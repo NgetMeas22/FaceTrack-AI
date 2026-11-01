@@ -48,7 +48,7 @@ TRANSLATIONS = {
         "identity_verified": "Identity Verified",
         "biometric_confidence": "Biometric Confidence",
 
-        # 7-Day Trend
+        # 7-Day Trend & Compliance Analytics
         "trend_title": "7-Day Attendance Trend",
         "trend_subtitle": "Shift ingress validation comparison across work days",
         "this_week_btn": "This Week",
@@ -57,6 +57,12 @@ TRANSLATIONS = {
         "peak_ingress": "Peak Ingress Slot",
         "punctuality_note": "Punctuality is up +2.4% compared to previous week's baseline.",
         "detailed_analytics": "Detailed Analytics",
+        "compliance_rate": "Compliance Rate",
+        "on_time_ingress": "On-Time Ingress",
+        "expected_ingress": "Expected Ingress",
+        "recent_verifications": "Recent Biometric Verifications",
+        "audit_dossier_files": "Audit Reports & Files",
+        "view_all": "View all",
 
         # Biometric Feed
         "realtime_feed": "Real-Time Biometric Feed",
@@ -188,7 +194,7 @@ TRANSLATIONS = {
         "identity_verified": "អត្តសញ្ញាណត្រូវបានផ្ទៀងផ្ទាត់",
         "biometric_confidence": "កម្រិតទំនុកចិត្តជីវមាត្រ",
 
-        # 7-Day Trend
+        # 7-Day Trend & Compliance Analytics
         "trend_title": "និន្នាការវត្តមាន ៧ ថ្ងៃចុងក្រោយ",
         "trend_subtitle": "ការប្រៀបធៀបទិន្នន័យវត្តមានតាមថ្ងៃធ្វើការក្នុងសប្តាហ៍",
         "this_week_btn": "សប្តាហ៍នេះ",
@@ -197,6 +203,12 @@ TRANSLATIONS = {
         "peak_ingress": "ម៉ោងមកដល់ច្រើនបំផុត",
         "punctuality_note": "ភាពទៀងទាត់ពេលវេលាកើនឡើង +2.4% ធៀបនឹងសប្តាហ៍មុន។",
         "detailed_analytics": "មើលស្ថិតិលម្អិត",
+        "compliance_rate": "អត្រាអនុលោមភាពវត្តមាន",
+        "on_time_ingress": "វត្តមានទាន់ពេល",
+        "expected_ingress": "វត្តមានរំពឹងទុក",
+        "recent_verifications": "ការផ្ទៀងផ្ទាត់ជីវមាត្រថ្មីៗ",
+        "audit_dossier_files": "ឯកសារ និង របាយការណ៍សវនកម្ម",
+        "view_all": "មើលទាំងអស់",
 
         # Biometric Feed
         "realtime_feed": "ចរន្តទិន្នន័យស្កេនមុខ Real-Time",

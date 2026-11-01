@@ -50,3 +50,4 @@ def test_full_rbac_matrix():
 
 if __name__ == "__main__":
     test_full_rbac_matrix()
+

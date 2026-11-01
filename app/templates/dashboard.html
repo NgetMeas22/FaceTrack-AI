@@ -95,6 +95,106 @@
 
   </div>
 
+  <!-- Attendance Dynamics & Compliance Intelligence (Placed ON TOP OF Live Scanner - Image 2 Style) -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    
+    <!-- Curvy Spline Dual Area Chart (3 cols - Match "Patient Visit" in Reference Pic) -->
+    <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+      <div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.trend_title }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ t.trend_subtitle }}</p>
+          </div>
+          
+          <!-- Reference Pic Header Controls: Dual Legend & Period Selector -->
+          <div class="flex items-center gap-4">
+            <div class="hidden sm:flex items-center gap-3 text-xs font-semibold">
+              <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
+                <span>{{ t.on_time_ingress }}</span>
+              </span>
+              <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>
+                <span>{{ t.expected_ingress }}</span>
+              </span>
+            </div>
+
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              <button class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">{{ t.this_week_btn }}</button>
+              <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white transition-colors">{{ t.last_week_btn }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="grid grid-cols-2 gap-4 my-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.arrival_accuracy }}</span>
+            <p class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">94.2%</p>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.peak_ingress }}</span>
+            <p class="text-xl font-extrabold text-[#0ea5e9] mt-0.5 font-mono">08:45 - 09:10 AM</p>
+          </div>
+        </div>
+
+        <!-- Curvy Wave Chart Viewport (Height 230px) -->
+        <div class="h-60 mt-2 relative">
+          <canvas id="sevenDayTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Footer Punctuality Note -->
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+          <span>{{ t.punctuality_note }}</span>
+        </div>
+        {% if not current_user or can_access_page(current_user.role, 'reports') %}
+        <a href="/{{ lang }}/reports" class="text-xs text-[#0ea5e9] font-bold hover:underline flex items-center gap-1">
+          <span>{{ t.detailed_analytics }}</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Donut Ingress Compliance Meter (2 cols - Match "Total Income" Gauge in Reference Pic) -->
+    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.compliance_rate }}</h3>
+          <span class="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">+2.4% vs last week</span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Daily workforce biometric sync ratio</p>
+
+        <!-- Donut Canvas Container with Center Text Overlay -->
+        <div class="relative h-56 flex items-center justify-center my-2">
+          <canvas id="complianceDonutChart"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-mono">{{ t.present }}</span>
+            <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ stats.attendance_rate }}%</span>
+            <span class="text-[11px] font-semibold text-[#0ea5e9] font-mono mt-0.5">{{ stats.present_today }} / {{ stats.total_employees }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Legend -->
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-around text-xs font-semibold">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
+          <span class="text-slate-700 dark:text-slate-300">On-Time ({{ stats.present_today }})</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+          <span class="text-slate-500 dark:text-slate-400">Exceptions ({{ stats.late_today }})</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- Live Attendance Face Scanner Card (Exact Match to Picture) -->
   <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
     
@@ -250,174 +350,286 @@
 
   </div>
 
-  <!-- Bottom Row: 7-Day Attendance Trend & Real-Time Biometric Feed -->
+  <!-- Bottom Row: Recent Biometric Verifications Table & Audit Reports Dossier (Image 2 Style) -->
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
     
-    <!-- 7-Day Attendance Trend (3 cols) -->
+    <!-- Left: Recent Biometric Verifications (3 cols - Match "Appointment" Table in Reference Pic) -->
     <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-      
       <div>
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.trend_title }}</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ t.trend_subtitle }}</p>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.recent_verifications }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Real-time biometric optical verification events</p>
           </div>
-          <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300">
-            <button class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">{{ t.this_week_btn }}</button>
-            <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white transition-colors">{{ t.last_week_btn }}</button>
-          </div>
-        </div>
-
-        <!-- Metrics Row -->
-        <div class="grid grid-cols-2 gap-4 my-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.arrival_accuracy }}</span>
-            <p class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">94.2%</p>
-          </div>
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.peak_ingress }}</span>
-            <p class="text-xl font-extrabold text-[#0ea5e9] mt-0.5 font-mono">08:45 - 09:10 AM</p>
-          </div>
-        </div>
-
-        <!-- Minimalist Bar Chart -->
-        <div class="h-56 mt-2">
-          <canvas id="sevenDayTrendChart"></canvas>
-        </div>
-      </div>
-
-      <!-- Footer Punctuality Note -->
-      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-        <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
-          <span>{{ t.punctuality_note }}</span>
-        </div>
-        {% if not current_user or can_access_page(current_user.role, 'reports') %}
-        <a href="/{{ lang }}/reports" class="text-xs text-[#0ea5e9] font-bold hover:underline flex items-center gap-1">
-          <span>{{ t.detailed_analytics }}</span>
-          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-        </a>
-        {% endif %}
-      </div>
-
-    </div>
-
-    <!-- Real-Time Biometric Feed (2 cols) -->
-    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-      
-      <div>
-        <div class="flex items-center justify-between mb-1">
-          <div class="flex items-center gap-2">
-            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.realtime_feed }}</h3>
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-50 dark:bg-sky-950/60 text-[#0ea5e9] border border-sky-200 dark:border-sky-800">{{ t.live_hook }}</span>
-          </div>
-        </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-5">{{ t.feed_subtitle }}</p>
-
-        <!-- Personnel Feed List -->
-        <div class="space-y-3.5">
           
-          <!-- David Vance -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-900 dark:text-white">David Vance</h4>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">Engineering • Terminal 02</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:55:12 AM <span class="text-emerald-500 font-semibold">98.8% Conf.</span></p>
-            </div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+            <span>Latest Ingress</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
           </div>
+        </div>
 
-          <!-- Elena Rostova -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Elena Rostova</h4>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">Design • Terminal 04</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:52:04 AM <span class="text-emerald-500 font-semibold">99.1% Conf.</span></p>
-            </div>
-          </div>
+        <!-- Clean Modern Data Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono border-b border-slate-100 dark:border-slate-800">
+                <th class="pb-3 font-semibold">PERSONNEL</th>
+                <th class="pb-3 font-semibold">DEPARTMENT</th>
+                <th class="pb-3 font-semibold">STATUS</th>
+                <th class="pb-3 font-semibold">TIME</th>
+                <th class="pb-3 text-right font-semibold">ACTION</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+              
+              <!-- Row 1: David Vance -->
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-3.5 flex items-center gap-3">
+                  <div class="relative shrink-0">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-[#222225]"></span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-900 dark:text-white">David Vance</p>
+                    <p class="text-[10px] text-slate-400 font-mono">EMP-1004</p>
+                  </div>
+                </td>
+                <td class="py-3.5 text-slate-600 dark:text-slate-300">Engineering • Gate 02</td>
+                <td class="py-3.5">
+                  <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    {{ t.present }} (98.8%)
+                  </span>
+                </td>
+                <td class="py-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">08:55 AM</td>
+                <td class="py-3.5 text-right">
+                  <button class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
 
-          <!-- Marcus Sterling -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-amber-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Marcus Sterling</h4>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">Finance • Gate 01</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">{{ t.late }} (+16m)</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">09:16:22 AM <span class="text-slate-400 font-semibold">96.9% Conf.</span></p>
-            </div>
-          </div>
+              <!-- Row 2: Elena Rostova -->
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-3.5 flex items-center gap-3">
+                  <div class="relative shrink-0">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-[#222225]"></span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-900 dark:text-white">Elena Rostova</p>
+                    <p class="text-[10px] text-slate-400 font-mono">EMP-1012</p>
+                  </div>
+                </td>
+                <td class="py-3.5 text-slate-600 dark:text-slate-300">Product Design</td>
+                <td class="py-3.5">
+                  <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    {{ t.present }} (99.1%)
+                  </span>
+                </td>
+                <td class="py-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">08:52 AM</td>
+                <td class="py-3.5 text-right">
+                  <button class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
 
-          <!-- Chloe Zhang -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Chloe Zhang</h4>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">People Ops • Terminal 04</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:48:59 AM <span class="text-emerald-500 font-semibold">98.5% Conf.</span></p>
-            </div>
-          </div>
+              <!-- Row 3: Marcus Sterling -->
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-3.5 flex items-center gap-3">
+                  <div class="relative shrink-0">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-[#222225]"></span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-900 dark:text-white">Marcus Sterling</p>
+                    <p class="text-[10px] text-slate-400 font-mono">EMP-1025</p>
+                  </div>
+                </td>
+                <td class="py-3.5 text-slate-600 dark:text-slate-300">Finance & Legal</td>
+                <td class="py-3.5">
+                  <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                    {{ t.late }} (+16m)
+                  </span>
+                </td>
+                <td class="py-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">09:16 AM</td>
+                <td class="py-3.5 text-right">
+                  <button class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
 
-          <!-- Kenji Sato -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Kenji Sato</h4>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">Infrastructure • Terminal 03</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:42:10 AM <span class="text-emerald-500 font-semibold">99.3% Conf.</span></p>
-            </div>
-          </div>
+              <!-- Row 4: Chloe Zhang -->
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-3.5 flex items-center gap-3">
+                  <div class="relative shrink-0">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-[#222225]"></span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-900 dark:text-white">Chloe Zhang</p>
+                    <p class="text-[10px] text-slate-400 font-mono">EMP-1033</p>
+                  </div>
+                </td>
+                <td class="py-3.5 text-slate-600 dark:text-slate-300">People Operations</td>
+                <td class="py-3.5">
+                  <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    {{ t.present }} (98.5%)
+                  </span>
+                </td>
+                <td class="py-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">08:48 AM</td>
+                <td class="py-3.5 text-right">
+                  <button class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
 
+              <!-- Row 5: Kenji Sato -->
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-3.5 flex items-center gap-3">
+                  <div class="relative shrink-0">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-[#222225]"></span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-900 dark:text-white">Kenji Sato</p>
+                    <p class="text-[10px] text-slate-400 font-mono">EMP-1048</p>
+                  </div>
+                </td>
+                <td class="py-3.5 text-slate-600 dark:text-slate-300">IT Infrastructure</td>
+                <td class="py-3.5">
+                  <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    {{ t.present }} (99.3%)
+                  </span>
+                </td>
+                <td class="py-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">08:42 AM</td>
+                <td class="py-3.5 text-right">
+                  <button class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Footer Link -->
+      <!-- Footer Action -->
       <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
         <a href="/{{ lang }}/attendance" class="text-xs font-bold text-[#0ea5e9] hover:underline flex items-center justify-center gap-1.5">
           <i data-lucide="history" class="w-3.5 h-3.5"></i>
           <span>{{ t.view_full_stream }} (420 events) &rarr;</span>
         </a>
       </div>
+    </div>
 
+    <!-- Right: Audit Reports & Files Dossier (2 cols - Match "Patient File" in Reference Pic) -->
+    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.audit_dossier_files }}</h3>
+          {% if not current_user or can_access_page(current_user.role, 'reports') %}
+          <a href="/{{ lang }}/reports" class="text-xs font-semibold text-[#0ea5e9] hover:underline flex items-center gap-1">
+            <span>{{ t.view_all }}</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Files List with Icons & Download Action -->
+        <div class="space-y-3">
+          
+          <!-- File 1: Shift Attendance Log CSV -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 hover:border-sky-300 dark:hover:border-sky-800/80 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-950/70 text-[#0ea5e9] flex items-center justify-center shrink-0">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">Shift_Attendance_Log.csv</p>
+                <p class="text-[10px] text-slate-400 font-mono">240 KB • Updated 5m ago</p>
+              </div>
+            </div>
+            <a href="/api/attendance/export" title="Download CSV" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </a>
+          </div>
+
+          <!-- File 2: Biometric Audit Report PDF -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 hover:border-rose-300 dark:hover:border-rose-800/80 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-500 flex items-center justify-center shrink-0">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">Biometric_Audit_Dossier.pdf</p>
+                <p class="text-[10px] text-slate-400 font-mono">1.4 MB • Generated Today</p>
+              </div>
+            </div>
+            <a href="/api/settings/backup" title="Download Audit" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </a>
+          </div>
+
+          <!-- File 3: Ingress Telemetry JSON -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-800/80 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-500 flex items-center justify-center shrink-0">
+                <i data-lucide="file-code" class="w-4 h-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">Ingress_Telemetry.json</p>
+                <p class="text-[10px] text-slate-400 font-mono">85 KB • Synced to S3</p>
+              </div>
+            </div>
+            <a href="/api/settings/backup" title="Download JSON" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </a>
+          </div>
+
+          <!-- File 4: Terminal Diagnostics Log -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 hover:border-amber-300 dark:hover:border-amber-800/80 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/70 text-amber-500 flex items-center justify-center shrink-0">
+                <i data-lucide="file-terminal" class="w-4 h-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">Optical_Diagnostics.log</p>
+                <p class="text-[10px] text-slate-400 font-mono">48 KB • RealSense Array</p>
+              </div>
+            </div>
+            <a href="/api/settings/backup" title="Download Log" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </a>
+          </div>
+
+          <!-- File 5: Monthly Payroll Attendance XLSX -->
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 hover:border-teal-300 dark:hover:border-teal-800/80 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/70 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                <i data-lucide="sheet" class="w-4 h-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">Payroll_Ingress_Monthly.xlsx</p>
+                <p class="text-[10px] text-slate-400 font-mono">620 KB • Ready for Export</p>
+              </div>
+            </div>
+            <a href="/api/attendance/export" title="Download Excel" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer Quick Status -->
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 font-mono">
+        <span>ENCRYPTED_ARCHIVE</span>
+        <span class="text-emerald-500 font-bold">ALL SYNCS COMPLETE</span>
+      </div>
     </div>
 
   </div>
@@ -451,56 +663,142 @@
     }
   }
 
-  // 7-Day Attendance Trend Chart
+  // 7-Day Attendance Trend Chart & Compliance Donut Meter
   document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('sevenDayTrendChart');
-    if (!ctx) return;
-
     const isDark = document.documentElement.classList.contains('dark');
 
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu (Today)', 'Fri', 'Sat', 'Sun'],
-        datasets: [
-          {
-            label: 'On-Time',
-            data: [128, 134, 130, 132, 126, 45, 12],
-            backgroundColor: (context) => {
-              return context.dataIndex === 3 ? '#0ea5e9' : (isDark ? '#1e293b' : '#bae6fd');
+    // 1. Curvy Wave Dual-Spline Area Chart (Match "Patient Visit" in Image 2)
+    const trendCanvas = document.getElementById('sevenDayTrendChart');
+    if (trendCanvas) {
+      const ctx = trendCanvas.getContext('2d');
+
+      // Create Soft Wave Gradients
+      const gradSky = ctx.createLinearGradient(0, 0, 0, 220);
+      gradSky.addColorStop(0, isDark ? 'rgba(14, 165, 233, 0.35)' : 'rgba(14, 165, 233, 0.22)');
+      gradSky.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
+
+      const gradTeal = ctx.createLinearGradient(0, 0, 0, 220);
+      gradTeal.addColorStop(0, isDark ? 'rgba(16, 185, 129, 0.25)' : 'rgba(16, 185, 129, 0.15)');
+      gradTeal.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu (Today)', 'Fri', 'Sat', 'Sun'],
+          datasets: [
+            {
+              label: 'On-Time Ingress',
+              data: [120, 134, 128, 142, 132, 138, 135],
+              borderColor: '#0ea5e9',
+              borderWidth: 3,
+              backgroundColor: gradSky,
+              fill: true,
+              tension: 0.45,
+              pointBackgroundColor: '#0ea5e9',
+              pointBorderColor: isDark ? '#1c1c1f' : '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 6,
             },
-            borderRadius: 6,
-            barThickness: 28,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
-          },
-          y: {
-            beginAtZero: true,
-            max: 160,
-            grid: { color: isDark ? '#1e293b' : '#f1f5f9' },
-            ticks: { color: isDark ? '#64748b' : '#94a3b8', stepSize: 40, font: { family: 'JetBrains Mono', size: 10 } }
-          }
+            {
+              label: 'Expected Baseline',
+              data: [110, 124, 115, 130, 118, 126, 122],
+              borderColor: '#10b981',
+              borderWidth: 2.5,
+              backgroundColor: gradTeal,
+              fill: true,
+              tension: 0.45,
+              pointBackgroundColor: '#10b981',
+              pointBorderColor: isDark ? '#1c1c1f' : '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+            }
+          ]
         },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#090d16',
-            titleFont: { family: 'Plus Jakarta Sans', size: 12 },
-            bodyFont: { family: 'JetBrains Mono', size: 11 },
-            padding: 10,
-            cornerRadius: 8,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                color: isDark ? '#94a3b8' : '#64748b',
+                font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              max: 160,
+              grid: {
+                color: isDark ? '#26262b' : '#f1f5f9',
+                drawBorder: false
+              },
+              ticks: {
+                color: isDark ? '#64748b' : '#94a3b8',
+                stepSize: 40,
+                font: { family: 'JetBrains Mono', size: 10 }
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? '#090d16' : '#1e293b',
+              titleColor: '#ffffff',
+              bodyColor: '#38bdf8',
+              titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
+              bodyFont: { family: 'JetBrains Mono', size: 11, weight: '600' },
+              padding: 12,
+              cornerRadius: 12,
+              boxPadding: 4,
+            }
           }
         }
-      }
-    });
+      });
+    }
+
+    // 2. Compliance Donut Meter (Match "Total Income" Gauge in Image 2)
+    const donutCanvas = document.getElementById('complianceDonutChart');
+    if (donutCanvas) {
+      const rate = Number({{ stats.attendance_rate or 88.6 }});
+      const remainder = Math.max(0, 100 - rate);
+
+      new Chart(donutCanvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['On-Time', 'Exceptions'],
+          datasets: [
+            {
+              data: [rate, remainder],
+              backgroundColor: ['#0ea5e9', isDark ? '#26262b' : '#e2e8f0'],
+              borderWidth: 0,
+              borderRadius: 6,
+              hoverOffset: 4,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '78%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? '#090d16' : '#1e293b',
+              titleFont: { family: 'Plus Jakarta Sans', size: 11 },
+              bodyFont: { family: 'JetBrains Mono', size: 11 },
+              padding: 10,
+              cornerRadius: 10,
+            }
+          }
+        }
+      });
+    }
   });
 </script>
 {% endblock %}
