@@ -891,9 +891,12 @@ def create_employee_api(
     db: Session = Depends(get_db),
 ):
     curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
+    referer = request.headers.get("referer", "")
+    target_lang = "kh" if "/kh/" in referer else "en"
+
     existing = db.query(Employee).filter_by(employee_code=employee_code.strip()).first()
     if existing:
-        return RedirectResponse(url="/en/employees?error=Employee+Code+already+exists", status_code=303)
+        return RedirectResponse(url=f"/{target_lang}/employees?error=Employee+Code+already+exists", status_code=303)
 
     emp = Employee(
         employee_code=employee_code.strip(),
@@ -952,7 +955,7 @@ def create_employee_api(
     db.add(audit)
     db.commit()
 
-    return RedirectResponse(url="/en/employees?success=created", status_code=303)
+    return RedirectResponse(url=f"/{target_lang}/employees?success=created", status_code=303)
 
 
 @app.post("/api/employees/{emp_id}/update")
@@ -971,6 +974,9 @@ def update_employee_api(
     db: Session = Depends(get_db),
 ):
     curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
+    referer = request.headers.get("referer", "")
+    target_lang = "kh" if "/kh/" in referer else "en"
+
     emp = db.query(Employee).filter_by(id=emp_id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")
@@ -1028,7 +1034,7 @@ def update_employee_api(
     db.add(audit)
     db.commit()
 
-    return RedirectResponse(url="/en/employees?success=updated", status_code=303)
+    return RedirectResponse(url=f"/{target_lang}/employees?success=updated", status_code=303)
 
 
 def set_system_setting(db: Session, key: str, value: str, desc: str = ""):
@@ -1313,6 +1319,9 @@ def purge_old_logs_api(
 @app.post("/api/employees/{emp_id}/delete")
 def delete_employee_api(emp_id: int, request: Request, db: Session = Depends(get_db)):
     curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
+    referer = request.headers.get("referer", "")
+    target_lang = "kh" if "/kh/" in referer else "en"
+
     emp = db.query(Employee).filter_by(id=emp_id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")
@@ -1330,7 +1339,7 @@ def delete_employee_api(emp_id: int, request: Request, db: Session = Depends(get
     db.add(audit)
     db.commit()
 
-    return RedirectResponse(url="/en/employees?success=deleted", status_code=303)
+    return RedirectResponse(url=f"/{target_lang}/employees?success=deleted", status_code=303)
 
 
 class FaceEnrollRequest(BaseModel):

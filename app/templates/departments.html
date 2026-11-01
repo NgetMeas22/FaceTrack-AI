@@ -27,14 +27,14 @@
   <div class="aesthetic-card overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
-        <thead class="text-slate-400 dark:text-slate-400 uppercase bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-100 dark:border-[#333338] font-mono tracking-wider text-[11px]">
+        <thead class="bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-200 dark:border-[#333338] text-[11px]">
           <tr>
-            <th class="py-4 px-6">Code</th>
+            <th class="py-4 px-6">{{ t.department_code }}</th>
             <th class="py-4 px-6">{{ t.departments }}</th>
-            <th class="py-4 px-6">Department Head</th>
-            <th class="py-4 px-6">Office Location</th>
-            <th class="py-4 px-6">Personnel Count</th>
-            <th class="py-4 px-6">Biometric Rate</th>
+            <th class="py-4 px-6">{{ t.department_head }}</th>
+            <th class="py-4 px-6">{{ t.office_location }}</th>
+            <th class="py-4 px-6">{{ t.personnel_count }}</th>
+            <th class="py-4 px-6">{{ t.biometric_rate }}</th>
             <th class="py-4 px-6 text-right">{{ t.actions }}</th>
           </tr>
         </thead>

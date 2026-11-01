@@ -127,16 +127,16 @@
   <div class="aesthetic-card overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
-        <thead class="text-slate-400 dark:text-slate-400 uppercase bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-100 dark:border-[#333338] font-mono tracking-wider text-[11px]">
+        <thead class="bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-200 dark:border-[#333338] text-[11px]">
           <tr>
-            <th class="py-4 px-6">{{ t.employees }}</th>
-            <th class="py-4 px-6">{{ t.departments }}</th>
+            <th class="py-4 px-6">{{ t.employee_name or t.employees }}</th>
+            <th class="py-4 px-6">{{ t.department }}</th>
             <th class="py-4 px-6">{{ t.check_in }}</th>
             <th class="py-4 px-6">{{ t.check_out }}</th>
-            <th class="py-4 px-6">Terminal Node</th>
+            <th class="py-4 px-6">{{ t.terminal_node }}</th>
             <th class="py-4 px-6">{{ t.status }}</th>
-            <th class="py-4 px-6">Confidence</th>
-            <th class="py-4 px-6">Audit Notes</th>
+            <th class="py-4 px-6">{{ t.confidence }}</th>
+            <th class="py-4 px-6">{{ t.audit_notes }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-[#1e2c48]">
@@ -148,9 +148,10 @@
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
                   {% if r.employee.photo_path %}
-                    <img src="{{ r.employee.photo_path }}" alt="{{ r.employee.full_name }}" class="w-full h-full object-cover">
+                    <img src="{{ r.employee.photo_path }}" alt="{{ r.employee.full_name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <span class="text-xs font-bold text-[#0ea5e9] hidden">{{ (r.employee.first_name[0] if r.employee.first_name else '') + (r.employee.last_name[0] if r.employee.last_name else '') }}</span>
                   {% else %}
-                    <span class="text-xs font-bold text-[#0ea5e9]">{{ r.employee.first_name[0] }}</span>
+                    <span class="text-xs font-bold text-[#0ea5e9]">{{ (r.employee.first_name[0] if r.employee.first_name else '') + (r.employee.last_name[0] if r.employee.last_name else '') }}</span>
                   {% endif %}
                 </div>
                 <div>
