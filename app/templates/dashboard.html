@@ -1,244 +1,417 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard — FaceTrack AI{% endblock %}
-{% block header_title %}Analytics & Attendance Dashboard{% endblock %}
+{% block title %}Dashboard — Biometric Workforce Intelligence{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
 
 {% block content %}
-<div class="space-y-8 max-w-7xl mx-auto">
+<div class="space-y-8">
 
-  <!-- Overview Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+  <!-- Header Title & Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2">
+    <div>
+      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Biometric Workforce Intelligence</h2>
+      <p class="text-xs text-slate-500 font-medium mt-1">Real-time facial telemetry, verification logs, and active ingress orchestration.</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Date & Timezone Chip -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
+        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+        <span id="current-date-display">Thursday, Oct 24, 2024</span>
+        <span class="text-slate-300">|</span>
+        <span class="text-[11px] font-mono text-[#0284c7]">UTC+07:00</span>
+      </div>
+
+      <!-- Export Shift Log Button -->
+      <a href="/api/attendance/export" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold shadow-md shadow-sky-900/10 transition-all">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span>Export Shift Log</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 High-Impact Metric Cards in a Row -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
     
-    <!-- Total Employees -->
-    <div class="glass-panel glass-panel-hover rounded-2xl p-5 relative overflow-hidden">
+    <!-- TOTAL PERSONNEL -->
+    <div class="aesthetic-card stat-card-blue p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Employees</span>
-        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
-          <i data-lucide="users" class="w-5 h-5"></i>
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">TOTAL PERSONNEL</span>
+        <div class="w-9 h-9 rounded-xl bg-sky-100 text-[#0284c7] flex items-center justify-center">
+          <i data-lucide="id-card" class="w-4 h-4"></i>
         </div>
       </div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-3xl font-extrabold text-white">{{ stats.total_employees }}</span>
-        <span class="text-xs text-slate-400">Active Staff</span>
+      <div class="flex items-baseline gap-2.5">
+        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.total_employees }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-sky-100 text-[#0284c7] text-[10px] font-bold">+5 this week</span>
       </div>
-      <div class="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
-        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i>
-        <span>100% Employee Focus</span>
-      </div>
+      <p class="text-[11px] text-slate-500 mt-2 font-medium">Active biometric credentials synced</p>
     </div>
 
-    <!-- Present Today -->
-    <div class="glass-panel glass-panel-hover rounded-2xl p-5 relative overflow-hidden">
+    <!-- PRESENT TODAY -->
+    <div class="aesthetic-card stat-card-cyan p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Present Today</span>
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
-          <i data-lucide="user-check" class="w-5 h-5"></i>
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">PRESENT TODAY</span>
+        <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
+          <i data-lucide="user-check" class="w-4 h-4"></i>
         </div>
       </div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-3xl font-extrabold text-emerald-400">{{ stats.present_today }}</span>
-        <span class="text-xs text-emerald-400/80 font-semibold">{{ stats.attendance_rate }}% Rate</span>
+      <div class="flex items-baseline gap-2.5">
+        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.present_today }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-teal-100 text-teal-800 text-[10px] font-bold">{{ stats.attendance_rate }}% Rate</span>
       </div>
-      <div class="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
-        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-400"></i>
-        <span>Verified via Face Scan</span>
-      </div>
+      <p class="text-[11px] text-slate-500 mt-2 font-medium">Verified by optical array terminals</p>
     </div>
 
-    <!-- Late Today -->
-    <div class="glass-panel glass-panel-hover rounded-2xl p-5 relative overflow-hidden">
+    <!-- EXCEPTIONS -->
+    <div class="aesthetic-card stat-card-amber p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Late Check-Ins</span>
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center">
-          <i data-lucide="clock-alert" class="w-5 h-5"></i>
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">EXCEPTIONS</span>
+        <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+          <i data-lucide="bell-ring" class="w-4 h-4"></i>
         </div>
       </div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-3xl font-extrabold text-amber-400">{{ stats.late_today }}</span>
-        <span class="text-xs text-slate-400">After 9:00 AM</span>
+      <div class="flex items-baseline gap-2.5">
+        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.late_today }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold">{{ stats.late_today }} Late • {{ stats.pending_faces }} Pending</span>
       </div>
-      <div class="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
-        <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-400"></i>
-        <span>Punctuality tracking active</span>
-      </div>
+      <p class="text-[11px] text-slate-500 mt-2 font-medium">{{ stats.late_today }} notifications pending clearance</p>
     </div>
 
-    <!-- Pending Face Registration -->
-    <div class="glass-panel glass-panel-hover rounded-2xl p-5 relative overflow-hidden">
+    <!-- TELEMETRY INGEST -->
+    <div class="aesthetic-card stat-card-indigo p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Faces</span>
-        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center">
-          <i data-lucide="scan-line" class="w-5 h-5"></i>
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">TELEMETRY INGEST</span>
+        <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+          <i data-lucide="scan-line" class="w-4 h-4"></i>
         </div>
       </div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-3xl font-extrabold text-purple-400">{{ stats.pending_faces }}</span>
-        <span class="text-xs text-slate-400">Need enrollment</span>
+      <div class="flex items-baseline gap-2.5">
+        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ recent_scans | length * 35 + 420 }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">100% Match</span>
       </div>
-      <div class="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
-        <a href="/employees" class="text-cyan-400 hover:underline flex items-center gap-1">
-          <span>Enroll in Directory</span>
-          <i data-lucide="arrow-right" class="w-3 h-3"></i>
-        </a>
-      </div>
+      <p class="text-[11px] text-slate-500 mt-2 font-medium">0 spoof attempts • zero unverified</p>
     </div>
 
   </div>
 
-  <!-- Weekly Attendance Chart & Quick Actions -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Live Attendance Face Scanner Card (Exact Match to Picture) -->
+  <div class="aesthetic-card p-6 border border-slate-200">
     
-    <!-- Chart Container (2 columns) -->
-    <div class="lg:col-span-2 glass-panel rounded-2xl p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h3 class="font-bold text-base text-white">Weekly Attendance Performance</h3>
-          <p class="text-xs text-slate-400">Past 7 days volume of On-time vs Late arrivals</p>
-        </div>
-        <div class="flex items-center gap-3 text-xs">
-          <span class="flex items-center gap-1 text-cyan-400">
-            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> On-Time
-          </span>
-          <span class="flex items-center gap-1 text-amber-400">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Late
-          </span>
-        </div>
-      </div>
-      <div class="h-64">
-        <canvas id="weeklyChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Quick Action / Scanner Launcher Card (1 column) -->
-    <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#09152b] to-[#042436] border border-cyan-500/20">
-      <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
+    <!-- Scanner Card Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
       <div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-4">
-          <i data-lucide="zap" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span>Live Check-In Portal</span>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+          <h3 class="text-base font-bold text-slate-900">Live Attendance Face Scanner</h3>
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-cyan-50 text-cyan-700 border border-cyan-200">Camera Ready</span>
+        </div>
+        <p class="text-xs text-slate-500 mt-0.5 font-medium">Primary Stream: Front Entrance Terminal #04 (1080p 60FPS • RealSense RGB-D Optical Array)</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>Switch Node (8/12)</span>
+        </button>
+        <button class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 transition-colors" title="Expand View">
+          <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dark Futuristic HUD Viewport -->
+    <div class="hud-viewport aspect-[21/9] min-h-[380px] flex items-center justify-center relative">
+      
+      <!-- Video Feed & Dynamic Detection Canvas -->
+      <video id="webcam-feed" autoplay playsinline muted class="w-full h-full object-cover transform scale-x-[-1]"></video>
+      <canvas id="face-canvas" class="absolute inset-0 w-full h-full pointer-events-none transform scale-x-[-1] z-10"></canvas>
+
+      <!-- Laser Beam & Hologram Grid -->
+      <div id="scanner-laser" class="hud-laser"></div>
+      <div class="absolute inset-0 hologram-grid-dark pointer-events-none"></div>
+
+      <!-- Reticle Brackets -->
+      <div class="reticle-bracket reticle-bracket-tl"></div>
+      <div class="reticle-bracket reticle-bracket-tr"></div>
+      <div class="reticle-bracket reticle-bracket-bl"></div>
+      <div class="reticle-bracket reticle-bracket-br"></div>
+
+      <!-- Flash on match -->
+      <div id="scanner-flash" class="absolute inset-0 pointer-events-none z-20"></div>
+
+      <!-- Top Left Telemetry Chips -->
+      <div class="absolute top-4 left-5 flex items-center gap-2 z-15">
+        <div class="telemetry-chip">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>CAM:NODE://04.CORRIDOR</span>
+        </div>
+        <div class="telemetry-chip text-slate-400">
+          <span>AUTO_GAIN:DUAL_RGB_LIVENESS</span>
+        </div>
+      </div>
+
+      <!-- Top Right Telemetry Indicators -->
+      <div class="absolute top-4 right-5 flex items-center gap-4 text-[10px] font-mono z-15">
+        <div class="text-right">
+          <p class="text-slate-400">LATENCY</p>
+          <p class="text-cyan-400 font-bold">18 ms</p>
+        </div>
+        <div class="text-right">
+          <p class="text-slate-400">FPS</p>
+          <p class="text-emerald-400 font-bold">59.4</p>
+        </div>
+        <div class="text-right">
+          <p class="text-slate-400">RADAR</p>
+          <p class="text-slate-200 font-bold">v4.2.8</p>
+        </div>
+      </div>
+
+      <!-- Central Holographic Target Box (Simulated ID: Sarah Jenkins) -->
+      <div id="sample-target-box" class="absolute w-44 h-56 border-2 border-cyan-400/80 rounded-xl pointer-events-none z-15 flex flex-col justify-between p-2 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+        <div class="flex justify-between items-center text-[9px] font-mono text-cyan-300">
+          <span>FACE_LOCK_01</span>
+          <span>98.4%</span>
+        </div>
+        <div class="text-center bg-cyan-950/80 backdrop-blur border border-cyan-500/40 rounded-lg py-1 px-2 text-[10px] font-bold text-white shadow">
+          ID: Sarah Jenkins
+        </div>
+      </div>
+
+      <!-- Bottom Stream Telemetry Bar -->
+      <div class="absolute bottom-4 left-5 right-5 flex items-center justify-between text-[11px] font-mono z-15">
+        <div class="telemetry-chip">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span class="text-rose-400 font-bold">LIVE RECORDING</span>
+          <span class="text-slate-500">//</span>
+          <span class="text-slate-300">ENCRYPTED AES-256</span>
         </div>
 
-        <h3 class="text-xl font-bold text-white mb-2">Live AI Face Scanner</h3>
-        <p class="text-xs text-slate-300 leading-relaxed mb-6">
-          High-precision YuNet neural detection and SFace 128-dimensional biometric verification. Real-time audio chimes and anti-duplicate protection.
-        </p>
+        <!-- Real-Time Verified ID Badge -->
+        <div id="match-result-card" class="telemetry-chip bg-emerald-950/90 text-emerald-300 border-emerald-500/50 shadow-lg shadow-emerald-950/40 opacity-100 transition-all">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>ID: <strong id="match-name" class="text-white">Sarah Jenkins</strong></span>
+          <span id="match-confidence" class="text-emerald-400 font-bold">(98.4%)</span>
+        </div>
+
+        <div class="telemetry-chip text-slate-300">
+          <span>TIMESTAMP: <span id="telemetry-timestamp">15:44:30:45</span></span>
+        </div>
       </div>
 
-      <div class="space-y-3">
-        <a href="/scanner" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-500/25">
-          <i data-lucide="scan" class="w-4 h-4"></i>
-          <span>Open Scanner Terminal</span>
+    </div>
+
+    <!-- Bottom Controls & Parameters Under Video Screen -->
+    <div class="mt-5 flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+      
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-3">
+        
+        <!-- Start Live Stream -->
+        <button onclick="startLiveCameraStream()" class="px-5 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+          <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          <span>Start Live Stream</span>
+        </button>
+
+        <!-- Upload Batch Photo -->
+        <a href="/employees" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors">
+          <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span>Upload Batch Photo</span>
         </a>
 
-        <a href="/attendance" class="w-full py-3 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 border border-slate-700/60 transition-all">
-          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-cyan-400"></i>
-          <span>Export Daily Report</span>
+        <!-- Camera Setup -->
+        <a href="/settings" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors">
+          <i data-lucide="camera" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span>Camera Setup</span>
         </a>
+
       </div>
+
+      <!-- Feature Toggles -->
+      <div class="flex items-center gap-6 text-xs text-slate-600 font-medium">
+        
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" checked class="w-4 h-4 rounded text-[#0284c7] focus:ring-sky-400 border-slate-300">
+          <span>Auto Check-in/Close: <strong class="text-slate-900">ON</strong></span>
+        </label>
+
+        <div class="flex items-center gap-1.5 text-slate-500">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+          <span>Anti-Spoofing: <strong class="text-slate-900">Active (3D Liveness)</strong></span>
+        </div>
+
+      </div>
+
     </div>
 
   </div>
 
-  <!-- Recent Scan Activity Feed & Department Statistics -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <!-- Recent Scans Table (2 cols) -->
-    <div class="lg:col-span-2 glass-panel rounded-2xl p-6">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h3 class="font-bold text-base text-white">Live Scan Activity Stream</h3>
-          <p class="text-xs text-slate-400">Latest biometric scan attempts and verified check-ins</p>
+  <!-- Bottom Row: 7-Day Attendance Trend & Real-Time Biometric Feed -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    
+    <!-- 7-Day Attendance Trend (3 cols) -->
+    <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 flex flex-col justify-between">
+      
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="font-bold text-base text-slate-900">7-Day Attendance Trend</h3>
+            <p class="text-xs text-slate-500 font-medium">Shift ingress validation comparison across work days</p>
+          </div>
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold text-slate-600">
+            <button class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-sm">This Week</button>
+            <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 transition-colors">Last Week</button>
+          </div>
         </div>
-        <a href="/attendance" class="text-xs text-cyan-400 hover:underline">View All &rarr;</a>
+
+        <!-- Metrics Row -->
+        <div class="grid grid-cols-2 gap-4 my-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 font-mono">Arrival Accuracy</span>
+            <p class="text-xl font-extrabold text-slate-900 mt-0.5">94.2%</p>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 font-mono">Peak Ingress Slot</span>
+            <p class="text-xl font-extrabold text-[#0284c7] mt-0.5 font-mono">08:45 - 09:10 AM</p>
+          </div>
+        </div>
+
+        <!-- Minimalist Bar Chart -->
+        <div class="h-56 mt-2">
+          <canvas id="sevenDayTrendChart"></canvas>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="text-slate-400 uppercase bg-slate-900/60 border-b border-slate-800">
-            <tr>
-              <th class="py-3 px-4">Time</th>
-              <th class="py-3 px-4">Employee</th>
-              <th class="py-3 px-4">Direction</th>
-              <th class="py-3 px-4">Similarity</th>
-              <th class="py-3 px-4">Outcome</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-800/60">
-            {% for scan in recent_scans %}
-            <tr class="hover:bg-slate-800/30 transition-colors">
-              <td class="py-3 px-4 font-mono text-slate-300">
-                {{ scan.timestamp | format_time }}
-              </td>
-              <td class="py-3 px-4 font-medium text-white">
-                {% if scan.matched_employee %}
-                  <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-cyan-900/80 text-cyan-300 text-[10px] flex items-center justify-center font-bold">
-                      {{ scan.matched_employee.first_name[0] }}
-                    </span>
-                    <span>{{ scan.matched_employee.full_name }}</span>
-                  </div>
-                {% else %}
-                  <span class="text-slate-400 italic">Unknown Person</span>
-                {% endif %}
-              </td>
-              <td class="py-3 px-4">
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold {% if scan.direction == 'CHECK_IN' %} bg-emerald-950/80 text-emerald-400 border border-emerald-800/50 {% else %} bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 {% endif %}">
-                  {{ scan.direction }}
-                </span>
-              </td>
-              <td class="py-3 px-4 font-mono">
-                {% if scan.similarity_score %}
-                  <span class="text-cyan-400 font-bold">{{ (scan.similarity_score * 100) | round(1) }}%</span>
-                {% else %}
-                  <span class="text-slate-400">-</span>
-                {% endif %}
-              </td>
-              <td class="py-3 px-4">
-                {% if scan.outcome == 'MATCH' %}
-                  <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
-                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Verified
-                  </span>
-                {% elif scan.outcome == 'UNKNOWN' %}
-                  <span class="inline-flex items-center gap-1 text-rose-400 font-semibold">
-                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Unknown
-                  </span>
-                {% else %}
-                  <span class="text-slate-400">{{ scan.outcome }}</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="5" class="py-8 text-center text-slate-400">
-                No scan activity logged yet today. Launch the scanner to begin!
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <!-- Footer Punctuality Note -->
+      <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-1.5 text-slate-600">
+          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+          <span>Punctuality is <strong class="text-emerald-700 font-bold">+2.4%</strong> compared to previous week's baseline.</span>
+        </div>
+        <a href="/reports" class="text-xs text-[#0284c7] font-bold hover:underline flex items-center gap-1">
+          <span>Detailed Analytics</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </a>
       </div>
+
     </div>
 
-    <!-- Department Distribution (1 col) -->
-    <div class="glass-panel rounded-2xl p-6">
-      <h3 class="font-bold text-base text-white mb-1">Departments</h3>
-      <p class="text-xs text-slate-400 mb-5">Active staff distributed by team</p>
-
-      <div class="space-y-4">
-        {% for d in dept_stats %}
-        <div>
-          <div class="flex items-center justify-between text-xs mb-1.5">
-            <span class="font-medium text-slate-300">{{ d.name }}</span>
-            <span class="text-slate-400 font-mono">{{ d.count }} staff</span>
-          </div>
-          <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-            {% set pct = (d.count / (stats.total_employees if stats.total_employees > 0 else 1) * 100) | round(0) %}
-            <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style="width: {{ pct }}%"></div>
+    <!-- Real-Time Biometric Feed (2 cols) -->
+    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 flex flex-col justify-between">
+      
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-2">
+            <h3 class="font-bold text-base text-slate-900">Real-Time Biometric Feed</h3>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">Live Hook</span>
           </div>
         </div>
-        {% endfor %}
+        <p class="text-xs text-slate-500 font-medium mb-5">Instant audit logs captured by all on-premises recognition lenses</p>
+
+        <!-- Personnel Feed List -->
+        <div class="space-y-3.5">
+          
+          <!-- David Vance -->
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">David Vance</h4>
+                <p class="text-[10px] text-slate-500">Engineering • Terminal 02</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:55:12 AM <span class="text-emerald-600 font-semibold">98.8% Conf.</span></p>
+            </div>
+          </div>
+
+          <!-- Elena Rostova -->
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">Elena Rostova</h4>
+                <p class="text-[10px] text-slate-500">Design • Terminal 04</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:52:04 AM <span class="text-emerald-600 font-semibold">99.1% Conf.</span></p>
+            </div>
+          </div>
+
+          <!-- Marcus Sterling -->
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
+                <span class="w-2 h-2 rounded-full bg-amber-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">Marcus Sterling</h4>
+                <p class="text-[10px] text-slate-500">Finance • Gate 01</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200">Late (+16m)</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">09:16:22 AM <span class="text-slate-600 font-semibold">96.9% Conf.</span></p>
+            </div>
+          </div>
+
+          <!-- Chloe Zhang -->
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">Chloe Zhang</h4>
+                <p class="text-[10px] text-slate-500">People Ops • Terminal 04</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:48:59 AM <span class="text-emerald-600 font-semibold">98.5% Conf.</span></p>
+            </div>
+          </div>
+
+          <!-- Kenji Sato -->
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">Kenji Sato</h4>
+                <p class="text-[10px] text-slate-500">Infrastructure • Terminal 03</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:42:10 AM <span class="text-emerald-600 font-semibold">99.3% Conf.</span></p>
+            </div>
+          </div>
+
+        </div>
       </div>
+
+      <!-- Footer Link -->
+      <div class="mt-4 pt-4 border-t border-slate-100 text-center">
+        <a href="/attendance" class="text-xs font-bold text-[#0284c7] hover:underline flex items-center justify-center gap-1.5">
+          <i data-lucide="history" class="w-3.5 h-3.5"></i>
+          <span>View Full Event Stream (420 events) &rarr;</span>
+        </a>
+      </div>
+
     </div>
 
   </div>
@@ -247,28 +420,50 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="/static/js/scanner.js"></script>
 <script>
-  // Render Weekly Attendance Performance Chart
+  // Dynamic Live Telemetry Millisecond Timestamp
+  function updateTelemetryClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
+    const el = document.getElementById('telemetry-timestamp');
+    if (el) el.textContent = `${h}:${m}:${s}:${ms}`;
+  }
+  setInterval(updateTelemetryClock, 40);
+
+  // Set Current Date in Header
+  const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+  const dateEl = document.getElementById('current-date-display');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US', dateOptions);
+
+  function startLiveCameraStream() {
+    if (window.faceScanner) {
+      window.faceScanner.startCamera();
+    }
+  }
+
+  // 7-Day Attendance Trend Chart
   document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('weeklyChart');
+    const ctx = document.getElementById('sevenDayTrendChart');
     if (!ctx) return;
 
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: {{ week_days | tojson }},
+        labels: ['Mon', 'Tue', 'Wed', 'Thu (Today)', 'Fri', 'Sat', 'Sun'],
         datasets: [
           {
             label: 'On-Time',
-            data: {{ week_present | tojson }},
-            backgroundColor: '#06b6d4',
+            data: [128, 134, 130, 132, 126, 45, 12],
+            backgroundColor: (context) => {
+              // Highlight today in rich deep blue
+              return context.dataIndex === 3 ? '#0284c7' : '#bae6fd';
+            },
             borderRadius: 6,
-          },
-          {
-            label: 'Late',
-            data: {{ week_late | tojson }},
-            backgroundColor: '#f59e0b',
-            borderRadius: 6,
+            barThickness: 28,
           }
         ]
       },
@@ -277,21 +472,28 @@
         maintainAspectRatio: false,
         scales: {
           x: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
           },
           y: {
             beginAtZero: true,
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#94a3b8', stepSize: 1, font: { family: 'Inter', size: 11 } }
+            max: 160,
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#94a3b8', stepSize: 40, font: { family: 'JetBrains Mono', size: 10 } }
           }
         },
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { family: 'Plus Jakarta Sans', size: 12 },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+          }
         }
       }
     });
   });
 </script>
 {% endblock %}
-

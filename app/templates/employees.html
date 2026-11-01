@@ -1,25 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Employee Directory — FaceTrack AI{% endblock %}
-{% block header_title %}Employee Directory & Biometrics{% endblock %}
+{% block title %}Employees — FaceTrack AI{% endblock %}
+{% block breadcrumb %}Employees Directory{% endblock %}
 
 {% block content %}
-<div class="space-y-6 max-w-7xl mx-auto">
+<div class="space-y-6">
 
-  <!-- Action Bar & Filters -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel rounded-2xl p-5">
-    
-    <!-- Search & Filters -->
-    <form method="GET" action="/employees" class="flex flex-wrap items-center gap-3 flex-1">
+  <!-- Header Banner -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Personnel & Biometric Enrollment</h2>
+      <p class="text-xs text-slate-500 font-medium mt-1">Manage corporate personnel records, assign organizational units, and register facial templates.</p>
+    </div>
+
+    <!-- Add Employee Button -->
+    <button 
+      onclick="openModal('add-employee-modal')" 
+      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold shadow-md shadow-sky-500/20 transition-all shrink-0"
+    >
+      <i data-lucide="user-plus" class="w-4 h-4"></i>
+      <span>Enroll New Employee</span>
+    </button>
+  </div>
+
+  <!-- Filter & Search Toolbar Card -->
+  <div class="aesthetic-card p-4 border border-slate-200">
+    <form method="GET" action="/employees" class="flex flex-wrap items-center gap-3">
+      
       <!-- Search Input -->
-      <div class="relative flex-1 min-w-[220px]">
+      <div class="relative flex-1 min-w-[240px]">
         <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
         <input 
           type="text" 
           name="search" 
           value="{{ search }}" 
-          placeholder="Search name, code, email..." 
-          class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors"
+          placeholder="Filter by name, employee ID, position or email..." 
+          class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0284c7] focus:bg-white transition-all font-medium"
         >
       </div>
 
@@ -27,7 +43,7 @@
       <select 
         name="dept_id" 
         onchange="this.form.submit()"
-        class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#0284c7]"
       >
         <option value="">All Departments</option>
         {% for dept in departments %}
@@ -39,7 +55,7 @@
       <select 
         name="status" 
         onchange="this.form.submit()"
-        class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#0284c7]"
       >
         <option value="">All Statuses</option>
         <option value="ACTIVE" {% if selected_status == 'ACTIVE' %}selected{% endif %}>Active</option>
@@ -47,124 +63,117 @@
       </select>
 
       {% if search or selected_dept or selected_status %}
-        <a href="/employees" class="text-xs text-rose-400 hover:underline px-2">Clear</a>
+        <a href="/employees" class="text-xs text-rose-500 font-bold hover:underline px-2">Reset</a>
       {% endif %}
     </form>
-
-    <!-- Add Employee Button -->
-    <button 
-      onclick="openModal('add-employee-modal')" 
-      class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all shrink-0"
-    >
-      <i data-lucide="user-plus" class="w-4 h-4"></i>
-      <span>Add New Employee</span>
-    </button>
   </div>
 
-  <!-- Employees Table -->
-  <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800">
+  <!-- Personnel Data Table Card -->
+  <div class="aesthetic-card overflow-hidden border border-slate-200">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
-        <thead class="text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800 tracking-wider">
+        <thead class="text-slate-400 uppercase bg-slate-50/80 border-b border-slate-100 font-mono tracking-wider text-[11px]">
           <tr>
-            <th class="py-3.5 px-5">Employee</th>
-            <th class="py-3.5 px-5">Code</th>
-            <th class="py-3.5 px-5">Department</th>
-            <th class="py-3.5 px-5">Position</th>
-            <th class="py-3.5 px-5">Biometrics</th>
-            <th class="py-3.5 px-5">Status</th>
-            <th class="py-3.5 px-5 text-right">Actions</th>
+            <th class="py-4 px-6">Personnel</th>
+            <th class="py-4 px-6">Employee ID</th>
+            <th class="py-4 px-6">Department</th>
+            <th class="py-4 px-6">Position</th>
+            <th class="py-4 px-6">Biometric Status</th>
+            <th class="py-4 px-6">Employment</th>
+            <th class="py-4 px-6 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/60">
+        <tbody class="divide-y divide-slate-100">
           {% for emp in employees %}
-          <tr class="hover:bg-slate-800/30 transition-colors">
+          <tr class="hover:bg-slate-50/60 transition-colors">
             
-            <!-- Employee Name & Avatar -->
-            <td class="py-3.5 px-5">
+            <!-- Employee Avatar & Name -->
+            <td class="py-3.5 px-6">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-slate-800 overflow-hidden border border-slate-700/80 flex items-center justify-center shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 flex items-center justify-center shrink-0">
                   {% if emp.photo_path %}
                     <img src="{{ emp.photo_path }}" alt="{{ emp.full_name }}" class="w-full h-full object-cover">
                   {% else %}
-                    <span class="text-xs font-bold text-cyan-400">{{ emp.first_name[0] }}{{ emp.last_name[0] }}</span>
+                    <span class="text-xs font-bold text-[#0284c7]">{{ emp.first_name[0] }}{{ emp.last_name[0] }}</span>
                   {% endif %}
                 </div>
                 <div>
-                  <p class="font-semibold text-white text-xs">{{ emp.full_name }}</p>
-                  <p class="text-[11px] text-slate-400">{{ emp.email or '-' }}</p>
+                  <p class="font-bold text-slate-900 text-xs">{{ emp.full_name }}</p>
+                  <p class="text-[11px] text-slate-400 font-medium">{{ emp.email or '-' }}</p>
                 </div>
               </div>
             </td>
 
-            <!-- Employee Code -->
-            <td class="py-3.5 px-5 font-mono text-cyan-300 font-medium">
+            <!-- Employee ID -->
+            <td class="py-3.5 px-6 font-mono font-bold text-[#0284c7]">
               {{ emp.employee_code }}
             </td>
 
             <!-- Department -->
-            <td class="py-3.5 px-5 text-slate-300">
+            <td class="py-3.5 px-6 text-slate-700 font-semibold">
               {% if emp.department %}
-                <span class="px-2 py-1 rounded-md bg-slate-800/90 text-slate-300 border border-slate-700 text-[11px]">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-[11px]">
                   {{ emp.department.name }}
                 </span>
               {% else %}
-                <span class="text-slate-400">-</span>
+                <span class="text-slate-400 italic">Unassigned</span>
               {% endif %}
             </td>
 
             <!-- Position -->
-            <td class="py-3.5 px-5 text-slate-300">
+            <td class="py-3.5 px-6 text-slate-600 font-medium">
               {{ emp.position or '-' }}
             </td>
 
-            <!-- Face Registration Status -->
-            <td class="py-3.5 px-5">
+            <!-- Biometric Enrollment Status -->
+            <td class="py-3.5 px-6">
               {% if emp.has_face_registered %}
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
-                  <i data-lucide="check" class="w-3 h-3"></i> Enrolled
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>Enrolled (SFace)</span>
                 </span>
               {% else %}
                 <button 
                   onclick="openFaceEnrollModal({{ emp.id }}, '{{ emp.full_name }}')"
-                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-950/80 text-purple-300 border border-purple-800 hover:bg-purple-900 transition-colors"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors"
                 >
-                  <i data-lucide="scan-face" class="w-3 h-3 text-purple-400"></i> Register Face
+                  <i data-lucide="scan-face" class="w-3 h-3 text-purple-600"></i>
+                  <span>Register Face</span>
                 </button>
               {% endif %}
             </td>
 
-            <!-- Status -->
-            <td class="py-3.5 px-5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold {% if emp.status == 'ACTIVE' %} bg-cyan-950/80 text-cyan-400 border border-cyan-800 {% else %} bg-slate-800 text-slate-400 border border-slate-700 {% endif %}">
+            <!-- Employment Status -->
+            <td class="py-3.5 px-6">
+              <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold {% if emp.status == 'ACTIVE' %} bg-sky-50 text-sky-700 border border-sky-200 {% else %} bg-slate-100 text-slate-500 {% endif %}">
                 {{ emp.status }}
               </span>
             </td>
 
             <!-- Actions -->
-            <td class="py-3.5 px-5 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <!-- Face Camera Button -->
+            <td class="py-3.5 px-6 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <!-- Capture Face -->
                 <button 
                   onclick="openFaceEnrollModal({{ emp.id }}, '{{ emp.full_name }}')" 
-                  title="Capture / Re-Enroll Face" 
-                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-cyan-950 hover:text-cyan-400 text-slate-300 transition-colors"
+                  title="Capture / Re-Enroll Biometric" 
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-sky-50 hover:text-[#0284c7] text-slate-500 transition-colors"
                 >
                   <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                 </button>
 
-                <!-- Edit Button -->
+                <!-- Edit -->
                 <button 
                   onclick="editEmployee({{ emp.id }}, '{{ emp.employee_code }}', '{{ emp.first_name }}', '{{ emp.last_name }}', '{{ emp.email or '' }}', '{{ emp.phone or '' }}', '{{ emp.position or '' }}', '{{ emp.department_id or '' }}', '{{ emp.status }}')" 
                   title="Edit details" 
-                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors"
                 >
                   <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                 </button>
 
-                <!-- Delete Form -->
-                <form method="POST" action="/api/employees/{{ emp.id }}/delete" onsubmit="return confirm('Delete this employee record?')">
-                  <button type="submit" title="Delete employee" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-400 transition-colors">
+                <!-- Delete -->
+                <form method="POST" action="/api/employees/{{ emp.id }}/delete" onsubmit="return confirm('Archive/delete this employee record?')">
+                  <button type="submit" title="Delete record" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-600 text-slate-400 transition-colors">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </form>
@@ -175,7 +184,7 @@
           {% else %}
           <tr>
             <td colspan="7" class="py-12 text-center text-slate-400">
-              No employees match the filter criteria.
+              No personnel match the query parameters.
             </td>
           </tr>
           {% endfor %}
@@ -187,31 +196,31 @@
 </div>
 
 <!-- Modal: Add New Employee -->
-<div id="add-employee-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-  <div class="bg-[#0f172a] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
-    <button onclick="closeModal('add-employee-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+<div id="add-employee-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
+    <button onclick="closeModal('add-employee-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
       <i data-lucide="x" class="w-5 h-5"></i>
     </button>
 
     <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 text-[#0284c7] border border-sky-100 flex items-center justify-center">
         <i data-lucide="user-plus" class="w-5 h-5"></i>
       </div>
       <div>
-        <h3 class="font-bold text-base text-white">Add New Employee</h3>
-        <p class="text-xs text-slate-400">Fill in employee credentials to initialize their profile</p>
+        <h3 class="font-bold text-base text-slate-900">Enroll New Personnel</h3>
+        <p class="text-xs text-slate-500">Initialize identity profile and assign organizational department</p>
       </div>
     </div>
 
     <form method="POST" action="/api/employees" class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Employee Code *</label>
-          <input type="text" name="employee_code" required placeholder="EMP-1004" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Employee Code *</label>
+          <input type="text" name="employee_code" required placeholder="EMP-1011" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7] font-mono font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Department</label>
-          <select name="department_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Department</label>
+          <select name="department_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0284c7]">
             <option value="">Select Department</option>
             {% for dept in departments %}
               <option value="{{ dept.id }}">{{ dept.name }}</option>
@@ -222,33 +231,33 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">First Name *</label>
-          <input type="text" name="first_name" required placeholder="John" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">First Name *</label>
+          <input type="text" name="first_name" required placeholder="Sarah" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Last Name *</label>
-          <input type="text" name="last_name" required placeholder="Doe" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Last Name *</label>
+          <input type="text" name="last_name" required placeholder="Connor" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Email</label>
-          <input type="email" name="email" placeholder="john.doe@company.com" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+          <input type="email" name="email" placeholder="sarah.connor@facetrack.ai" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Position</label>
-          <input type="text" name="position" placeholder="Senior Analyst" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Position</label>
+          <input type="text" name="position" placeholder="Systems Engineer" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
       </div>
 
       <div class="flex items-center gap-3 pt-3">
-        <button type="button" onclick="closeModal('add-employee-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+        <button type="button" onclick="closeModal('add-employee-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
           Cancel
         </button>
-        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/20">
+        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20 transition-all">
           <i data-lucide="check" class="w-4 h-4"></i>
-          <span>Save Employee</span>
+          <span>Save Profile</span>
         </button>
       </div>
     </form>
@@ -256,31 +265,31 @@
 </div>
 
 <!-- Modal: Edit Employee -->
-<div id="edit-employee-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-  <div class="bg-[#0f172a] border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
-    <button onclick="closeModal('edit-employee-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+<div id="edit-employee-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
+    <button onclick="closeModal('edit-employee-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
       <i data-lucide="x" class="w-5 h-5"></i>
     </button>
 
     <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-xl bg-blue-950 text-blue-400 border border-blue-800 flex items-center justify-center">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 text-[#0284c7] border border-sky-100 flex items-center justify-center">
         <i data-lucide="pencil" class="w-5 h-5"></i>
       </div>
       <div>
-        <h3 class="font-bold text-base text-white">Edit Employee Details</h3>
-        <p class="text-xs text-slate-400">Update employee profile or organizational unit</p>
+        <h3 class="font-bold text-base text-slate-900">Update Employee Record</h3>
+        <p class="text-xs text-slate-500">Modify personnel information and employment state</p>
       </div>
     </div>
 
     <form id="edit-form" method="POST" action="" class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Employee Code *</label>
-          <input type="text" id="edit-code" name="employee_code" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Employee Code *</label>
+          <input type="text" id="edit-code" name="employee_code" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7] font-mono font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Department</label>
-          <select id="edit-dept" name="department_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Department</label>
+          <select id="edit-dept" name="department_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0284c7]">
             <option value="">Select Department</option>
             {% for dept in departments %}
               <option value="{{ dept.id }}">{{ dept.name }}</option>
@@ -291,34 +300,34 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">First Name *</label>
-          <input type="text" id="edit-fname" name="first_name" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">First Name *</label>
+          <input type="text" id="edit-fname" name="first_name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Last Name *</label>
-          <input type="text" id="edit-lname" name="last_name" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Email</label>
-          <input type="email" id="edit-email" name="email" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Position</label>
-          <input type="text" id="edit-position" name="position" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Last Name *</label>
+          <input type="text" id="edit-lname" name="last_name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Phone</label>
-          <input type="text" id="edit-phone" name="phone" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+          <input type="email" id="edit-email" name="email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Status</label>
-          <select id="edit-status" name="status" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Position</label>
+          <input type="text" id="edit-position" name="position" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Phone</label>
+          <input type="text" id="edit-phone" name="phone" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Status</label>
+          <select id="edit-status" name="status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0284c7]">
             <option value="ACTIVE">ACTIVE</option>
             <option value="INACTIVE">INACTIVE</option>
           </select>
@@ -326,12 +335,12 @@
       </div>
 
       <div class="flex items-center gap-3 pt-3">
-        <button type="button" onclick="closeModal('edit-employee-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+        <button type="button" onclick="closeModal('edit-employee-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
           Cancel
         </button>
-        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/20">
+        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20 transition-all">
           <i data-lucide="save" class="w-4 h-4"></i>
-          <span>Update Employee</span>
+          <span>Update Profile</span>
         </button>
       </div>
     </form>
@@ -355,4 +364,3 @@
   }
 </script>
 {% endblock %}
-

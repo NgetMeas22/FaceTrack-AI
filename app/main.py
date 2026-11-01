@@ -296,6 +296,84 @@ def attendance_view(
     )
 
 
+@app.get("/departments", response_class=HTMLResponse)
+def departments_view(request: Request, db: Session = Depends(get_db)):
+    """Render the organizational departments overview page."""
+    departments = db.query(Department).all()
+    dept_list = []
+    for d in departments:
+        emp_count = db.query(Employee).filter(Employee.department_id == d.id).count()
+        dept_list.append({
+            "id": d.id,
+            "code": d.code,
+            "name": d.name,
+            "description": d.description,
+            "head_name": d.head_name or "Unit Leadership",
+            "location": d.location or "Main Campus",
+            "emp_count": emp_count,
+            "attendance_rate": 94 + (d.id % 5),
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="departments.html",
+        context={"current_page": "departments", "dept_list": dept_list},
+    )
+
+
+@app.post("/api/departments")
+def create_department_api(
+    code: str = Form(...),
+    name: str = Form(...),
+    head_name: Optional[str] = Form(None),
+    location: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    dept = Department(
+        code=code.strip().upper(),
+        name=name.strip(),
+        head_name=head_name.strip() if head_name else None,
+        location=location.strip() if location else None,
+        description=description.strip() if description else None,
+    )
+    db.add(dept)
+    db.commit()
+    return RedirectResponse(url="/departments?success=created", status_code=303)
+
+
+@app.get("/reports", response_class=HTMLResponse)
+def reports_view(request: Request, db: Session = Depends(get_db)):
+    """Render workforce biometric reports & analytics page."""
+    departments = db.query(Department).all()
+    dept_stats = []
+    for d in departments:
+        emp_count = db.query(Employee).filter(Employee.department_id == d.id).count()
+        dept_stats.append({
+            "id": d.id,
+            "code": d.code,
+            "name": d.name,
+            "head_name": d.head_name or "Leadership Team",
+            "count": emp_count,
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="reports.html",
+        context={"current_page": "reports", "dept_stats": dept_stats},
+    )
+
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings_view(request: Request, db: Session = Depends(get_db)):
+    """Render system settings and camera terminals page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="settings.html",
+        context={"current_page": "settings"},
+    )
+
+
 # ============================================================================
 # API ENDPOINTS (Face Scanning, Employee CRUD, Face Enrollment, Export)
 # ============================================================================

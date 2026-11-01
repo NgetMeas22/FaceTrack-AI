@@ -1,4 +1,4 @@
-"""SQLAlchemy models focused exclusively on Employee Management & Face Attendance."""
+"""SQLAlchemy models focused exclusively on Enterprise Employee Management & Biometrics."""
 
 import json
 from datetime import date, datetime, timezone
@@ -31,6 +31,8 @@ class Department(Base):
     code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    head_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    location: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     employees: Mapped[List["Employee"]] = relationship("Employee", back_populates="department")
@@ -78,7 +80,6 @@ class FaceEmbedding(Base):
     employee_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("employees.id", ondelete="CASCADE"), index=True, nullable=False
     )
-    # Stored as serialized JSON list of floats (128 dimensions from SFace)
     embedding_data: Mapped[str] = mapped_column(Text, nullable=False)
     quality_score: Mapped[float] = mapped_column(Float, default=1.0)
     source: Mapped[str] = mapped_column(String(30), default="WEBCAM")  # WEBCAM, UPLOAD
@@ -108,6 +109,7 @@ class AttendanceRecord(Base):
     check_out_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="PRESENT")  # PRESENT, LATE, ABSENT
     method: Mapped[str] = mapped_column(String(30), default="FACE_SCAN")  # FACE_SCAN, MANUAL
+    terminal_node: Mapped[str] = mapped_column(String(50), default="Front Terminal #04")
     confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
@@ -124,6 +126,7 @@ class ScanLog(Base):
     matched_employee_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("employees.id", ondelete="SET NULL"), nullable=True
     )
+    terminal_node: Mapped[str] = mapped_column(String(50), default="Terminal 04")
     similarity_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     direction: Mapped[str] = mapped_column(String(20), default="CHECK_IN")  # CHECK_IN, CHECK_OUT
     snapshot_path: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -131,3 +134,11 @@ class ScanLog(Base):
 
     matched_employee: Mapped[Optional["Employee"]] = relationship("Employee")
 
+
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    setting_key: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    setting_value: Mapped[str] = mapped_column(String(255))
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
