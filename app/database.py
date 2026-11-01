@@ -42,12 +42,51 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    """Create all tables and seed default departments/employees/logs if empty."""
-    from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting
+    """Create all tables and seed default departments/employees/logs/users if empty."""
+    from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting, User
+    from app.security import hash_password, ROLE_ADMIN, ROLE_HR, ROLE_SECURITY, ROLE_EMPLOYEE
 
     Base.metadata.create_all(bind=engine)
 
     with SessionLocal() as db:
+        # Seed Users & Roles if empty
+        if db.query(User).count() == 0:
+            demo_users = [
+                User(
+                    username="admin",
+                    email="alex.chen@facetrack.ai",
+                    full_name="Alex Chen",
+                    hashed_password=hash_password("admin123"),
+                    role=ROLE_ADMIN,
+                    avatar_url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces",
+                ),
+                User(
+                    username="hr",
+                    email="chloe.zhang@facetrack.ai",
+                    full_name="Chloe Zhang",
+                    hashed_password=hash_password("hr123"),
+                    role=ROLE_HR,
+                    avatar_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=faces",
+                ),
+                User(
+                    username="security",
+                    email="kenji.sato@facetrack.ai",
+                    full_name="Kenji Sato",
+                    hashed_password=hash_password("security123"),
+                    role=ROLE_SECURITY,
+                    avatar_url="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces",
+                ),
+                User(
+                    username="staff",
+                    email="david.vance@facetrack.ai",
+                    full_name="David Vance",
+                    hashed_password=hash_password("staff123"),
+                    role=ROLE_EMPLOYEE,
+                    avatar_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces",
+                ),
+            ]
+            db.add_all(demo_users)
+            db.commit()
         # Seed Settings if empty
         if db.query(SystemSetting).count() == 0:
             settings = [

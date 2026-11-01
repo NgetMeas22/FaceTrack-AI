@@ -128,23 +128,29 @@
         <span>{{ t.system_settings }}</span>
       </a>
 
+      <!-- Security & Roles -->
+      <a href="/{{ lang }}/security" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'security' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="shield-check" class="w-4 h-4"></i>
+        <span>{{ t.security_roles }}</span>
+      </a>
+
     </nav>
 
     <!-- Bottom Profile Card -->
     <div class="p-4 m-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-9 h-9 rounded-xl object-cover ring-2 ring-white dark:ring-slate-800">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div class="relative shrink-0">
+          <img src="{{ (current_user.avatar_url if current_user else None) or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces' }}" alt="User" class="w-9 h-9 rounded-xl object-cover ring-2 ring-white dark:ring-slate-800">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-800"></span>
         </div>
-        <div>
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white leading-tight">Alex Chen</h4>
-          <p class="text-[10px] text-[#0ea5e9] font-bold tracking-wide">{{ t.system_admin }}</p>
+        <div class="overflow-hidden">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">{{ current_user.full_name if current_user else 'Alex Chen' }}</h4>
+          <p class="text-[9px] text-[#0ea5e9] font-bold tracking-wide uppercase font-mono">{{ current_user.role | replace('_', ' ') if current_user else t.system_admin }}</p>
         </div>
       </div>
-      <button title="Log Out" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors">
+      <a href="/{{ lang }}/logout" title="{{ t.logout }}" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0">
         <i data-lucide="log-out" class="w-4 h-4"></i>
-      </button>
+      </a>
     </div>
 
   </aside>

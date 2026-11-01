@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ t.login }} — {{ t.brand_name }}</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            khmer: ['"Kantumruy Pro"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans, JetBrains Mono, Kantumruy Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Kantumruy+Pro:wght@400;600;700&family=Plus Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Aesthetics Styles -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+
+  <script>
+    (function() {
+      const theme = localStorage.getItem('facetrack-theme') || 'dark';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+</head>
+<body class="bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 min-h-screen flex items-center justify-center p-4 antialiased transition-colors duration-200 {% if lang == 'kh' %} font-khmer {% endif %}">
+
+  <!-- Top Right Header Controls -->
+  <div class="fixed top-6 right-6 flex items-center gap-3 z-30">
+    <!-- Language Switcher Pill -->
+    <div class="flex items-center bg-white/80 dark:bg-slate-800/80 backdrop-blur p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-sm">
+      <a href="/en/login{% if next_url %}?next={{ next_url }}{% endif %}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'en' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">EN</a>
+      <a href="/kh/login{% if next_url %}?next={{ next_url }}{% endif %}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'kh' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">KM</a>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-slate-200 dark:border-slate-700 shadow-sm transition-colors" title="Toggle Light / Dark Mode">
+      <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+      <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-600"></i>
+    </button>
+  </div>
+
+  <!-- Background Decorative Cyber Elements -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden opacity-30 dark:opacity-20">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-[#0ea5e9]/20 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-[#10b981]/20 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Main Login Card Container -->
+  <div class="w-full max-w-md relative z-10">
+    
+    <!-- Branding Header -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] text-white shadow-lg shadow-sky-500/25 mb-4">
+        <i data-lucide="scan-face" class="w-7 h-7"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">{{ t.brand_name }}</h1>
+      <p class="text-xs font-mono font-bold tracking-widest text-[#0ea5e9] mt-1 uppercase">{{ t.brand_tagline }}</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ t.login_tagline }}</p>
+    </div>
+
+    <!-- Login Box Card -->
+    <div class="aesthetic-card p-8 border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+      
+      <!-- Reticle corner brackets for biometric theme -->
+      <div class="reticle-bracket reticle-bracket-tl"></div>
+      <div class="reticle-bracket reticle-bracket-tr"></div>
+      <div class="reticle-bracket reticle-bracket-bl"></div>
+      <div class="reticle-bracket reticle-bracket-br"></div>
+
+      <!-- Error Message Banner (if any) -->
+      {% if error %}
+      <div class="mb-5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-500"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Success Notification (e.g. after logout) -->
+      {% if message %}
+      <div class="mb-5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4 shrink-0 text-emerald-500"></i>
+        <span>{{ message }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Login Form -->
+      <form method="POST" action="/api/auth/login" class="space-y-4">
+        <input type="hidden" name="lang" value="{{ lang }}">
+        <input type="hidden" name="next" value="{{ next_url or '' }}">
+
+        <!-- Username / Email Input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{{ t.username_or_email }}</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="input-username"
+              name="username" 
+              required 
+              placeholder="admin" 
+              value="{{ username_prefill or '' }}"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] transition-all font-medium"
+            >
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{{ t.password }}</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="password" 
+              id="input-password"
+              name="password" 
+              required 
+              placeholder="••••••••" 
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] transition-all font-medium"
+            >
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i id="eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember Me Checkbox -->
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none text-slate-600 dark:text-slate-400">
+            <input type="checkbox" name="remember_me" checked class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-slate-700 dark:bg-slate-900">
+            <span>{{ t.remember_me }}</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full py-3 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#0ea5e9] hover:from-[#0369a1] hover:to-[#0284c7] text-white text-xs font-bold shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 transition-all mt-2"
+        >
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>{{ t.sign_in_btn }}</span>
+        </button>
+      </form>
+
+      <!-- 1-Click Demo Accounts Selector -->
+      <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
+        <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono tracking-wider mb-2.5 text-center">{{ t.quick_test_roles }}</p>
+        <div class="grid grid-cols-2 gap-2">
+          
+          <button 
+            type="button" 
+            onclick="fillCredentials('admin', 'admin123')"
+            class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-sky-50 dark:hover:bg-sky-950/60 border border-slate-200 dark:border-slate-700 hover:border-sky-300 dark:hover:border-sky-700 transition-all text-left"
+          >
+            <p class="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span>Admin</span>
+            </p>
+            <p class="text-[9px] text-slate-400 font-mono">admin / admin123</p>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="fillCredentials('hr', 'hr123')"
+            class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-sky-50 dark:hover:bg-sky-950/60 border border-slate-200 dark:border-slate-700 hover:border-sky-300 dark:hover:border-sky-700 transition-all text-left"
+          >
+            <p class="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+              <span>HR Manager</span>
+            </p>
+            <p class="text-[9px] text-slate-400 font-mono">hr / hr123</p>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="fillCredentials('security', 'security123')"
+            class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-sky-50 dark:hover:bg-sky-950/60 border border-slate-200 dark:border-slate-700 hover:border-sky-300 dark:hover:border-sky-700 transition-all text-left"
+          >
+            <p class="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span>Security Guard</span>
+            </p>
+            <p class="text-[9px] text-slate-400 font-mono">security / security123</p>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="fillCredentials('staff', 'staff123')"
+            class="p-2 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-sky-50 dark:hover:bg-sky-950/60 border border-slate-200 dark:border-slate-700 hover:border-sky-300 dark:hover:border-sky-700 transition-all text-left"
+          >
+            <p class="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Staff</span>
+            </p>
+            <p class="text-[9px] text-slate-400 font-mono">staff / staff123</p>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Security Indicator Footer -->
+    <div class="mt-6 flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500 text-xs font-mono">
+      <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-500"></i>
+      <span>AES-256 SESSION ENCRYPTION ACTIVE</span>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function fillCredentials(usr, pwd) {
+      document.getElementById('input-username').value = usr;
+      document.getElementById('input-password').value = pwd;
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('input-password');
+      const icon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      if (isDark) {
+        html.classList.remove('dark');
+        localStorage.setItem('facetrack-theme', 'light');
+      } else {
+        html.classList.add('dark');
+        localStorage.setItem('facetrack-theme', 'dark');
+      }
+    }
+  </script>
+</body>
+</html>

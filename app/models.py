@@ -155,3 +155,19 @@ class AuditLog(Base):
     details: Mapped[str] = mapped_column(String(255))
     ip_address: Mapped[Optional[str]] = mapped_column(String(50), default="127.0.0.1")
 
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, index=True, nullable=False)
+    full_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(30), default="EMPLOYEE", index=True)  # ADMIN, HR_MANAGER, SECURITY_OFFICER, EMPLOYEE
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+

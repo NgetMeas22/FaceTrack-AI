@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden — {{ t.brand_name }}{% endblock %}
+{% block breadcrumb %}{{ t.access_denied_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-16 text-center space-y-6">
+
+  <!-- Warning Hologram Icon -->
+  <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-500 shadow-xl shadow-rose-500/10 mb-2">
+    <i data-lucide="shield-x" class="w-10 h-10"></i>
+  </div>
+
+  <div>
+    <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 uppercase tracking-widest">
+      SECURITY ACCESS VIOLATION
+    </span>
+    <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-4">{{ t.access_denied_title }}</h2>
+    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium max-w-md mx-auto mt-2">
+      {{ t.access_denied_desc }}
+    </p>
+  </div>
+
+  <!-- Role Diagnostic Chip -->
+  <div class="aesthetic-card p-5 border border-slate-200 dark:border-slate-800 text-left space-y-3">
+    <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-100 dark:border-slate-800">
+      <span class="text-slate-500 dark:text-slate-400 font-medium">Current Authenticated Account:</span>
+      <span class="font-bold text-slate-900 dark:text-white font-mono">{{ current_user.username }} ({{ current_user.full_name }})</span>
+    </div>
+    <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-100 dark:border-slate-800">
+      <span class="text-slate-500 dark:text-slate-400 font-medium">Your Role Clearance:</span>
+      <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+        {{ current_user.role }}
+      </span>
+    </div>
+    <div class="flex items-center justify-between text-xs">
+      <span class="text-slate-500 dark:text-slate-400 font-medium">Required Clearance Level:</span>
+      <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
+        {{ required_roles | join(', ') if required_roles else 'ADMIN' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+    <a 
+      href="/{{ lang }}/dashboard" 
+      class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>{{ t.back_to_dashboard }}</span>
+    </a>
+
+    <a 
+      href="/{{ lang }}/login" 
+      class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 transition-all"
+    >
+      <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      <span>{{ t.switch_account }}</span>
+    </a>
+  </div>
+
+</div>
+{% endblock %}

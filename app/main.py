@@ -18,7 +18,19 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db, init_db
 from app.face_recognition import FaceBox, FaceEngine, get_face_engine
-from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting
+from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting, User
+from app.security import (
+    ROLE_ADMIN,
+    ROLE_EMPLOYEE,
+    ROLE_HR,
+    ROLE_SECURITY,
+    SESSION_COOKIE_NAME,
+    can_access_page,
+    create_session_token,
+    hash_password,
+    verify_password,
+    verify_session_token,
+)
 from app.translations import TRANSLATIONS
 
 # Paths
@@ -75,6 +87,30 @@ def resolve_lang(lang: str) -> str:
     return "kh" if lang == "kh" else "en"
 
 
+def get_current_user(request: Request, db: Session) -> Optional[User]:
+    """Retrieve authenticated user from signed HMAC session cookie."""
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if not token:
+        return None
+    payload = verify_session_token(token)
+    if not payload:
+        return None
+    return db.query(User).filter(User.id == payload.get("uid"), User.is_active == True).first()
+
+
+PAGE_REQUIRED_ROLES = {
+    "settings": ["ADMIN"],
+    "security": ["ADMIN"],
+    "audit_logs": ["ADMIN", "SECURITY_OFFICER"],
+    "departments": ["ADMIN", "HR_MANAGER"],
+    "employees": ["ADMIN", "HR_MANAGER"],
+    "reports": ["ADMIN", "HR_MANAGER"],
+    "attendance": ["ADMIN", "HR_MANAGER", "SECURITY_OFFICER"],
+    "scanner": ["ADMIN", "HR_MANAGER", "SECURITY_OFFICER", "EMPLOYEE"],
+    "dashboard": ["ADMIN", "HR_MANAGER", "SECURITY_OFFICER", "EMPLOYEE"],
+}
+
+
 @app.on_event("startup")
 def on_startup():
     init_db()
@@ -88,6 +124,18 @@ def on_startup():
 @app.get("/", response_class=RedirectResponse)
 def root_redirect():
     return RedirectResponse(url="/en/dashboard", status_code=302)
+
+@app.get("/login", response_class=RedirectResponse)
+def login_redirect():
+    return RedirectResponse(url="/en/login", status_code=302)
+
+@app.get("/logout", response_class=RedirectResponse)
+def logout_redirect():
+    return RedirectResponse(url="/en/logout", status_code=302)
+
+@app.get("/security", response_class=RedirectResponse)
+def sec_redirect():
+    return RedirectResponse(url="/en/security", status_code=302)
 
 @app.get("/dashboard", response_class=RedirectResponse)
 def dash_redirect():
@@ -122,6 +170,163 @@ def set_redirect():
     return RedirectResponse(url="/en/settings", status_code=302)
 
 
+def check_view_access(request: Request, db: Session, lang: str, page_name: str):
+    """Check authentication and RBAC permissions for web views."""
+    current_user = get_current_user(request, db)
+    t = TRANSLATIONS[lang]
+    if not current_user:
+        return RedirectResponse(url=f"/{lang}/login?next={request.url.path}", status_code=302), None
+
+    if not can_access_page(current_user.role, page_name):
+        forbidden_resp = templates.TemplateResponse(
+            request=request,
+            name="403_forbidden.html",
+            context={
+                "lang": lang,
+                "t": t,
+                "current_user": current_user,
+                "current_page": page_name,
+                "required_roles": PAGE_REQUIRED_ROLES.get(page_name, ["ADMIN"]),
+            },
+            status_code=403,
+        )
+        return forbidden_resp, current_user
+
+    return None, current_user
+
+
+# ============================================================================
+# AUTHENTICATION & LOGIN / LOGOUT ROUTES
+# ============================================================================
+
+@app.get("/{lang}/login", response_class=HTMLResponse)
+def login_view(
+    lang: str,
+    request: Request,
+    next: Optional[str] = Query(None),
+    error: Optional[str] = Query(None),
+    message: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+    current_user = get_current_user(request, db)
+    if current_user:
+        return RedirectResponse(url=f"/{lang}/dashboard", status_code=302)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "lang": lang,
+            "t": t,
+            "next_url": next or "",
+            "error": error,
+            "message": message,
+        },
+    )
+
+
+@app.get("/{lang}/logout", response_class=RedirectResponse)
+def logout_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    current_user = get_current_user(request, db)
+    if current_user:
+        audit = AuditLog(
+            operator=current_user.username,
+            action_type="LOGOUT",
+            status="SUCCESS",
+            details=f"User {current_user.username} signed out.",
+            ip_address=request.client.host if request.client else "127.0.0.1",
+        )
+        db.add(audit)
+        db.commit()
+
+    resp = RedirectResponse(url=f"/{lang}/login?message=Signed out successfully", status_code=302)
+    resp.delete_cookie(SESSION_COOKIE_NAME)
+    return resp
+
+
+@app.post("/api/auth/login")
+def login_api(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    lang: str = Form("en"),
+    next: Optional[str] = Form(None),
+    remember_me: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+    usr_clean = username.strip()
+
+    user = db.query(User).filter(
+        (User.username.ilike(usr_clean)) | (User.email.ilike(usr_clean))
+    ).first()
+
+    if not user or not verify_password(password, user.hashed_password):
+        audit = AuditLog(
+            operator=usr_clean or "Anonymous",
+            action_type="LOGIN_FAILED",
+            status="FAILED",
+            details=f"Authentication rejected for identifier: {usr_clean}",
+            ip_address=request.client.host if request.client else "127.0.0.1",
+        )
+        db.add(audit)
+        db.commit()
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "lang": lang,
+                "t": t,
+                "error": "Invalid username or password.",
+                "username_prefill": usr_clean,
+                "next_url": next or "",
+            },
+            status_code=400,
+        )
+
+    if not user.is_active:
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "lang": lang,
+                "t": t,
+                "error": "Account is suspended. Contact system administrator.",
+                "username_prefill": usr_clean,
+                "next_url": next or "",
+            },
+            status_code=403,
+        )
+
+    user.last_login = datetime.now(timezone.utc)
+    audit = AuditLog(
+        operator=user.username,
+        action_type="LOGIN_SUCCESS",
+        status="SUCCESS",
+        details=f"User {user.username} authenticated as {user.role}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    token = create_session_token(user.id, user.username, user.role)
+    target = next if (next and next.startswith(f"/{lang}/")) else f"/{lang}/dashboard"
+    resp = RedirectResponse(url=target, status_code=303)
+    max_age = 86400 * 30 if remember_me else 86400
+    resp.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        max_age=max_age,
+        httponly=True,
+        samesite="lax",
+    )
+    return resp
+
+
 # ============================================================================
 # LOCALIZED BILINGUAL WEB VIEW ROUTES (/{lang}/...)
 # ============================================================================
@@ -130,8 +335,11 @@ def set_redirect():
 def dashboard_view(lang: str, request: Request, db: Session = Depends(get_db)):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
-    today = date.today()
+    guard_resp, current_user = check_view_access(request, db, lang, "dashboard")
+    if guard_resp:
+        return guard_resp
 
+    today = date.today()
     total_employees = db.query(Employee).filter(Employee.status == "ACTIVE").count()
     present_today = (
         db.query(AttendanceRecord)
@@ -178,6 +386,7 @@ def dashboard_view(lang: str, request: Request, db: Session = Depends(get_db)):
         context={
             "lang": lang,
             "t": t,
+            "current_user": current_user,
             "current_page": "dashboard",
             "stats": {
                 "total_employees": total_employees,
@@ -203,6 +412,9 @@ def employees_view(
 ):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "employees")
+    if guard_resp:
+        return guard_resp
 
     query = db.query(Employee).options(joinedload(Employee.department), joinedload(Employee.embeddings))
 
@@ -231,6 +443,7 @@ def employees_view(
         context={
             "lang": lang,
             "t": t,
+            "current_user": current_user,
             "current_page": "employees",
             "employees": employees,
             "departments": departments,
@@ -245,6 +458,9 @@ def employees_view(
 def departments_view(lang: str, request: Request, db: Session = Depends(get_db)):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "departments")
+    if guard_resp:
+        return guard_resp
 
     departments = db.query(Department).all()
     dept_list = []
@@ -264,7 +480,13 @@ def departments_view(lang: str, request: Request, db: Session = Depends(get_db))
     return templates.TemplateResponse(
         request=request,
         name="departments.html",
-        context={"lang": lang, "t": t, "current_page": "departments", "dept_list": dept_list},
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "departments",
+            "dept_list": dept_list,
+        },
     )
 
 
@@ -272,6 +494,9 @@ def departments_view(lang: str, request: Request, db: Session = Depends(get_db))
 def scanner_view(lang: str, request: Request, db: Session = Depends(get_db)):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "scanner")
+    if guard_resp:
+        return guard_resp
 
     departments = db.query(Department).all()
     total_enrolled = (
@@ -286,6 +511,7 @@ def scanner_view(lang: str, request: Request, db: Session = Depends(get_db)):
         context={
             "lang": lang,
             "t": t,
+            "current_user": current_user,
             "current_page": "scanner",
             "departments": departments,
             "total_enrolled": total_enrolled,
@@ -305,6 +531,9 @@ def attendance_view(
 ):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "attendance")
+    if guard_resp:
+        return guard_resp
 
     filter_date = date.today()
     if target_date:
@@ -346,6 +575,7 @@ def attendance_view(
         context={
             "lang": lang,
             "t": t,
+            "current_user": current_user,
             "current_page": "attendance",
             "records": records,
             "departments": departments,
@@ -371,6 +601,9 @@ def audit_logs_view(
 ):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "audit_logs")
+    if guard_resp:
+        return guard_resp
 
     query = db.query(AuditLog).order_by(desc(AuditLog.timestamp))
 
@@ -394,6 +627,7 @@ def audit_logs_view(
         context={
             "lang": lang,
             "t": t,
+            "current_user": current_user,
             "current_page": "audit_logs",
             "logs": logs,
             "selected_action": action_type or "",
@@ -407,6 +641,9 @@ def audit_logs_view(
 def reports_view(lang: str, request: Request, db: Session = Depends(get_db)):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "reports")
+    if guard_resp:
+        return guard_resp
 
     departments = db.query(Department).all()
     dept_stats = []
@@ -423,7 +660,13 @@ def reports_view(lang: str, request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(
         request=request,
         name="reports.html",
-        context={"lang": lang, "t": t, "current_page": "reports", "dept_stats": dept_stats},
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "reports",
+            "dept_stats": dept_stats,
+        },
     )
 
 
@@ -431,17 +674,117 @@ def reports_view(lang: str, request: Request, db: Session = Depends(get_db)):
 def settings_view(lang: str, request: Request, db: Session = Depends(get_db)):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "settings")
+    if guard_resp:
+        return guard_resp
 
     return templates.TemplateResponse(
         request=request,
         name="settings.html",
-        context={"lang": lang, "t": t, "current_page": "settings"},
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "settings",
+        },
+    )
+
+
+@app.get("/{lang}/security", response_class=HTMLResponse)
+def security_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "security")
+    if guard_resp:
+        return guard_resp
+
+    users = db.query(User).order_by(User.id).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="security.html",
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "security",
+            "users": users,
+        },
     )
 
 
 # ============================================================================
-# API ACTIONS (Departments, Employees, Biometrics, Export)
+# API ACTIONS (Security Users, Roles, Departments, Employees, Biometrics, Export)
 # ============================================================================
+
+@app.post("/api/security/users")
+def add_user_api(
+    request: Request,
+    username: str = Form(...),
+    full_name: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    role: str = Form("SECURITY_OFFICER"),
+    db: Session = Depends(get_db),
+):
+    current_user = get_current_user(request, db)
+    if not current_user or current_user.role != ROLE_ADMIN:
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    usr_clean = username.strip().lower()
+    existing = db.query(User).filter((User.username == usr_clean) | (User.email == email.strip())).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username or email already in use.")
+
+    new_u = User(
+        username=usr_clean,
+        full_name=full_name.strip(),
+        email=email.strip().lower(),
+        hashed_password=hash_password(password),
+        role=role.strip().upper(),
+        is_active=True,
+    )
+    db.add(new_u)
+    audit = AuditLog(
+        operator=current_user.username,
+        action_type="USER_PROVISIONED",
+        status="SUCCESS",
+        details=f"Provisioned operator {new_u.username} with role {new_u.role}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url="/en/security?success=provisioned", status_code=303)
+
+
+@app.post("/api/security/users/{user_id}/role")
+def update_user_role_api(
+    user_id: int,
+    request: Request,
+    role: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    current_user = get_current_user(request, db)
+    if not current_user or current_user.role != ROLE_ADMIN:
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    target_u = db.query(User).filter_by(id=user_id).first()
+    if not target_u:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    old_role = target_u.role
+    target_u.role = role.strip().upper()
+    audit = AuditLog(
+        operator=current_user.username,
+        action_type="ROLE_UPDATED",
+        status="SUCCESS",
+        details=f"Altered role of {target_u.username} from {old_role} to {target_u.role}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url="/en/security?success=role_updated", status_code=303)
 
 @app.post("/api/departments")
 def create_department_api(
