@@ -124,3 +124,4 @@ def can_access_page(user_role: str, page_name: str) -> bool:
 
     allowed_pages = permissions.get(role, ["dashboard", "scanner"])
     return page_name in allowed_pages
+
