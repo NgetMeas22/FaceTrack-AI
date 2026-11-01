@@ -13,10 +13,18 @@ def run_all_tests():
     # 1. Test Navbar and Sidebar avatar rendering
     r = client_admin.get('/en/dashboard')
     assert r.status_code == 200
-    assert '/uploads/user_1_1793530260.jpg' in r.text
+
+    from app.database import SessionLocal
+    from app.models import User
+    _db = SessionLocal()
+    _user = _db.query(User).filter_by(username='admin').first()
+    expected_avatar = _user.avatar_url or '/static/img/avatar.png'
+    _db.close()
+
+    assert expected_avatar in r.text
     print('Avatar URL successfully rendered in dashboard for user 1!')
 
-    count = r.text.count('/uploads/user_1_1793530260.jpg')
+    count = r.text.count(expected_avatar)
     print('Avatar count in rendered page:', count)
     assert count >= 2, f'Expected at least 2 occurrences (navbar & sidebar), found {count}'
 
