@@ -77,25 +77,29 @@
     <!-- Navigation Menu Items -->
     <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
       
-      <!-- Dashboard -->
+      <!-- Dashboard (All roles) -->
       <a href="/{{ lang }}/dashboard" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'dashboard' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="layout-grid" class="w-4 h-4"></i>
         <span>{{ t.dashboard }}</span>
       </a>
 
-      <!-- Employees -->
+      <!-- Employees (ADMIN, HR_MANAGER) -->
+      {% if not current_user or can_access_page(current_user.role, 'employees') %}
       <a href="/{{ lang }}/employees" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'employees' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="users" class="w-4 h-4"></i>
         <span>{{ t.employees }}</span>
       </a>
+      {% endif %}
 
-      <!-- Departments -->
+      <!-- Departments (ADMIN, HR_MANAGER) -->
+      {% if not current_user or can_access_page(current_user.role, 'departments') %}
       <a href="/{{ lang }}/departments" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'departments' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="building-2" class="w-4 h-4"></i>
         <span>{{ t.departments }}</span>
       </a>
+      {% endif %}
 
-      <!-- Live Scanner Mode -->
+      <!-- Live Scanner Mode (All roles) -->
       <a href="/{{ lang }}/scanner" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'scanner' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <div class="flex items-center gap-3.5">
           <i data-lucide="scan" class="w-4 h-4"></i>
@@ -104,35 +108,43 @@
         <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-md {% if current_page == 'scanner' %} bg-white/20 text-white {% else %} bg-sky-100 dark:bg-sky-950 text-[#0284c7] dark:text-cyan-400 border border-sky-200 dark:border-sky-800 {% endif %} animate-pulse">{{ t.live_badge }}</span>
       </a>
 
-      <!-- View Attendance Logs -->
+      <!-- View Attendance Logs (All roles) -->
       <a href="/{{ lang }}/attendance" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'attendance' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="calendar-check" class="w-4 h-4"></i>
         <span>{{ t.attendance_logs }}</span>
       </a>
 
-      <!-- System Audit Logs -->
+      <!-- System Audit Logs (ADMIN, SECURITY_OFFICER) -->
+      {% if not current_user or can_access_page(current_user.role, 'audit_logs') %}
       <a href="/{{ lang }}/audit-logs" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'audit_logs' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="shield-alert" class="w-4 h-4"></i>
         <span>{{ t.audit_logs }}</span>
       </a>
+      {% endif %}
 
-      <!-- Reports & Analytics -->
+      <!-- Reports & Analytics (ADMIN, HR_MANAGER) -->
+      {% if not current_user or can_access_page(current_user.role, 'reports') %}
       <a href="/{{ lang }}/reports" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'reports' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
         <span>{{ t.reports_analytics }}</span>
       </a>
+      {% endif %}
 
-      <!-- System Settings -->
+      <!-- System Settings (ADMIN) -->
+      {% if not current_user or can_access_page(current_user.role, 'settings') %}
       <a href="/{{ lang }}/settings" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'settings' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="settings" class="w-4 h-4"></i>
         <span>{{ t.system_settings }}</span>
       </a>
+      {% endif %}
 
-      <!-- Security & Roles -->
+      <!-- Security & Roles (ADMIN) -->
+      {% if not current_user or can_access_page(current_user.role, 'security') %}
       <a href="/{{ lang }}/security" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'security' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="shield-check" class="w-4 h-4"></i>
         <span>{{ t.security_roles }}</span>
       </a>
+      {% endif %}
 
     </nav>
 
@@ -140,7 +152,10 @@
     <div class="p-4 m-3 rounded-2xl bg-slate-50 dark:bg-[#222225] border border-slate-200/80 dark:border-[#333338] flex items-center justify-between">
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="relative shrink-0">
-          <img src="{{ (current_user.avatar_url if current_user else None) or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces' }}" alt="User" class="w-9 h-9 rounded-xl object-cover ring-2 ring-white dark:ring-slate-800">
+          <img src="{{ (current_user.avatar_url if current_user and current_user.avatar_url else None) or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces' }}" 
+               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces';"
+               alt="{{ current_user.full_name if current_user else 'User' }}" 
+               class="w-9 h-9 rounded-xl object-cover ring-2 ring-white dark:ring-slate-800">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-800"></span>
         </div>
         <div class="overflow-hidden">
@@ -148,9 +163,9 @@
           <p class="text-[9px] text-[#0ea5e9] font-bold tracking-wide uppercase font-mono">{{ current_user.role | replace('_', ' ') if current_user else t.system_admin }}</p>
         </div>
       </div>
-      <a href="/{{ lang }}/logout" title="{{ t.logout }}" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0">
+      <button type="button" onclick="openLogoutModal()" title="{{ t.logout }}" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0">
         <i data-lucide="log-out" class="w-4 h-4"></i>
-      </a>
+      </button>
     </div>
 
   </aside>
@@ -195,8 +210,50 @@
           <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-900"></span>
         </button>
 
-        <!-- Header Profile Avatar -->
-        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-100 dark:ring-slate-800">
+        <!-- Header Profile Avatar & Quick Menu -->
+        <div class="relative" id="user-menu-container">
+          <button type="button" onclick="toggleUserMenu()" class="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-[#26262b] transition-all focus:outline-none" title="User Menu">
+            <div class="relative shrink-0">
+              <img src="{{ (current_user.avatar_url if current_user and current_user.avatar_url else None) or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces' }}" 
+                   onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces';"
+                   alt="{{ current_user.full_name if current_user else 'User' }}" 
+                   class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-[#333338] hover:ring-[#0ea5e9] transition-all">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-[#1c1c1f]"></span>
+            </div>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 hidden sm:block"></i>
+          </button>
+
+          <!-- User Menu Dropdown -->
+          <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#222225] border border-slate-200 dark:border-[#333338] shadow-2xl p-2 z-50">
+            <div class="px-3 py-2 border-b border-slate-100 dark:border-[#333338]">
+              <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ current_user.full_name if current_user else 'Alex Chen' }}</p>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="text-[10px] font-mono font-bold text-[#0ea5e9] uppercase tracking-wider">{{ current_user.role | replace('_', ' ') if current_user else t.system_admin }}</span>
+              </div>
+            </div>
+
+            <div class="py-1">
+              <a href="/{{ lang }}/settings?tab=profile" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#2c2c32] rounded-xl transition-colors">
+                <i data-lucide="user" class="w-4 h-4 text-sky-500"></i>
+                <span>{{ t.tab_profile }}</span>
+              </a>
+              {% if not current_user or current_user.role == 'ADMIN' %}
+              <a href="/{{ lang }}/settings?tab=security" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#2c2c32] rounded-xl transition-colors">
+                <i data-lucide="shield" class="w-4 h-4 text-amber-500"></i>
+                <span>{{ t.tab_security }}</span>
+              </a>
+              {% endif %}
+            </div>
+
+            <div class="pt-1 border-t border-slate-100 dark:border-[#333338]">
+              <button type="button" onclick="closeUserMenu(); openLogoutModal();" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors text-left">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>{{ t.logout }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
       </div>
 
@@ -257,9 +314,97 @@
     </div>
   </div>
 
+  <!-- Logout Confirmation Alert Modal -->
+  <div id="logout-confirm-modal" class="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#222225] border border-slate-200 dark:border-[#333338] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative text-center">
+      
+      <!-- Danger Sign Out Icon -->
+      <div class="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-500 border border-rose-200 dark:border-rose-900/60 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-rose-500/10">
+        <i data-lucide="log-out" class="w-7 h-7"></i>
+      </div>
+
+      <h3 class="font-extrabold text-base text-slate-900 dark:text-white">{{ t.logout_confirm_title }}</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+        {{ t.logout_confirm_msg }}
+      </p>
+
+      {% if current_user %}
+      <div class="mt-4 p-2.5 rounded-xl bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#333338] flex items-center justify-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ current_user.full_name }}</span>
+        <span class="text-[10px] font-mono text-[#0ea5e9]">({{ current_user.role | replace('_', ' ') }})</span>
+      </div>
+      {% endif %}
+
+      <div class="flex items-center gap-3 mt-6">
+        <button 
+          type="button" 
+          onclick="closeLogoutModal()" 
+          class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-[#2c2c32] hover:bg-slate-200 dark:hover:bg-[#383840] text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
+        >
+          {{ t.cancel }}
+        </button>
+        <button 
+          type="button" 
+          onclick="confirmLogout()" 
+          class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/25 transition-all"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>{{ t.confirm_logout }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Global Scripts & Theme Toggle Engine -->
   <script src="/static/js/main.js"></script>
   <script>
+    function toggleUserMenu() {
+      const menu = document.getElementById('user-dropdown-menu');
+      if (menu) {
+        menu.classList.toggle('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+
+    function closeUserMenu() {
+      const menu = document.getElementById('user-dropdown-menu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const container = document.getElementById('user-menu-container');
+      if (container && !container.contains(e.target)) {
+        closeUserMenu();
+      }
+    });
+
+    function openLogoutModal() {
+      const modal = document.getElementById('logout-confirm-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+
+    function closeLogoutModal() {
+      const modal = document.getElementById('logout-confirm-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function confirmLogout() {
+      if (typeof showToast === 'function') {
+        showToast('info', 'Signing out of FaceTrack AI...');
+      }
+      setTimeout(() => {
+        window.location.href = '/{{ lang }}/logout';
+      }, 300);
+    }
+
     function toggleTheme() {
       const isDark = document.documentElement.classList.contains('dark');
       if (isDark) {

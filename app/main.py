@@ -82,6 +82,12 @@ def format_time(value: Optional[datetime], fmt: str = "%I:%M %p") -> str:
 templates.env.filters["format_datetime"] = format_datetime
 templates.env.filters["format_time"] = format_time
 
+templates.env.globals["can_access_page"] = can_access_page
+templates.env.globals["ROLE_ADMIN"] = ROLE_ADMIN
+templates.env.globals["ROLE_HR"] = ROLE_HR
+templates.env.globals["ROLE_SECURITY"] = ROLE_SECURITY
+templates.env.globals["ROLE_EMPLOYEE"] = ROLE_EMPLOYEE
+
 
 def resolve_lang(lang: str) -> str:
     return "kh" if lang == "kh" else "en"
@@ -96,6 +102,19 @@ def get_current_user(request: Request, db: Session) -> Optional[User]:
     if not payload:
         return None
     return db.query(User).filter(User.id == payload.get("uid"), User.is_active == True).first()
+
+
+def require_user(request: Request, db: Session, allowed_roles: Optional[List[str]] = None) -> User:
+    """Validate authenticated user and role. Raises HTTPException if invalid."""
+    user = get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if allowed_roles and user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Access denied: role '{user.role}' is not authorized. Required: {', '.join(allowed_roles)}",
+        )
+    return user
 
 
 PAGE_REQUIRED_ROLES = {
@@ -825,6 +844,7 @@ def update_user_role_api(
 
 @app.post("/api/departments")
 def create_department_api(
+    request: Request,
     code: str = Form(...),
     name: str = Form(...),
     head_name: Optional[str] = Form(None),
@@ -832,6 +852,7 @@ def create_department_api(
     description: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
+    curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
     dept = Department(
         code=code.strip().upper(),
         name=name.strip(),
@@ -843,10 +864,11 @@ def create_department_api(
 
     # Log to Audit Trail
     audit = AuditLog(
-        operator="Alex Chen (Admin)",
+        operator=curr_user.full_name,
         action_type="DEPARTMENT_CREATED",
         status="SUCCESS",
         details=f"Created department: {dept.name} ({dept.code})",
+        ip_address=request.client.host if request.client else "127.0.0.1",
     )
     db.add(audit)
     db.commit()
@@ -868,6 +890,7 @@ def create_employee_api(
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
+    curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
     existing = db.query(Employee).filter_by(employee_code=employee_code.strip()).first()
     if existing:
         return RedirectResponse(url="/en/employees?error=Employee+Code+already+exists", status_code=303)
@@ -947,6 +970,7 @@ def update_employee_api(
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
+    curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
     emp = db.query(Employee).filter_by(id=emp_id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")
@@ -1088,7 +1112,14 @@ def update_profile_api(
             if len(content) > 0:
                 safe_name = f"user_{curr_user.id}_{int(datetime.now().timestamp())}.jpg"
                 save_path = UPLOADS_DIR / safe_name
-                save_path.write_bytes(content)
+                try:
+                    import io
+                    from PIL import Image
+                    pil_img = Image.open(io.BytesIO(content)).convert("RGB")
+                    pil_img.thumbnail((400, 400), Image.Resampling.LANCZOS)
+                    pil_img.save(save_path, format="JPEG", quality=90, optimize=True)
+                except Exception:
+                    save_path.write_bytes(content)
                 curr_user.avatar_url = f"/uploads/{safe_name}"
         except Exception as e:
             print("Avatar upload error:", e)
@@ -1119,9 +1150,7 @@ def update_notifications_api(
     db: Session = Depends(get_db),
 ):
     lang = resolve_lang(lang)
-    curr_user = get_current_user(request, db)
-    if not curr_user:
-        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+    curr_user = require_user(request, db, [ROLE_ADMIN])
 
     set_system_setting(db, "notify_late", "true" if notify_late else "false", "Notify on late arrivals")
     set_system_setting(db, "notify_spoof", "true" if notify_spoof else "false", "Notify on spoof triggers")
@@ -1158,9 +1187,7 @@ def update_system_settings_api(
     db: Session = Depends(get_db),
 ):
     lang = resolve_lang(lang)
-    curr_user = get_current_user(request, db)
-    if not curr_user:
-        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+    curr_user = require_user(request, db, [ROLE_ADMIN])
 
     set_system_setting(db, "cosine_threshold", cosine_threshold, "SFace distance threshold")
     set_system_setting(db, "detection_confidence", detection_confidence, "YuNet face detector threshold")
@@ -1193,9 +1220,7 @@ def update_privacy_settings_api(
     db: Session = Depends(get_db),
 ):
     lang = resolve_lang(lang)
-    curr_user = get_current_user(request, db)
-    if not curr_user:
-        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+    curr_user = require_user(request, db, [ROLE_ADMIN])
 
     set_system_setting(db, "snapshot_retention_days", snapshot_retention_days, "Snapshot retention")
 
@@ -1286,7 +1311,8 @@ def purge_old_logs_api(
 
 
 @app.post("/api/employees/{emp_id}/delete")
-def delete_employee_api(emp_id: int, db: Session = Depends(get_db)):
+def delete_employee_api(emp_id: int, request: Request, db: Session = Depends(get_db)):
+    curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR])
     emp = db.query(Employee).filter_by(id=emp_id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")
@@ -1295,10 +1321,11 @@ def delete_employee_api(emp_id: int, db: Session = Depends(get_db)):
     db.delete(emp)
 
     audit = AuditLog(
-        operator="Alex Chen (Admin)",
+        operator=curr_user.full_name,
         action_type="EMPLOYEE_DELETE",
         status="WARN",
         details=f"Deleted employee record: {emp_name} (ID: {emp_id})",
+        ip_address=request.client.host if request.client else "127.0.0.1",
     )
     db.add(audit)
     db.commit()
@@ -1311,7 +1338,8 @@ class FaceEnrollRequest(BaseModel):
 
 
 @app.post("/api/employees/{emp_id}/register-face")
-def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends(get_db)):
+def register_face_api(emp_id: int, req: FaceEnrollRequest, request: Request, db: Session = Depends(get_db)):
+    curr_user = require_user(request, db, [ROLE_ADMIN, ROLE_HR, ROLE_SECURITY])
     emp = db.query(Employee).filter_by(id=emp_id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")

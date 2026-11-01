@@ -136,6 +136,10 @@ TRANSLATIONS = {
         "save_changes": "Save Changes",
         "update_password": "Update Password",
         "backup_download": "Export System Backup (JSON)",
+        "logout_confirm_title": "Sign Out Confirmation",
+        "logout_confirm_msg": "Are you sure you want to end your current authenticated session?",
+        "confirm_logout": "Yes, Sign Out",
+        "cancel": "Cancel",
     },
     "kh": {
         # Navigation
@@ -272,6 +276,10 @@ TRANSLATIONS = {
         "save_changes": "រក្សាទុកការផ្លាស់ប្តូរ",
         "update_password": "កែប្រែពាក្យសម្ងាត់",
         "backup_download": "ទាញយកទិន្នន័យបម្រុងទុក (JSON)",
+        "logout_confirm_title": "ការបញ្ជាក់ការចាកចេញ",
+        "logout_confirm_msg": "តើអ្នកប្រាកដថាចង់ចាកចេញពីប្រព័ន្ធ FaceTrack AI ឬ?",
+        "confirm_logout": "បាទ/ចាស, ចាកចេញ",
+        "cancel": "បោះបង់",
     }
 }
 

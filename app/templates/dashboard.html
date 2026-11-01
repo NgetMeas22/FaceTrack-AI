@@ -213,17 +213,21 @@
           <span>{{ t.start_live_stream }}</span>
         </button>
 
-        <!-- Upload Batch Photo -->
+        <!-- Upload Batch Photo (HR and Admin) -->
+        {% if not current_user or can_access_page(current_user.role, 'employees') %}
         <a href="/{{ lang }}/employees" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 transition-colors">
           <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>{{ t.upload_batch }}</span>
         </a>
+        {% endif %}
 
-        <!-- Camera Setup -->
+        <!-- Camera Setup (Admin only) -->
+        {% if not current_user or can_access_page(current_user.role, 'settings') %}
         <a href="/{{ lang }}/settings" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 transition-colors">
           <i data-lucide="camera" class="w-3.5 h-3.5 text-slate-500"></i>
           <span>{{ t.camera_setup }}</span>
         </a>
+        {% endif %}
 
       </div>
 
@@ -288,10 +292,12 @@
           <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
           <span>{{ t.punctuality_note }}</span>
         </div>
+        {% if not current_user or can_access_page(current_user.role, 'reports') %}
         <a href="/{{ lang }}/reports" class="text-xs text-[#0ea5e9] font-bold hover:underline flex items-center gap-1">
           <span>{{ t.detailed_analytics }}</span>
           <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
         </a>
+        {% endif %}
       </div>
 
     </div>

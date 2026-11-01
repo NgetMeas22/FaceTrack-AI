@@ -13,8 +13,28 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-# Secret key for signing sessions (persisted or fallback to environment)
-SECRET_KEY = secrets.token_hex(32)
+import os
+from pathlib import Path
+
+# Secret key for signing sessions (persisted in data/.session_secret or environment)
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+SECRET_FILE = DATA_DIR / ".session_secret"
+
+if os.getenv("SECRET_KEY"):
+    SECRET_KEY = os.getenv("SECRET_KEY")
+elif SECRET_FILE.exists():
+    try:
+        SECRET_KEY = SECRET_FILE.read_text(encoding="utf-8").strip()
+    except Exception:
+        SECRET_KEY = secrets.token_hex(32)
+else:
+    SECRET_KEY = secrets.token_hex(32)
+    try:
+        SECRET_FILE.write_text(SECRET_KEY, encoding="utf-8")
+    except Exception:
+        pass
+
 SESSION_COOKIE_NAME = "facetrack_session"
 SESSION_DURATION_SECONDS = 86400  # 24 hours
 
