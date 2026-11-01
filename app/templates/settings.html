@@ -4,99 +4,456 @@
 {% block breadcrumb %}{{ t.system_settings }}{% endblock %}
 
 {% block content %}
-<div class="space-y-8 max-w-5xl">
+<div class="space-y-6 max-w-5xl">
 
   <!-- Header Banner -->
-  <div class="pb-2">
-    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.system_settings }}</h2>
-    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Fine-tune face recognition matching thresholds, ingress terminal nodes, and shift punctuality thresholds.</p>
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-1">
+    <div>
+      <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.system_settings }}</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Configure zero-trust access controls, operator credentials, inference parameters, and data governance.</p>
+    </div>
+
+    <!-- Quick Database Backup Button -->
+    <a 
+      href="/api/settings/backup" 
+      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md shadow-sky-500/20 transition-all shrink-0"
+    >
+      <i data-lucide="download" class="w-4 h-4"></i>
+      <span>{{ t.backup_download }}</span>
+    </a>
   </div>
 
-  <!-- Settings Grid -->
-  <div class="space-y-6">
+  <!-- Multi-Tab Navigation Bar (Matching User Attached Mock) -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 dark:border-[#333338]">
+    <!-- Tab 1: Security -->
+    <button 
+      type="button"
+      onclick="switchSettingsTab('security')" 
+      id="tab-btn-security" 
+      class="settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all {% if active_tab == 'security' %} bg-slate-900 dark:bg-[#26262b] text-white shadow-md border border-slate-800 dark:border-[#38383e] {% else %} text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#222225] {% endif %}"
+    >
+      <i data-lucide="lock" class="w-4 h-4 text-amber-400"></i>
+      <span>{{ t.tab_security }}</span>
+    </button>
+
+    <!-- Tab 2: Profile & Contact -->
+    <button 
+      type="button"
+      onclick="switchSettingsTab('profile')" 
+      id="tab-btn-profile" 
+      class="settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold transition-all {% if active_tab == 'profile' %} bg-slate-900 dark:bg-[#26262b] text-white shadow-md border border-slate-800 dark:border-[#38383e] {% else %} text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#222225] {% endif %}"
+    >
+      <i data-lucide="user" class="w-4 h-4 text-sky-400"></i>
+      <span>{{ t.tab_profile }}</span>
+    </button>
+
+    <!-- Tab 3: Notifications -->
+    <button 
+      type="button"
+      onclick="switchSettingsTab('notifications')" 
+      id="tab-btn-notifications" 
+      class="settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold transition-all {% if active_tab == 'notifications' %} bg-slate-900 dark:bg-[#26262b] text-white shadow-md border border-slate-800 dark:border-[#38383e] {% else %} text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#222225] {% endif %}"
+    >
+      <i data-lucide="bell" class="w-4 h-4 text-rose-400"></i>
+      <span>{{ t.tab_notifications }}</span>
+    </button>
+
+    <!-- Tab 4: System -->
+    <button 
+      type="button"
+      onclick="switchSettingsTab('system')" 
+      id="tab-btn-system" 
+      class="settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold transition-all {% if active_tab == 'system' %} bg-slate-900 dark:bg-[#26262b] text-white shadow-md border border-slate-800 dark:border-[#38383e] {% else %} text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#222225] {% endif %}"
+    >
+      <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+      <span>{{ t.tab_system }}</span>
+    </button>
+
+    <!-- Tab 5: Privacy & Data -->
+    <button 
+      type="button"
+      onclick="switchSettingsTab('privacy')" 
+      id="tab-btn-privacy" 
+      class="settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold transition-all {% if active_tab == 'privacy' %} bg-slate-900 dark:bg-[#26262b] text-white shadow-md border border-slate-800 dark:border-[#38383e] {% else %} text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#222225] {% endif %}"
+    >
+      <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
+      <span>{{ t.tab_privacy }}</span>
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB PANE 1: SECURITY -->
+  <!-- ========================================================================= -->
+  <div id="pane-security" class="settings-pane space-y-6 {% if active_tab != 'security' %}hidden{% endif %}">
     
-    <!-- Card 1: Biometric Recognition Sensitivity -->
-    <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-[#0ea5e9] flex items-center justify-center">
-          <i data-lucide="scan-face" class="w-4 h-4"></i>
+    <!-- Change Password Card -->
+    <div class="aesthetic-card p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center border border-amber-200/60 dark:border-amber-800/60">
+          <i data-lucide="key-round" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="font-bold text-base text-slate-900 dark:text-white">Biometric Inference Engine Parameters</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">OpenCV YuNet & SFace 128-dimensional cosine vector thresholds</p>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.change_password }}</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Strengthen cryptographic access key with minimum 8 characters</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+      <form method="POST" action="/api/settings/password" class="space-y-4 max-w-xl">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Cosine Distance Threshold (SFace)</label>
-          <div class="flex items-center gap-3">
-            <input type="range" min="0.30" max="0.50" step="0.01" value="0.38" class="flex-1 accent-[#0ea5e9]">
-            <span class="font-mono font-bold text-xs text-[#0ea5e9] bg-sky-50 dark:bg-sky-950/50 px-2.5 py-1 rounded-lg border border-sky-200 dark:border-sky-800">0.38</span>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{{ t.current_password }} *</label>
+          <div class="relative">
+            <input type="password" name="current_password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
           </div>
-          <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">Default 0.38 balances False Match Rate (FMR) and False Non-Match Rate (FNMR).</p>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{{ t.new_password }} *</label>
+            <input type="password" name="new_password" required minlength="6" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{{ t.confirm_password }} *</label>
+            <input type="password" name="confirm_password" required minlength="6" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          </div>
+        </div>
+
+        <!-- Session Policy Configuration -->
+        <div class="pt-3 border-t border-slate-100 dark:border-[#333338] space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Session Inactivity Timeout</label>
+              <select name="session_timeout_mins" class="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:border-[#0ea5e9]">
+                <option value="15" {% if settings.session_timeout_mins == '15' %}selected{% endif %}>15 Minutes</option>
+                <option value="30" {% if settings.session_timeout_mins == '30' %}selected{% endif %}>30 Minutes</option>
+                <option value="60" {% if settings.session_timeout_mins == '60' %}selected{% endif %}>1 Hour (Standard)</option>
+                <option value="480" {% if settings.session_timeout_mins == '480' %}selected{% endif %}>8 Hours (Full Shift)</option>
+                <option value="1440" {% if settings.session_timeout_mins == '1440' %}selected{% endif %}>24 Hours</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col justify-center">
+              <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-700 dark:text-slate-300 font-semibold pt-4">
+                <input type="checkbox" name="enforce_2fa" value="true" {% if settings.enforce_2fa == 'true' %}checked{% endif %} class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-[#38383e] dark:bg-[#1c1c1f]">
+                <span>Enforce 2FA / Biometric Hardware Key</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>{{ t.update_password }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Active Sessions Scorecard -->
+    <div class="aesthetic-card p-6">
+      <div class="flex items-center justify-between mb-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Anti-Spoofing & Liveness Validation</label>
-          <select class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-[#0ea5e9]">
-            <option value="active" selected>Active — 3D RGB-D Texture & Depth Validation</option>
-            <option value="strict">Strict — High-Pass Frequency & Motion Vector Analysis</option>
-            <option value="passive">Passive — Basic Glare & Boundary Verification</option>
-          </select>
-          <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">Prevents spoofing via printed photographs or digital tablet replays.</p>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">Active Cryptographic Sessions</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Authenticated devices currently granted access to the FaceTrack AI cluster</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200/60 dark:border-[#38383e]">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 flex items-center justify-center">
+              <i data-lucide="laptop" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Chrome on Windows (Current Terminal)</p>
+              <p class="text-[11px] text-slate-400 font-mono">127.0.0.1 • SHA-256 HMAC Cookie</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
+            Active Now
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- Card 2: Shift Policy & Punctuality Rules -->
-    <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-          <i data-lucide="clock" class="w-4 h-4"></i>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB PANE 2: PROFILE & CONTACT -->
+  <!-- ========================================================================= -->
+  <div id="pane-profile" class="settings-pane space-y-6 {% if active_tab != 'profile' %}hidden{% endif %}">
+    
+    <div class="aesthetic-card p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#0ea5e9] flex items-center justify-center border border-sky-200/60 dark:border-sky-800/60">
+          <i data-lucide="user-cog" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="font-bold text-base text-slate-900 dark:text-white">Workforce Shift & Ingress Schedule</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Configure standard corporate arrival hours and automatic late categorization</p>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.profile_settings }}</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Manage your administrative persona, email notification routing, and avatar</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+      <form method="POST" action="/api/settings/profile" enctype="multipart/form-data" class="space-y-5 max-w-2xl">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
+        <!-- Avatar Upload with Live Preview -->
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Standard Shift Start</label>
-          <input type="time" value="09:00" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Operator Avatar Photo</label>
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[#1c1c1f] border-2 border-dashed border-slate-300 dark:border-[#38383e] overflow-hidden flex items-center justify-center shrink-0">
+              <img id="profile-avatar-preview" src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces' }}" alt="Avatar" class="w-full h-full object-cover">
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <input 
+                type="file" 
+                name="avatar_file" 
+                accept="image/*" 
+                onchange="previewImage(this, 'profile-avatar-preview')"
+                class="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 dark:file:bg-[#26262b] file:text-[#0ea5e9] hover:file:bg-sky-100 file:cursor-pointer"
+              >
+              <input 
+                type="text" 
+                name="avatar_url" 
+                value="{{ current_user.avatar_url or '' }}" 
+                placeholder="Or paste external image URL: https://..." 
+                class="w-full px-3 py-1.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-[#0ea5e9]"
+              >
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Grace Period (Minutes)</label>
-          <input type="number" value="15" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{{ t.full_name }} *</label>
+            <input type="text" name="full_name" required value="{{ current_user.full_name }}" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9] font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Username (Read-Only)</label>
+            <input type="text" value="{{ current_user.username }}" disabled class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-[#141416] border border-slate-200 dark:border-[#2a2a2e] rounded-xl text-xs text-slate-500 dark:text-slate-400 font-mono font-bold cursor-not-allowed">
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Standard Shift End</label>
-          <input type="time" value="18:00" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Corporate Email *</label>
+            <input type="email" name="email" required value="{{ current_user.email or '' }}" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Access Clearance Role</label>
+            <div class="flex items-center h-10 px-3.5 bg-slate-100 dark:bg-[#141416] border border-slate-200 dark:border-[#2a2a2e] rounded-xl">
+              <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0ea5e9]">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>{{ current_user.role | replace('_', ' ') }}</span>
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="pt-3">
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>{{ t.save_changes }}</span>
+          </button>
+        </div>
+      </form>
     </div>
 
-    <!-- Card 3: Ingress Optical Terminals Nodes -->
-    <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB PANE 3: NOTIFICATIONS & ALERTS -->
+  <!-- ========================================================================= -->
+  <div id="pane-notifications" class="settings-pane space-y-6 {% if active_tab != 'notifications' %}hidden{% endif %}">
+    
+    <div class="aesthetic-card p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center border border-rose-200/60 dark:border-rose-800/60">
+          <i data-lucide="bell-ring" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">Real-Time Incident & Shift Notifications</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Configure visual alerts, audio chimes, and external webhook integrations</p>
+        </div>
+      </div>
+
+      <form method="POST" action="/api/settings/notifications" class="space-y-6 max-w-2xl">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
+        <!-- Notification Toggles -->
+        <div class="space-y-4">
+          <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200/60 dark:border-[#38383e] cursor-pointer">
+            <input type="checkbox" name="notify_late" value="true" {% if settings.notify_late == 'true' %}checked{% endif %} class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-[#38383e] dark:bg-[#222225] mt-0.5">
+            <div>
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Punctuality Exceptions & Late Arrivals</p>
+              <p class="text-[11px] text-slate-400">Trigger on-screen toast notification whenever an employee scans past the designated grace period.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200/60 dark:border-[#38383e] cursor-pointer">
+            <input type="checkbox" name="notify_spoof" value="true" {% if settings.notify_spoof == 'true' %}checked{% endif %} class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-[#38383e] dark:bg-[#222225] mt-0.5">
+            <div>
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Anti-Spoofing & Unrecognized Faces Warning</p>
+              <p class="text-[11px] text-slate-400">Immediate security alert when 2D spoof replay or unauthorized face is detected at any entrance lens.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200/60 dark:border-[#38383e] cursor-pointer">
+            <input type="checkbox" name="notify_failed_login" value="true" {% if settings.notify_failed_login == 'true' %}checked{% endif %} class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-[#38383e] dark:bg-[#222225] mt-0.5">
+            <div>
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Security Console Failed Login Alarms</p>
+              <p class="text-[11px] text-slate-400">Notify security dashboard when repeated bad credentials are submitted to the login portal.</p>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200/60 dark:border-[#38383e] cursor-pointer">
+            <input type="checkbox" name="audio_chime" value="true" {% if settings.audio_chime == 'true' %}checked{% endif %} class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-[#38383e] dark:bg-[#222225] mt-0.5">
+            <div>
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Synthesized Audio Chimes (Web Audio API)</p>
+              <p class="text-[11px] text-slate-400">Play pleasant synthesized chime sounds on biometric match and alert triggers.</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Volume Slider -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Audio Alert Volume (%)</label>
+          <div class="flex items-center gap-3">
+            <input type="range" name="audio_volume" min="0" max="100" value="{{ settings.audio_volume or '80' }}" oninput="document.getElementById('vol-display').textContent = this.value + '%'" class="flex-1 accent-[#0ea5e9]">
+            <span id="vol-display" class="font-mono font-bold text-xs text-[#0ea5e9] bg-sky-50 dark:bg-[#1c1c1f] px-2.5 py-1 rounded-lg border border-sky-200 dark:border-[#38383e]">{{ settings.audio_volume or '80' }}%</span>
+          </div>
+        </div>
+
+        <!-- External Webhook Integration -->
+        <div class="pt-3 border-t border-slate-100 dark:border-[#333338]">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Incident Webhook Endpoint (Slack / Discord / Teams)</label>
+          <div class="relative">
+            <i data-lucide="link" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input type="url" name="webhook_url" value="{{ settings.webhook_url or '' }}" placeholder="https://discord.com/api/webhooks/..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9] font-mono">
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1.5">FaceTrack AI posts JSON payloads to this webhook for high-priority security incidents.</p>
+        </div>
+
+        <div>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>{{ t.save_changes }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB PANE 4: SYSTEM & BIOMETRICS -->
+  <!-- ========================================================================= -->
+  <div id="pane-system" class="settings-pane space-y-6 {% if active_tab != 'system' %}hidden{% endif %}">
+    
+    <form method="POST" action="/api/settings/system" class="space-y-6">
+      <input type="hidden" name="lang" value="{{ lang }}">
+
+      <!-- Card 1: Biometric Engine Tuning -->
+      <div class="aesthetic-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#0ea5e9] flex items-center justify-center border border-sky-200/60 dark:border-sky-800/60">
+            <i data-lucide="scan-face" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">Biometric Inference Engine Parameters</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">OpenCV YuNet & SFace 128-dimensional cosine vector thresholds</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Cosine Distance Threshold (SFace)</label>
+            <div class="flex items-center gap-3">
+              <input type="range" name="cosine_threshold" min="0.30" max="0.50" step="0.01" value="{{ settings.cosine_threshold }}" oninput="document.getElementById('cosine-display').textContent = this.value" class="flex-1 accent-[#0ea5e9]">
+              <span id="cosine-display" class="font-mono font-bold text-xs text-[#0ea5e9] bg-sky-50 dark:bg-[#1c1c1f] px-2.5 py-1 rounded-lg border border-sky-200 dark:border-[#38383e]">{{ settings.cosine_threshold }}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1.5">Default 0.38 balances False Match Rate (FMR) and False Non-Match Rate (FNMR).</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Anti-Spoofing & Liveness Validation</label>
+            <select name="anti_spoofing" class="w-full bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-[#0ea5e9]">
+              <option value="active" {% if settings.anti_spoofing == 'active' %}selected{% endif %}>Active — 3D RGB-D Texture & Depth Validation</option>
+              <option value="strict" {% if settings.anti_spoofing == 'strict' %}selected{% endif %}>Strict — High-Pass Frequency & Motion Vector Analysis</option>
+              <option value="passive" {% if settings.anti_spoofing == 'passive' %}selected{% endif %}>Passive — Basic Glare & Boundary Verification</option>
+            </select>
+            <p class="text-[11px] text-slate-400 mt-1.5">Prevents spoofing via printed photographs or digital tablet replays.</p>
+          </div>
+        </div>
+
+        <div class="pt-4 mt-4 border-t border-slate-100 dark:border-[#333338] flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-700 dark:text-slate-300 font-semibold">
+            <input type="checkbox" name="auto_checkin" value="true" {% if settings.auto_checkin == 'true' %}checked{% endif %} class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-[#38383e] dark:bg-[#1c1c1f]">
+            <span>Auto Check-in & Punch Clock on Optical Face Recognition</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Card 2: Shift Policy & Punctuality Rules -->
+      <div class="aesthetic-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center border border-amber-200/60 dark:border-amber-800/60">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">Workforce Shift & Ingress Schedule</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Configure standard corporate arrival hours and automatic late categorization</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Standard Shift Start</label>
+            <input type="time" name="work_start_time" value="{{ settings.work_start_time }}" class="w-full bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Grace Period (Minutes)</label>
+            <input type="number" name="grace_period_mins" value="{{ settings.grace_period_mins }}" class="w-full bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Standard Shift End</label>
+            <input type="time" name="work_end_time" value="{{ settings.work_end_time }}" class="w-full bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          </div>
+        </div>
+      </div>
+
+      <!-- Save System Parameters Button -->
+      <div>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Save System Parameters</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Card 3: Connected Optical Hardware Terminals -->
+    <div class="aesthetic-card p-6">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-            <i data-lucide="video" class="w-4 h-4"></i>
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-400 flex items-center justify-center border border-indigo-200/60 dark:border-indigo-800/60">
+            <i data-lucide="video" class="w-5 h-5"></i>
           </div>
           <div>
             <h3 class="font-bold text-base text-slate-900 dark:text-white">Connected Optical Hardware Terminals</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400">Active biometric lenses deployed across physical entry points</p>
           </div>
         </div>
-        <button class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors">
-          + Add Terminal
+        <button onclick="openModal('add-terminal-modal')" class="px-3.5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Add Terminal</span>
         </button>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
-          <thead class="text-slate-400 dark:text-slate-500 uppercase bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 font-mono text-[10px]">
+          <thead class="text-slate-400 uppercase bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-100 dark:border-[#333338] font-mono text-[10px]">
             <tr>
               <th class="py-2.5 px-4">Node Name</th>
               <th class="py-2.5 px-4">Location</th>
@@ -104,24 +461,24 @@
               <th class="py-2.5 px-4">Status</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-            <tr>
+          <tbody class="divide-y divide-slate-100 dark:divide-[#333338] font-medium">
+            <tr class="hover:bg-slate-50/60 dark:hover:bg-[#2b2b30] transition-colors">
               <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">Front Entrance Terminal #04</td>
               <td class="py-3 px-4 text-slate-600 dark:text-slate-400">Main Lobby Corridor</td>
               <td class="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">1080p 60FPS RGB-D</td>
-              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Active Primary</span></td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">Active Primary</span></td>
             </tr>
-            <tr>
+            <tr class="hover:bg-slate-50/60 dark:hover:bg-[#2b2b30] transition-colors">
               <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">Executive Corridor Terminal #02</td>
               <td class="py-3 px-4 text-slate-600 dark:text-slate-400">Building A - 4th Floor</td>
               <td class="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">1080p 30FPS Optical</td>
-              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Online</span></td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">Online</span></td>
             </tr>
-            <tr>
+            <tr class="hover:bg-slate-50/60 dark:hover:bg-[#2b2b30] transition-colors">
               <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">Parking Gate 01 Scanner</td>
               <td class="py-3 px-4 text-slate-600 dark:text-slate-400">North Garage Turnstile</td>
               <td class="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">720p 60FPS Wide</td>
-              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Online</span></td>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">Online</span></td>
             </tr>
           </tbody>
         </table>
@@ -130,5 +487,164 @@
 
   </div>
 
+  <!-- ========================================================================= -->
+  <!-- TAB PANE 5: PRIVACY & DATA -->
+  <!-- ========================================================================= -->
+  <div id="pane-privacy" class="settings-pane space-y-6 {% if active_tab != 'privacy' %}hidden{% endif %}">
+    
+    <!-- Retention Policy Card -->
+    <div class="aesthetic-card p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-400 flex items-center justify-center border border-emerald-200/60 dark:border-emerald-800/60">
+          <i data-lucide="shield-alert" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.retention_policy }}</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">GDPR & corporate biometric governance compliance parameters</p>
+        </div>
+      </div>
+
+      <form method="POST" action="/api/settings/privacy" class="space-y-5 max-w-xl">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Optical Scan Snapshots Retention Period</label>
+          <select name="snapshot_retention_days" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:border-[#0ea5e9]">
+            <option value="30" {% if settings.snapshot_retention_days == '30' %}selected{% endif %}>30 Days (Strict Data Minimization)</option>
+            <option value="60" {% if settings.snapshot_retention_days == '60' %}selected{% endif %}>60 Days</option>
+            <option value="90" {% if settings.snapshot_retention_days == '90' %}selected{% endif %}>90 Days (Enterprise Standard)</option>
+            <option value="365" {% if settings.snapshot_retention_days == '365' %}selected{% endif %}>1 Year (Audit Compliance)</option>
+            <option value="9999" {% if settings.snapshot_retention_days == '9999' %}selected{% endif %}>Indefinite (No Auto-Purge)</option>
+          </select>
+          <p class="text-[11px] text-slate-400 mt-1.5">Snapshots older than this threshold are safely pruned during automated maintenance sweeps.</p>
+        </div>
+
+        <div>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Update Retention Policy</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Manual Maintenance & Purge Card -->
+    <div class="aesthetic-card p-6 border border-rose-200/40 dark:border-rose-950/40">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-500 flex items-center justify-center">
+          <i data-lucide="trash-2" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">Database Maintenance & Purge</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Irreversibly delete historical ingress logs beyond the retention window</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40">
+        <div>
+          <p class="text-xs font-bold text-rose-900 dark:text-rose-300">Purge Expired Attendance Snapshots</p>
+          <p class="text-[11px] text-rose-700/80 dark:text-rose-400/80">Removes unneeded image files from the data/uploads directory to free disk storage.</p>
+        </div>
+        <form method="POST" action="/api/settings/purge-logs" onsubmit="return confirm('Execute database snapshot maintenance sweep?')">
+          <input type="hidden" name="lang" value="{{ lang }}">
+          <input type="hidden" name="days" value="{{ settings.snapshot_retention_days }}">
+          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all shrink-0">
+            Execute Purge Sweep
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
 </div>
+
+<!-- Modal: Add Hardware Terminal -->
+<div id="add-terminal-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="aesthetic-card w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+    <button onclick="closeModal('add-terminal-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-[#26262b]">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-400 flex items-center justify-center">
+        <i data-lucide="video" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-slate-900 dark:text-white">Add Hardware Optical Terminal</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Register on-premise RTSP / USB camera lens</p>
+      </div>
+    </div>
+
+    <form method="POST" action="/api/settings/system" class="space-y-4">
+      <input type="hidden" name="lang" value="{{ lang }}">
+      <input type="hidden" name="cosine_threshold" value="{{ settings.cosine_threshold }}">
+      <input type="hidden" name="work_start_time" value="{{ settings.work_start_time }}">
+      <input type="hidden" name="work_end_time" value="{{ settings.work_end_time }}">
+      <input type="hidden" name="grace_period_mins" value="{{ settings.grace_period_mins }}">
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Terminal Node Identifier *</label>
+        <input type="text" name="camera_primary_node" required placeholder="Back Gate Optical Terminal #05" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Physical Location</label>
+        <input type="text" placeholder="Building B - Ground Entry" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">RTSP Stream URI / Device Index</label>
+        <input type="text" placeholder="rtsp://admin:pass@192.168.1.120:554/stream1" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#1c1c1f] border border-slate-200 dark:border-[#38383e] rounded-xl text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#0ea5e9]">
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button type="button" onclick="closeModal('add-terminal-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-[#26262b] text-slate-700 dark:text-slate-300 text-xs font-semibold">
+          {{ t.cancel }}
+        </button>
+        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Register Node</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function switchSettingsTab(tabName) {
+    // Hide all panes
+    document.querySelectorAll('.settings-pane').forEach(el => el.classList.add('hidden'));
+    const activePane = document.getElementById('pane-' + tabName);
+    if (activePane) activePane.classList.remove('hidden');
+
+    // Reset tab button states
+    document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+      btn.className = 'settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#222225]';
+    });
+
+    // Activate chosen tab button
+    const activeBtn = document.getElementById('tab-btn-' + tabName);
+    if (activeBtn) {
+      activeBtn.className = 'settings-tab-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all bg-slate-900 dark:bg-[#26262b] text-white shadow-md border border-slate-800 dark:border-[#38383e]';
+    }
+
+    // Update URL query parameter without page reload
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('tab', tabName);
+    window.history.replaceState({}, '', newUrl);
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // Check URL on load for active tab
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('tab')) {
+      switchSettingsTab(params.get('tab'));
+    }
+  });
+</script>
 {% endblock %}

@@ -671,12 +671,46 @@ def reports_view(lang: str, request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/{lang}/settings", response_class=HTMLResponse)
-def settings_view(lang: str, request: Request, db: Session = Depends(get_db)):
+def settings_view(
+    lang: str,
+    request: Request,
+    tab: Optional[str] = Query("security"),
+    db: Session = Depends(get_db),
+):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
     guard_resp, current_user = check_view_access(request, db, lang, "settings")
     if guard_resp:
         return guard_resp
+
+    settings_records = db.query(SystemSetting).all()
+    settings_map = {s.setting_key: s.setting_value for s in settings_records}
+
+    # Default fallbacks
+    defaults = {
+        "cosine_threshold": "0.38",
+        "detection_confidence": "0.70",
+        "anti_spoofing": "active",
+        "work_start_time": "09:00",
+        "grace_period_mins": "15",
+        "work_end_time": "18:00",
+        "session_timeout_mins": "60",
+        "enforce_2fa": "false",
+        "notify_late": "true",
+        "notify_spoof": "true",
+        "notify_failed_login": "true",
+        "audio_chime": "true",
+        "audio_volume": "80",
+        "webhook_url": "",
+        "snapshot_retention_days": "90",
+        "auto_checkin": "true",
+        "camera_primary_node": "Front Entrance Terminal #04",
+    }
+    for k, v in defaults.items():
+        if k not in settings_map:
+            settings_map[k] = v
+
+    departments = db.query(Department).all()
 
     return templates.TemplateResponse(
         request=request,
@@ -686,6 +720,9 @@ def settings_view(lang: str, request: Request, db: Session = Depends(get_db)):
             "t": t,
             "current_user": current_user,
             "current_page": "settings",
+            "active_tab": tab or "security",
+            "settings": settings_map,
+            "departments": departments,
         },
     )
 
@@ -969,16 +1006,283 @@ def update_employee_api(
 
     return RedirectResponse(url="/en/employees?success=updated", status_code=303)
 
+
+def set_system_setting(db: Session, key: str, value: str, desc: str = ""):
+    record = db.query(SystemSetting).filter_by(setting_key=key).first()
+    if record:
+        record.setting_value = str(value)
+    else:
+        record = SystemSetting(setting_key=key, setting_value=str(value), description=desc)
+        db.add(record)
+
+
+# ============================================================================
+# SETTINGS MANAGEMENT ENDPOINTS
+# ============================================================================
+
+@app.post("/api/settings/password")
+def change_password_api(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    lang: str = Form("en"),
+    session_timeout_mins: Optional[str] = Form("60"),
+    enforce_2fa: Optional[str] = Form("false"),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    curr_user = get_current_user(request, db)
+    if not curr_user:
+        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+
+    if not verify_password(current_password, curr_user.hashed_password):
+        return RedirectResponse(url=f"/{lang}/settings?tab=security&error=Current+password+incorrect", status_code=303)
+
+    if len(new_password) < 6:
+        return RedirectResponse(url=f"/{lang}/settings?tab=security&error=New+password+must+be+at+least+6+characters", status_code=303)
+
+    if new_password != confirm_password:
+        return RedirectResponse(url=f"/{lang}/settings?tab=security&error=New+passwords+do+not+match", status_code=303)
+
+    curr_user.hashed_password = hash_password(new_password)
+    set_system_setting(db, "session_timeout_mins", session_timeout_mins, "Session inactivity timeout")
+    set_system_setting(db, "enforce_2fa", "true" if enforce_2fa in ["true", "on"] else "false", "Enforce 2FA")
+
     audit = AuditLog(
-        operator="Alex Chen (Admin)",
-        action_type="EMPLOYEE_UPDATE",
+        operator=curr_user.full_name,
+        action_type="PASSWORD_CHANGE",
         status="SUCCESS",
-        details=f"Updated profile for: {emp.full_name} ({emp.employee_code})",
+        details="Updated operator master access password & session security policies.",
+        ip_address=request.client.host if request.client else "127.0.0.1",
     )
     db.add(audit)
     db.commit()
 
-    return RedirectResponse(url="/en/employees?success=updated", status_code=303)
+    return RedirectResponse(url=f"/{lang}/settings?tab=security&success=settings_saved", status_code=303)
+
+
+@app.post("/api/settings/profile")
+def update_profile_api(
+    request: Request,
+    full_name: str = Form(...),
+    email: str = Form(...),
+    avatar_url: Optional[str] = Form(None),
+    avatar_file: Optional[UploadFile] = File(None),
+    lang: str = Form("en"),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    curr_user = get_current_user(request, db)
+    if not curr_user:
+        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+
+    curr_user.full_name = full_name.strip()
+    curr_user.email = email.strip()
+    if avatar_url and avatar_url.strip():
+        curr_user.avatar_url = avatar_url.strip()
+
+    if avatar_file and avatar_file.filename:
+        try:
+            content = avatar_file.file.read()
+            if len(content) > 0:
+                safe_name = f"user_{curr_user.id}_{int(datetime.now().timestamp())}.jpg"
+                save_path = UPLOADS_DIR / safe_name
+                save_path.write_bytes(content)
+                curr_user.avatar_url = f"/uploads/{safe_name}"
+        except Exception as e:
+            print("Avatar upload error:", e)
+
+    audit = AuditLog(
+        operator=curr_user.full_name,
+        action_type="SETTINGS_UPDATE",
+        status="SUCCESS",
+        details=f"Updated operator personal profile and avatar.",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url=f"/{lang}/settings?tab=profile&success=settings_saved", status_code=303)
+
+
+@app.post("/api/settings/notifications")
+def update_notifications_api(
+    request: Request,
+    notify_late: Optional[str] = Form(None),
+    notify_spoof: Optional[str] = Form(None),
+    notify_failed_login: Optional[str] = Form(None),
+    audio_chime: Optional[str] = Form(None),
+    audio_volume: str = Form("80"),
+    webhook_url: Optional[str] = Form(""),
+    lang: str = Form("en"),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    curr_user = get_current_user(request, db)
+    if not curr_user:
+        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+
+    set_system_setting(db, "notify_late", "true" if notify_late else "false", "Notify on late arrivals")
+    set_system_setting(db, "notify_spoof", "true" if notify_spoof else "false", "Notify on spoof triggers")
+    set_system_setting(db, "notify_failed_login", "true" if notify_failed_login else "false", "Notify on failed logins")
+    set_system_setting(db, "audio_chime", "true" if audio_chime else "false", "Web audio sound chimes")
+    set_system_setting(db, "audio_volume", audio_volume, "Alert volume percentage")
+    set_system_setting(db, "webhook_url", webhook_url.strip() if webhook_url else "", "External incident webhook")
+
+    audit = AuditLog(
+        operator=curr_user.full_name,
+        action_type="SETTINGS_UPDATE",
+        status="SUCCESS",
+        details="Updated notification thresholds and incident webhook configuration.",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url=f"/{lang}/settings?tab=notifications&success=settings_saved", status_code=303)
+
+
+@app.post("/api/settings/system")
+def update_system_settings_api(
+    request: Request,
+    cosine_threshold: str = Form(...),
+    detection_confidence: str = Form("0.70"),
+    anti_spoofing: str = Form("active"),
+    work_start_time: str = Form("09:00"),
+    grace_period_mins: str = Form("15"),
+    work_end_time: str = Form("18:00"),
+    auto_checkin: Optional[str] = Form(None),
+    camera_primary_node: Optional[str] = Form("Front Entrance Terminal #04"),
+    lang: str = Form("en"),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    curr_user = get_current_user(request, db)
+    if not curr_user:
+        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+
+    set_system_setting(db, "cosine_threshold", cosine_threshold, "SFace distance threshold")
+    set_system_setting(db, "detection_confidence", detection_confidence, "YuNet face detector threshold")
+    set_system_setting(db, "anti_spoofing", anti_spoofing, "Liveness mode")
+    set_system_setting(db, "work_start_time", work_start_time, "Shift start")
+    set_system_setting(db, "grace_period_mins", grace_period_mins, "Grace period")
+    set_system_setting(db, "work_end_time", work_end_time, "Shift end")
+    set_system_setting(db, "auto_checkin", "true" if auto_checkin else "false", "Auto check in")
+    if camera_primary_node:
+        set_system_setting(db, "camera_primary_node", camera_primary_node, "Primary camera node")
+
+    audit = AuditLog(
+        operator=curr_user.full_name,
+        action_type="SETTINGS_UPDATE",
+        status="SUCCESS",
+        details="Reconfigured core biometric inference engine and shift punctuality policy.",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url=f"/{lang}/settings?tab=system&success=settings_saved", status_code=303)
+
+
+@app.post("/api/settings/privacy")
+def update_privacy_settings_api(
+    request: Request,
+    snapshot_retention_days: str = Form("90"),
+    lang: str = Form("en"),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    curr_user = get_current_user(request, db)
+    if not curr_user:
+        return RedirectResponse(url=f"/{lang}/login", status_code=303)
+
+    set_system_setting(db, "snapshot_retention_days", snapshot_retention_days, "Snapshot retention")
+
+    audit = AuditLog(
+        operator=curr_user.full_name,
+        action_type="SETTINGS_UPDATE",
+        status="SUCCESS",
+        details=f"Updated biometric snapshot retention duration to {snapshot_retention_days} days.",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url=f"/{lang}/settings?tab=privacy&success=settings_saved", status_code=303)
+
+
+@app.get("/api/settings/backup")
+def export_system_backup_api(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    curr_user = get_current_user(request, db)
+    if not curr_user or curr_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin role required for database backup export.")
+
+    employees = [
+        {
+            "code": e.employee_code,
+            "name": e.full_name,
+            "email": e.email,
+            "position": e.position,
+            "department": e.department.name if e.department else None,
+            "status": e.status,
+            "has_face": e.has_face_registered,
+        }
+        for e in db.query(Employee).all()
+    ]
+    departments = [
+        {"code": d.code, "name": d.name, "location": d.location, "head": d.head_name}
+        for d in db.query(Department).all()
+    ]
+    settings = {s.setting_key: s.setting_value for s in db.query(SystemSetting).all()}
+
+    backup_payload = {
+        "system": "FaceTrack AI Enterprise Biometrics",
+        "exported_at": datetime.now().isoformat(),
+        "exported_by": curr_user.username,
+        "departments": departments,
+        "employees": employees,
+        "system_settings": settings,
+    }
+
+    import json
+    content = json.dumps(backup_payload, indent=2)
+    return Response(
+        content=content,
+        media_type="application/json",
+        headers={"Content-Disposition": f"attachment; filename=facetrack_backup_{int(datetime.now().timestamp())}.json"},
+    )
+
+
+@app.post("/api/settings/purge-logs")
+def purge_old_logs_api(
+    request: Request,
+    lang: str = Form("en"),
+    days: int = Form(90),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    curr_user = get_current_user(request, db)
+    if not curr_user or curr_user.role != "ADMIN":
+        return RedirectResponse(url=f"/{lang}/settings?tab=privacy&error=Admin+role+required", status_code=303)
+
+    cutoff = datetime.now() - timedelta(days=days)
+    purged_scans = db.query(ScanLog).filter(ScanLog.timestamp < cutoff).delete()
+
+    audit = AuditLog(
+        operator=curr_user.full_name,
+        action_type="DATA_PURGE",
+        status="SUCCESS",
+        details=f"Purged {purged_scans} biometric ingress records older than {days} days.",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url=f"/{lang}/settings?tab=privacy&success=settings_saved", status_code=303)
 
 
 @app.post("/api/employees/{emp_id}/delete")

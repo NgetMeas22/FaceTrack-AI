@@ -121,6 +121,21 @@ TRANSLATIONS = {
         "new_user": "Provision Operator",
         "last_login": "Last Login",
         "account_state": "Account Status",
+
+        # Settings Navigation Tabs (Picture 2 Reference)
+        "tab_security": "Security",
+        "tab_profile": "Profile & Contact",
+        "tab_notifications": "Notifications",
+        "tab_system": "System",
+        "tab_privacy": "Privacy & Data",
+        "change_password": "Change Master Password",
+        "current_password": "Current Password",
+        "new_password": "New Password",
+        "confirm_password": "Confirm New Password",
+        "profile_settings": "Operator Profile & Contact Details",
+        "save_changes": "Save Changes",
+        "update_password": "Update Password",
+        "backup_download": "Export System Backup (JSON)",
     },
     "kh": {
         # Navigation
@@ -242,6 +257,21 @@ TRANSLATIONS = {
         "new_user": "បង្កើតអ្នកប្រើប្រាស់ថ្មី",
         "last_login": "ចូលចុងក្រោយ",
         "account_state": "ស្ថានភាពគណនី",
+
+        # Settings Navigation Tabs
+        "tab_security": "សន្តិសុខ",
+        "tab_profile": "ប្រវត្តិរូប & ទំនាក់ទំនង",
+        "tab_notifications": "ការជូនដំណឹង",
+        "tab_system": "ប្រព័ន្ធ",
+        "tab_privacy": "ឯកជនភាព & ទិន្នន័យ",
+        "change_password": "ប្តូរពាក្យសម្ងាត់មេ",
+        "current_password": "ពាក្យសម្ងាត់បច្ចុប្បន្ន",
+        "new_password": "ពាក្យសម្ងាត់ថ្មី",
+        "confirm_password": "ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី",
+        "profile_settings": "ព័ត៌មានប្រវត្តិរូប និង ទំនាក់ទំនង",
+        "save_changes": "រក្សាទុកការផ្លាស់ប្តូរ",
+        "update_password": "កែប្រែពាក្យសម្ងាត់",
+        "backup_download": "ទាញយកទិន្នន័យបម្រុងទុក (JSON)",
     }
 }
 
