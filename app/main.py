@@ -827,11 +827,12 @@ def create_employee_api(
     position: Optional[str] = Form(None),
     department_id: Optional[int] = Form(None),
     status: str = Form("ACTIVE"),
+    photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
     existing = db.query(Employee).filter_by(employee_code=employee_code.strip()).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Employee Code already exists.")
+        return RedirectResponse(url="/en/employees?error=Employee+Code+already+exists", status_code=303)
 
     emp = Employee(
         employee_code=employee_code.strip(),
@@ -844,6 +845,38 @@ def create_employee_api(
         status=status,
     )
     db.add(emp)
+    db.flush()
+
+    # Store photo if provided and extract biometrics
+    if photo and photo.filename:
+        try:
+            content = photo.file.read()
+            if len(content) > 0:
+                safe_name = f"emp_{emp.id}_{int(datetime.now().timestamp())}.jpg"
+                save_path = UPLOADS_DIR / safe_name
+                save_path.write_bytes(content)
+                emp.photo_path = f"/uploads/{safe_name}"
+
+                import cv2
+                import numpy as np
+                import json
+                nparr = np.frombuffer(content, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                if img is not None:
+                    engine = get_face_engine()
+                    box, raw_yunet = engine.detect_largest_face(img)
+                    if box and raw_yunet is not None:
+                        emb = engine.extract_embedding(img, raw_yunet)
+                        if emb:
+                            db.query(FaceEmbedding).filter_by(employee_id=emp.id).delete()
+                            db.add(FaceEmbedding(
+                                employee_id=emp.id,
+                                embedding_data=json.dumps(emb),
+                                quality_score=round(float(box.confidence), 3),
+                                source="FILE_UPLOAD",
+                            ))
+        except Exception as e:
+            print("Photo save error:", e)
 
     audit = AuditLog(
         operator="Alex Chen (Admin)",
@@ -868,6 +901,7 @@ def update_employee_api(
     position: Optional[str] = Form(None),
     department_id: Optional[int] = Form(None),
     status: str = Form("ACTIVE"),
+    photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
     emp = db.query(Employee).filter_by(id=emp_id).first()
@@ -882,6 +916,37 @@ def update_employee_api(
     emp.position = position.strip() if position else None
     emp.department_id = department_id if department_id else None
     emp.status = status
+
+    # Store photo if updated
+    if photo and photo.filename:
+        try:
+            content = photo.file.read()
+            if len(content) > 0:
+                safe_name = f"emp_{emp.id}_{int(datetime.now().timestamp())}.jpg"
+                save_path = UPLOADS_DIR / safe_name
+                save_path.write_bytes(content)
+                emp.photo_path = f"/uploads/{safe_name}"
+
+                import cv2
+                import numpy as np
+                import json
+                nparr = np.frombuffer(content, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                if img is not None:
+                    engine = get_face_engine()
+                    box, raw_yunet = engine.detect_largest_face(img)
+                    if box and raw_yunet is not None:
+                        emb = engine.extract_embedding(img, raw_yunet)
+                        if emb:
+                            db.query(FaceEmbedding).filter_by(employee_id=emp.id).delete()
+                            db.add(FaceEmbedding(
+                                employee_id=emp.id,
+                                embedding_data=json.dumps(emb),
+                                quality_score=round(float(box.confidence), 3),
+                                source="FILE_UPLOAD",
+                            ))
+        except Exception as e:
+            print("Photo update error:", e)
 
     audit = AuditLog(
         operator="Alex Chen (Admin)",
@@ -1083,6 +1148,17 @@ def recognize_face_api(req: ScanRequest, db: Session = Depends(get_db)):
             else:
                 att_record.check_out_time = now
 
+    # Save optical scan snapshot to disk
+    snapshot_rel_path = None
+    try:
+        import cv2
+        snap_name = f"scan_{int(now.timestamp())}_{employee.id}.jpg"
+        snap_path = UPLOADS_DIR / snap_name
+        cv2.imwrite(str(snap_path), img)
+        snapshot_rel_path = f"/uploads/{snap_name}"
+    except Exception:
+        pass
+
     scan_log = ScanLog(
         timestamp=now,
         outcome="MATCH",
@@ -1090,6 +1166,7 @@ def recognize_face_api(req: ScanRequest, db: Session = Depends(get_db)):
         terminal_node="Terminal 04",
         similarity_score=sim_score,
         direction=direction,
+        snapshot_path=snapshot_rel_path,
         notes=f"{direction} verified ({round(sim_score * 100, 1)}%)",
     )
     db.add(scan_log)

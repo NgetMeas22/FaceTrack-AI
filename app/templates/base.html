@@ -209,6 +209,9 @@
 
   </div>
 
+  <!-- Global Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
   <!-- Global Face Enrollment Modal -->
   <div id="face-enroll-modal" class="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
@@ -235,13 +238,18 @@
         <div class="reticle-bracket reticle-bracket-br"></div>
       </div>
 
+      <!-- Enrollment Progress Bar -->
+      <div id="enroll-progress" class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 mb-3 hidden overflow-hidden">
+        <div id="enroll-progress-fill" class="bg-[#0ea5e9] h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+
       <p id="enroll-status" class="text-xs text-slate-500 dark:text-slate-400 text-center mb-5">Align face directly into the camera frame.</p>
 
       <div class="flex items-center gap-3">
         <button onclick="closeFaceEnrollModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors">
           {{ t.cancel }}
         </button>
-        <button onclick="captureAndEnrollFace()" class="flex-1 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/25 transition-all">
+        <button id="btn-capture-enroll" onclick="captureAndEnrollFace(this)" class="flex-1 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/25 transition-all">
           <i data-lucide="check-circle" class="w-4 h-4"></i>
           <span>Capture & Enroll</span>
         </button>

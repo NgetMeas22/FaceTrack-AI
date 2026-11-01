@@ -209,3 +209,134 @@ html.dark .aesthetic-card-hover:hover {
   0% { background-color: rgba(16, 185, 129, 0.4); }
   100% { background-color: transparent; }
 }
+
+/* ==========================================================================
+   TOAST NOTIFICATION & ALERTS SYSTEM
+   ========================================================================== */
+#toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 24rem;
+  width: calc(100vw - 3rem);
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(12px);
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.3s ease;
+}
+
+.toast-item.toast-leave {
+  animation: toastSlideOut 0.3s ease forwards;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(30px) scale(0.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes toastSlideOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(40px) scale(0.9); }
+}
+
+.toast-success {
+  background: rgba(16, 185, 129, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+html.dark .toast-success {
+  background: rgba(6, 78, 59, 0.9);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.toast-error {
+  background: rgba(239, 68, 68, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+html.dark .toast-error {
+  background: rgba(127, 29, 29, 0.9);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.toast-warning {
+  background: rgba(245, 158, 11, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+html.dark .toast-warning {
+  background: rgba(120, 53, 15, 0.9);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.toast-info {
+  background: rgba(14, 165, 233, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+html.dark .toast-info {
+  background: rgba(12, 74, 110, 0.9);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.6);
+  width: 100%;
+  animation: toastProgress 4s linear forwards;
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* ==========================================================================
+   BUTTON LOADING STATES & SPINNERS
+   ========================================================================== */
+.btn-loading {
+  position: relative !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+  cursor: not-allowed !important;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spinRing 0.7s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes spinRing {
+  to { transform: rotate(360deg); }
+}
+
+.btn-loading-dark .btn-spinner {
+  border-color: rgba(14, 165, 233, 0.3);
+  border-top-color: #0ea5e9;
+}
