@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="{{ lang or 'en' }}" class="light">
+<html lang="{{ lang or 'en' }}" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ t.brand_name }} — {{ t.brand_tagline }}{% endblock %}</title>
 
-  <!-- Prevent Theme Flash (Early Theme Evaluator - Default to Light matching Pic 2) -->
+  <!-- Prevent Theme Flash (Early Theme Evaluator - Default to Dark Charcoal #181818) -->
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('facetrack-theme');
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-      } else {
+      const savedTheme = localStorage.getItem('facetrack-theme') || 'dark';
+      if (savedTheme === 'light') {
         document.documentElement.classList.add('light');
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
       }
     })();
   </script>
@@ -53,13 +53,13 @@
   <link rel="stylesheet" href="/static/css/styles.css">
   {% block head %}{% endblock %}
 </head>
-<body class="bg-[#f8fafc] dark:bg-[#0b101b] text-slate-800 dark:text-slate-100 min-h-screen flex antialiased transition-colors duration-200 overflow-x-hidden">
+<body class="bg-[#f8fafc] dark:bg-[#181818] text-slate-800 dark:text-slate-100 min-h-screen flex antialiased transition-colors duration-200 overflow-x-hidden">
 
   <!-- Left Sidebar (Enterprise Navigation) -->
-  <aside class="w-64 shrink-0 bg-white dark:bg-[#0d1527] border-r border-slate-200/90 dark:border-[#1e2c48] flex flex-col sticky top-0 h-screen z-30 shadow-[1px_0_10px_rgba(0,0,0,0.02)] transition-colors duration-200">
+  <aside class="w-64 shrink-0 bg-white dark:bg-[#1c1c1f] border-r border-slate-200/90 dark:border-[#333338] flex flex-col sticky top-0 h-screen z-30 shadow-[1px_0_10px_rgba(0,0,0,0.02)] transition-colors duration-200">
     
     <!-- Brand Header -->
-    <div class="h-20 flex items-center gap-3 px-6 border-b border-slate-100 dark:border-[#1e2c48]">
+    <div class="h-20 flex items-center gap-3 px-6 border-b border-slate-100 dark:border-[#333338]">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] flex items-center justify-center shadow-md shadow-sky-500/20 text-white">
         <i data-lucide="scan-face" class="w-5 h-5"></i>
       </div>
@@ -137,7 +137,7 @@
     </nav>
 
     <!-- Bottom Profile Card -->
-    <div class="p-4 m-3 rounded-2xl bg-slate-50 dark:bg-[#111a2e] border border-slate-200/80 dark:border-[#1e2c48] flex items-center justify-between">
+    <div class="p-4 m-3 rounded-2xl bg-slate-50 dark:bg-[#222225] border border-slate-200/80 dark:border-[#333338] flex items-center justify-between">
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="relative shrink-0">
           <img src="{{ (current_user.avatar_url if current_user else None) or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces' }}" alt="User" class="w-9 h-9 rounded-xl object-cover ring-2 ring-white dark:ring-slate-800">
@@ -159,7 +159,7 @@
   <div class="flex-1 flex flex-col min-w-0 min-h-screen">
     
     <!-- Topbar Header -->
-    <header class="h-20 bg-white/95 dark:bg-[#0d1527]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#1e2c48] px-6 lg:px-8 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-colors duration-200">
+    <header class="h-20 bg-white/95 dark:bg-[#1c1c1f]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#333338] px-6 lg:px-8 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-colors duration-200">
       
       <!-- Breadcrumb -->
       <div class="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -178,19 +178,19 @@
         </div>
 
         <!-- Language Switcher Pill -->
-        <div class="flex items-center bg-slate-100 dark:bg-[#111a2e] p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#1e2c48]">
+        <div class="flex items-center bg-slate-100 dark:bg-[#222225] p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#333338]">
           <a href="/en/{{ 'audit-logs' if current_page == 'audit_logs' else current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'en' %} bg-white dark:bg-[#0ea5e9] text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">EN</a>
           <a href="/kh/{{ 'audit-logs' if current_page == 'audit_logs' else current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'kh' %} bg-white dark:bg-[#0ea5e9] text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">KM</a>
         </div>
 
         <!-- Theme Toggle Button (Sun/Moon) -->
-        <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#111a2e] transition-colors" title="Toggle Light / Dark Mode">
+        <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#26262b] transition-colors" title="Toggle Light / Dark Mode">
           <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
           <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-600"></i>
         </button>
 
         <!-- Notification Bell -->
-        <button class="relative p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#111a2e] transition-colors">
+        <button class="relative p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#26262b] transition-colors">
           <i data-lucide="bell" class="w-4 h-4"></i>
           <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-900"></span>
         </button>

@@ -35,29 +35,29 @@
 
   <script>
     (function() {
-      const theme = localStorage.getItem('facetrack-theme') || 'light';
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-      } else {
+      const theme = localStorage.getItem('facetrack-theme') || 'dark';
+      if (theme === 'light') {
         document.documentElement.classList.add('light');
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
       }
     })();
   </script>
 </head>
-<body class="bg-[#f8fafc] dark:bg-[#0b101b] text-slate-800 dark:text-slate-100 min-h-screen flex items-center justify-center p-4 antialiased transition-colors duration-200 {% if lang == 'kh' %} font-khmer {% endif %}">
+<body class="bg-[#f8fafc] dark:bg-[#181818] text-slate-800 dark:text-slate-100 min-h-screen flex items-center justify-center p-4 antialiased transition-colors duration-200 {% if lang == 'kh' %} font-khmer {% endif %}">
 
   <!-- Top Right Header Controls -->
   <div class="fixed top-6 right-6 flex items-center gap-3 z-30">
     <!-- Language Switcher Pill -->
-    <div class="flex items-center bg-white/80 dark:bg-[#111a2e]/80 backdrop-blur p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#1e2c48] shadow-sm">
+    <div class="flex items-center bg-white/80 dark:bg-[#1c1c1f]/80 backdrop-blur p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#333338] shadow-sm">
       <a href="/en/login{% if next_url %}?next={{ next_url }}{% endif %}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'en' %} bg-white dark:bg-[#0ea5e9] text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">EN</a>
       <a href="/kh/login{% if next_url %}?next={{ next_url }}{% endif %}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'kh' %} bg-white dark:bg-[#0ea5e9] text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">KM</a>
     </div>
 
     <!-- Theme Toggle Button -->
-    <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-white/80 dark:bg-[#111a2e]/80 backdrop-blur text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-slate-200 dark:border-[#1e2c48] shadow-sm transition-colors" title="Toggle Light / Dark Mode">
+    <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-white/80 dark:bg-[#1c1c1f]/80 backdrop-blur text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-slate-200 dark:border-[#333338] shadow-sm transition-colors" title="Toggle Light / Dark Mode">
       <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
       <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-600"></i>
     </button>

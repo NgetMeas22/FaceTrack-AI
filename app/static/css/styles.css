@@ -19,15 +19,15 @@
 }
 
 html.dark {
-  /* Dark Mode Palette (Cyber Navy / High-Contrast Slate) */
-  --bg-page: #0b101b;
-  --card-bg: #111a2e;
-  --card-border: #1e2c48;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --sidebar-bg: #0d1527;
-  --table-head-bg: #15223a;
-  --table-hover: #192641;
+  /* Exact Dark Charcoal Palette from User's Picture (#181818 & #1f1f1f) */
+  --bg-page: #181818;
+  --card-bg: #222225;
+  --card-border: #333338;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --sidebar-bg: #1c1c1f;
+  --table-head-bg: #26262b;
+  --table-hover: #2b2b30;
 }
 
 body {
@@ -149,17 +149,17 @@ html.dark input[type="text"],
 html.dark input[type="password"],
 html.dark input[type="email"],
 html.dark select {
-  background-color: #0b101b;
-  border-color: #1e2c48;
-  color: #f8fafc;
+  background-color: #1c1c1f !important;
+  border-color: #38383e !important;
+  color: #f3f4f6 !important;
 }
 
 html.dark input[type="text"]:focus,
 html.dark input[type="password"]:focus,
 html.dark input[type="email"]:focus,
 html.dark select:focus {
-  background-color: #111a2e;
-  border-color: #0ea5e9;
+  background-color: #242428 !important;
+  border-color: #0ea5e9 !important;
 }
 
 /* ==========================================================================
