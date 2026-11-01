@@ -72,14 +72,14 @@
   <div class="aesthetic-card overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
-        <thead class="text-slate-400 dark:text-slate-400 uppercase bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-100 dark:border-[#333338] font-mono tracking-wider text-[11px]">
+        <thead class="bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-200 dark:border-[#333338] text-[11px]">
           <tr>
-            <th class="py-4 px-6">{{ t.employees }}</th>
-            <th class="py-4 px-6">Employee ID</th>
-            <th class="py-4 px-6">{{ t.departments }}</th>
-            <th class="py-4 px-6">Position</th>
-            <th class="py-4 px-6">Biometric Status</th>
-            <th class="py-4 px-6">Employment</th>
+            <th class="py-4 px-6">{{ t.employee_name or t.employees }}</th>
+            <th class="py-4 px-6">{{ t.employee_id }}</th>
+            <th class="py-4 px-6">{{ t.department }}</th>
+            <th class="py-4 px-6">{{ t.position }}</th>
+            <th class="py-4 px-6">{{ t.biometric_status }}</th>
+            <th class="py-4 px-6">{{ t.employment_status }}</th>
             <th class="py-4 px-6 text-right">{{ t.actions }}</th>
           </tr>
         </thead>
@@ -92,9 +92,10 @@
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-[#26262b] overflow-hidden border border-slate-200 dark:border-[#333338] flex items-center justify-center shrink-0">
                   {% if emp.photo_path %}
-                    <img src="{{ emp.photo_path }}" alt="{{ emp.full_name }}" class="w-full h-full object-cover">
+                    <img src="{{ emp.photo_path }}" alt="{{ emp.full_name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <span class="text-xs font-bold text-[#0ea5e9] hidden">{{ (emp.first_name[0] if emp.first_name else '') + (emp.last_name[0] if emp.last_name else '') }}</span>
                   {% else %}
-                    <span class="text-xs font-bold text-[#0ea5e9]">{{ emp.first_name[0] }}{{ emp.last_name[0] }}</span>
+                    <span class="text-xs font-bold text-[#0ea5e9]">{{ (emp.first_name[0] if emp.first_name else '') + (emp.last_name[0] if emp.last_name else '') }}</span>
                   {% endif %}
                 </div>
                 <div>
@@ -208,18 +209,18 @@
       </div>
       <div>
         <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.add_employee }}</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Initialize identity profile and assign organizational department</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ t.add_employee_subtitle }}</p>
       </div>
     </div>
 
     <form method="POST" action="/api/employees" enctype="multipart/form-data" class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Employee Code *</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.employee_code }} *</label>
           <input type="text" name="employee_code" required placeholder="EMP-1011" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9] font-mono font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.departments }}</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.department }}</label>
           <select name="department_id" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:border-[#0ea5e9]">
             <option value="">{{ t.all_departments }}</option>
             {% for dept in departments %}
@@ -231,29 +232,29 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">First Name *</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.first_name }} *</label>
           <input type="text" name="first_name" required placeholder="Sarah" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Last Name *</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.last_name }} *</label>
           <input type="text" name="last_name" required placeholder="Connor" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.email }}</label>
           <input type="email" name="email" placeholder="sarah.connor@facetrack.ai" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Position</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.position }}</label>
           <input type="text" name="position" placeholder="Systems Engineer" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
       </div>
 
       <!-- Avatar / Photo Upload with Live Preview -->
       <div>
-        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Profile Photo / Biometric Image (Optional)</label>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.profile_photo }}</label>
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
             <img id="add-avatar-preview" src="" alt="Preview" class="w-full h-full object-cover hidden">
@@ -302,11 +303,11 @@
     <form id="edit-form" method="POST" action="" enctype="multipart/form-data" class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Employee Code *</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.employee_code }} *</label>
           <input type="text" id="edit-code" name="employee_code" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9] font-mono font-bold">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.departments }}</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.department }}</label>
           <select id="edit-dept" name="department_id" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:border-[#0ea5e9]">
             <option value="">{{ t.all_departments }}</option>
             {% for dept in departments %}
@@ -318,33 +319,33 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">First Name *</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.first_name }} *</label>
           <input type="text" id="edit-fname" name="first_name" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Last Name *</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.last_name }} *</label>
           <input type="text" id="edit-lname" name="last_name" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.email }}</label>
           <input type="email" id="edit-email" name="email" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Position</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.position }}</label>
           <input type="text" id="edit-position" name="position" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.phone }}</label>
           <input type="text" id="edit-phone" name="phone" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.status }}</label>
           <select id="edit-status" name="status" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:border-[#0ea5e9]">
             <option value="ACTIVE">{{ t.active }}</option>
             <option value="INACTIVE">{{ t.inactive }}</option>
@@ -354,7 +355,7 @@
 
       <!-- Avatar / Photo Upload with Live Preview -->
       <div>
-        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Update Profile Photo / Biometric Image (Optional)</label>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.profile_photo }}</label>
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
             <img id="edit-avatar-preview" src="" alt="Preview" class="w-full h-full object-cover hidden">

@@ -1,6 +1,6 @@
-/* FaceTrack AI — Modern Minimalist Aesthetics (Light & Dark Mode + Khmer Typography) */
+/* FaceTrack AI — Modern Minimalist Aesthetics (Light & Dark Mode + Premium Khmer Typography) */
 
-@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:ital,wght@0,300..700;1,300..700&family=Noto+Sans+Khmer:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --primary: #0ea5e9;
@@ -38,18 +38,51 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Khmer Font Adjustment */
+/* High-Definition Khmer Typography System */
+html[lang="kh"],
 html[lang="kh"] body,
 html[lang="kh"] h1,
 html[lang="kh"] h2,
 html[lang="kh"] h3,
 html[lang="kh"] h4,
+html[lang="kh"] h5,
+html[lang="kh"] h6,
 html[lang="kh"] span,
 html[lang="kh"] p,
+html[lang="kh"] a,
+html[lang="kh"] label,
+html[lang="kh"] input,
+html[lang="kh"] select,
+html[lang="kh"] textarea,
 html[lang="kh"] button,
-html[lang="kh"] table {
-  font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif !important;
+html[lang="kh"] table,
+html[lang="kh"] th,
+html[lang="kh"] td {
+  font-family: 'Kantumruy Pro', 'Battambang', 'Noto Sans Khmer', system-ui, sans-serif !important;
   line-height: 1.6;
+}
+
+/* Fix Khmer Table Headers & Badges: Disable forced uppercase and letter spacing that break Khmer ligatures */
+html[lang="kh"] th,
+html[lang="kh"] thead,
+html[lang="kh"] .uppercase,
+html[lang="kh"] .tracking-wider,
+html[lang="kh"] .tracking-widest {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* Ensure Khmer Table Headers are high-contrast, bold and crisp */
+thead th {
+  color: #475569 !important; /* crisp slate-600 in light mode */
+  font-weight: 700;
+}
+html.dark thead th {
+  color: #94a3b8 !important; /* crisp slate-400 in dark mode */
+}
+html[lang="kh"] thead th {
+  font-size: 0.8125rem !important; /* 13px comfortable reading size for Khmer script */
+  font-weight: 700 !important;
 }
 
 .font-mono {
