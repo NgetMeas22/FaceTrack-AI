@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Live Scanner Mode — FaceTrack AI{% endblock %}
-{% block breadcrumb %}Live Scanner Mode{% endblock %}
+{% block title %}{{ t.scanner_mode }} — {{ t.brand_name }}{% endblock %}
+{% block breadcrumb %}{{ t.scanner_mode }}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6">
@@ -9,28 +9,28 @@
   <!-- Header Bar -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Dedicated Optical Scanner Terminal</h2>
-      <p class="text-xs text-slate-500 font-medium mt-0.5">High-accuracy facial recognition ingress terminal with 3D anti-spoofing.</p>
+      <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.scanner_mode }}</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">High-accuracy facial recognition ingress terminal with 3D anti-spoofing.</p>
     </div>
 
     <!-- Controls -->
     <div class="flex flex-wrap items-center gap-3">
       
       <!-- Direction Mode Toggle -->
-      <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold">
+      <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700">
         <button 
           id="btn-mode-checkin"
           onclick="setDirection('CHECK_IN')" 
-          class="px-3.5 py-1.5 rounded-lg transition-all bg-white text-emerald-700 shadow-sm border border-emerald-200"
+          class="px-3.5 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm border border-emerald-200 dark:border-emerald-800"
         >
-          Check In
+          {{ t.check_in }}
         </button>
         <button 
           id="btn-mode-checkout"
           onclick="setDirection('CHECK_OUT')" 
-          class="px-3.5 py-1.5 rounded-lg transition-all text-slate-500 hover:text-slate-800"
+          class="px-3.5 py-1.5 rounded-lg transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
         >
-          Check Out
+          {{ t.check_out }}
         </button>
       </div>
 
@@ -43,13 +43,13 @@
       <!-- Camera Selector -->
       <select 
         id="camera-select" 
-        class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#0284c7] shadow-sm max-w-[180px]"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:border-[#0ea5e9] shadow-sm max-w-[180px]"
       >
         <option value="">Default Optical Lens</option>
       </select>
 
       <!-- Scanner Status Pill -->
-      <div id="scanner-status" class="px-3 py-1.5 rounded-full text-xs font-mono border flex items-center gap-1.5 bg-sky-50 text-[#0284c7] border-sky-200">
+      <div id="scanner-status" class="px-3 py-1.5 rounded-full text-xs font-mono border flex items-center gap-1.5 bg-sky-50 dark:bg-sky-950/50 text-[#0ea5e9] border-sky-200 dark:border-sky-800">
         Initializing optical array...
       </div>
 
@@ -60,7 +60,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     <!-- Camera Feed (2 cols) -->
-    <div class="lg:col-span-2 aesthetic-card p-4 border border-slate-200">
+    <div class="lg:col-span-2 aesthetic-card p-4 border border-slate-200 dark:border-slate-800">
       <div class="hud-viewport aspect-[4/3] flex items-center justify-center relative">
         
         <!-- Video Stream -->
@@ -100,15 +100,15 @@
       <!-- Verified Match HUD Card -->
       <div 
         id="match-result-card" 
-        class="aesthetic-card p-6 border-2 border-emerald-400/80 shadow-xl opacity-0 translate-y-4 pointer-events-none transition-all duration-500 bg-gradient-to-b from-emerald-50/40 to-white"
+        class="aesthetic-card p-6 border-2 border-emerald-400/80 shadow-xl opacity-0 translate-y-4 pointer-events-none transition-all duration-500 bg-gradient-to-b from-emerald-50/40 to-white dark:from-emerald-950/40 dark:to-slate-900"
       >
         <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5 font-mono">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 font-mono">
             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
-            Identity Verified
+            {{ t.identity_verified }}
           </span>
-          <span id="match-direction" class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-            Check In
+          <span id="match-direction" class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700">
+            {{ t.check_in }}
           </span>
         </div>
 
@@ -120,39 +120,39 @@
             class="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-400 shadow"
           >
           <div>
-            <h4 id="match-name" class="font-bold text-lg text-slate-900 leading-tight">Employee Name</h4>
-            <p id="match-dept" class="text-xs text-slate-500 font-medium">Department • Position</p>
-            <p id="match-time" class="text-xs font-mono text-[#0284c7] font-bold mt-1">--:--:--</p>
+            <h4 id="match-name" class="font-bold text-lg text-slate-900 dark:text-white leading-tight">Employee Name</h4>
+            <p id="match-dept" class="text-xs text-slate-500 dark:text-slate-400 font-medium">Department • Position</p>
+            <p id="match-time" class="text-xs font-mono text-[#0ea5e9] font-bold mt-1">--:--:--</p>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-500 font-medium">Biometric Confidence:</span>
-          <span id="match-confidence" class="font-bold font-mono text-emerald-600">98.4% Match</span>
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+          <span class="text-slate-500 dark:text-slate-400 font-medium">{{ t.biometric_confidence }}:</span>
+          <span id="match-confidence" class="font-bold font-mono text-emerald-600 dark:text-emerald-400">98.4% Match</span>
         </div>
       </div>
 
       <!-- Quick Guidance Card -->
-      <div class="aesthetic-card p-6 border border-slate-200">
-        <h4 class="font-bold text-sm text-slate-900 mb-2 flex items-center gap-2">
-          <i data-lucide="info" class="w-4 h-4 text-[#0284c7]"></i>
+      <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
+        <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-[#0ea5e9]"></i>
           <span>Ingress Terminal Protocols</span>
         </h4>
-        <ul class="text-xs text-slate-600 space-y-2.5 font-medium">
+        <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 font-medium">
           <li class="flex items-start gap-2">
-            <span class="text-[#0284c7] font-bold">•</span>
+            <span class="text-[#0ea5e9] font-bold">•</span>
             <span>Stand squarely within the frame 0.5m – 1.2m from camera lens.</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-[#0284c7] font-bold">•</span>
+            <span class="text-[#0ea5e9] font-bold">•</span>
             <span>Identity verification and timestamping trigger automatically.</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-[#0284c7] font-bold">•</span>
+            <span class="text-[#0ea5e9] font-bold">•</span>
             <span>Audio confirmation tone rings upon successful biometric authentication.</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-[#0284c7] font-bold">•</span>
+            <span class="text-[#0ea5e9] font-bold">•</span>
             <span>Anti-duplicate debounce protects against double clock-ins.</span>
           </li>
         </ul>
@@ -179,11 +179,11 @@
     }
 
     if (dir === 'CHECK_IN') {
-      btnIn.className = 'px-3.5 py-1.5 rounded-lg transition-all bg-white text-emerald-700 shadow-sm border border-emerald-200';
-      btnOut.className = 'px-3.5 py-1.5 rounded-lg transition-all text-slate-500 hover:text-slate-800';
+      btnIn.className = 'px-3.5 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm border border-emerald-200 dark:border-emerald-800';
+      btnOut.className = 'px-3.5 py-1.5 rounded-lg transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200';
     } else {
-      btnOut.className = 'px-3.5 py-1.5 rounded-lg transition-all bg-white text-[#0284c7] shadow-sm border border-sky-200';
-      btnIn.className = 'px-3.5 py-1.5 rounded-lg transition-all text-slate-500 hover:text-slate-800';
+      btnOut.className = 'px-3.5 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-900 text-[#0ea5e9] shadow-sm border border-sky-200 dark:border-sky-800';
+      btnIn.className = 'px-3.5 py-1.5 rounded-lg transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200';
     }
   }
 </script>

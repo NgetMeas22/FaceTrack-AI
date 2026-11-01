@@ -360,6 +360,7 @@ def attendance_view(
 
 
 @app.get("/{lang}/audit-logs", response_class=HTMLResponse)
+@app.get("/{lang}/audit_logs", response_class=HTMLResponse)
 def audit_logs_view(
     lang: str,
     request: Request,

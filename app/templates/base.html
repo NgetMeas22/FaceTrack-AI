@@ -173,8 +173,8 @@
 
         <!-- Language Switcher Pill -->
         <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-          <a href="/en/{{ current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'en' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">EN</a>
-          <a href="/kh/{{ current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'kh' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">KM</a>
+          <a href="/en/{{ 'audit-logs' if current_page == 'audit_logs' else current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'en' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">EN</a>
+          <a href="/kh/{{ 'audit-logs' if current_page == 'audit_logs' else current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'kh' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">KM</a>
         </div>
 
         <!-- Theme Toggle Button (Sun/Moon) -->

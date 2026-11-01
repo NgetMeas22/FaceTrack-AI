@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard — Biometric Workforce Intelligence{% endblock %}
-{% block breadcrumb %}Overview{% endblock %}
+{% block title %}{{ t.dashboard }} — {{ t.dashboard_title }}{% endblock %}
+{% block breadcrumb %}{{ t.dashboard }} / Overview{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
@@ -9,23 +9,23 @@
   <!-- Header Title & Action Bar -->
   <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2">
     <div>
-      <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Biometric Workforce Intelligence</h2>
-      <p class="text-xs text-slate-500 font-medium mt-1">Real-time facial telemetry, verification logs, and active ingress orchestration.</p>
+      <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.dashboard_title }}</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{{ t.dashboard_subtitle }}</p>
     </div>
 
     <div class="flex items-center gap-3">
       <!-- Date & Timezone Chip -->
-      <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
+      <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-sm">
         <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
         <span id="current-date-display">Thursday, Oct 24, 2024</span>
-        <span class="text-slate-300">|</span>
-        <span class="text-[11px] font-mono text-[#0284c7]">UTC+07:00</span>
+        <span class="text-slate-300 dark:text-slate-700">|</span>
+        <span class="text-[11px] font-mono text-[#0ea5e9]">UTC+07:00</span>
       </div>
 
       <!-- Export Shift Log Button -->
-      <a href="/api/attendance/export" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold shadow-md shadow-sky-900/10 transition-all">
+      <a href="/api/attendance/export" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md shadow-sky-900/10 transition-all">
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
-        <span>Export Shift Log</span>
+        <span>{{ t.export_shift_log }}</span>
       </a>
     </div>
   </div>
@@ -36,85 +36,85 @@
     <!-- TOTAL PERSONNEL -->
     <div class="aesthetic-card stat-card-blue p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">TOTAL PERSONNEL</span>
-        <div class="w-9 h-9 rounded-xl bg-sky-100 text-[#0284c7] flex items-center justify-center">
+        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">{{ t.total_personnel }}</span>
+        <div class="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-[#0ea5e9] flex items-center justify-center">
           <i data-lucide="id-card" class="w-4 h-4"></i>
         </div>
       </div>
       <div class="flex items-baseline gap-2.5">
-        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.total_employees }}</span>
-        <span class="px-2 py-0.5 rounded-md bg-sky-100 text-[#0284c7] text-[10px] font-bold">+5 this week</span>
+        <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ stats.total_employees }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950/60 text-[#0ea5e9] text-[10px] font-bold">{{ t.this_week }}</span>
       </div>
-      <p class="text-[11px] text-slate-500 mt-2 font-medium">Active biometric credentials synced</p>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">{{ t.active_credentials }}</p>
     </div>
 
     <!-- PRESENT TODAY -->
     <div class="aesthetic-card stat-card-cyan p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">PRESENT TODAY</span>
-        <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
+        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">{{ t.present_today }}</span>
+        <div class="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 flex items-center justify-center">
           <i data-lucide="user-check" class="w-4 h-4"></i>
         </div>
       </div>
       <div class="flex items-baseline gap-2.5">
-        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.present_today }}</span>
-        <span class="px-2 py-0.5 rounded-md bg-teal-100 text-teal-800 text-[10px] font-bold">{{ stats.attendance_rate }}% Rate</span>
+        <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ stats.present_today }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 text-[10px] font-bold">{{ stats.attendance_rate }}% {{ t.rate }}</span>
       </div>
-      <p class="text-[11px] text-slate-500 mt-2 font-medium">Verified by optical array terminals</p>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">{{ t.verified_terminals }}</p>
     </div>
 
     <!-- EXCEPTIONS -->
     <div class="aesthetic-card stat-card-amber p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">EXCEPTIONS</span>
-        <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">{{ t.exceptions }}</span>
+        <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center">
           <i data-lucide="bell-ring" class="w-4 h-4"></i>
         </div>
       </div>
       <div class="flex items-baseline gap-2.5">
-        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.late_today }}</span>
-        <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold">{{ stats.late_today }} Late • {{ stats.pending_faces }} Pending</span>
+        <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ stats.late_today }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-bold">{{ stats.late_today }} {{ t.late }}</span>
       </div>
-      <p class="text-[11px] text-slate-500 mt-2 font-medium">{{ stats.late_today }} notifications pending clearance</p>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">{{ stats.late_today }} {{ t.pending_clearance }}</p>
     </div>
 
     <!-- TELEMETRY INGEST -->
     <div class="aesthetic-card stat-card-indigo p-6 relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">TELEMETRY INGEST</span>
-        <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">{{ t.telemetry_ingest }}</span>
+        <div class="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 flex items-center justify-center">
           <i data-lucide="scan-line" class="w-4 h-4"></i>
         </div>
       </div>
       <div class="flex items-baseline gap-2.5">
-        <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ recent_scans | length * 35 + 420 }}</span>
-        <span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">100% Match</span>
+        <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ recent_scans | length * 35 + 420 }}</span>
+        <span class="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 text-[10px] font-bold">100% Match</span>
       </div>
-      <p class="text-[11px] text-slate-500 mt-2 font-medium">0 spoof attempts • zero unverified</p>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">{{ t.spoof_attempts }}</p>
     </div>
 
   </div>
 
   <!-- Live Attendance Face Scanner Card (Exact Match to Picture) -->
-  <div class="aesthetic-card p-6 border border-slate-200">
+  <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
     
     <!-- Scanner Card Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
       <div>
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
-          <h3 class="text-base font-bold text-slate-900">Live Attendance Face Scanner</h3>
-          <span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-cyan-50 text-cyan-700 border border-cyan-200">Camera Ready</span>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ t.live_face_scanner }}</h3>
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">{{ t.camera_ready }}</span>
         </div>
-        <p class="text-xs text-slate-500 mt-0.5 font-medium">Primary Stream: Front Entrance Terminal #04 (1080p 60FPS • RealSense RGB-D Optical Array)</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{{ t.primary_stream }}</p>
       </div>
 
       <div class="flex items-center gap-2">
-        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors">
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-400"></i>
-          <span>Switch Node (8/12)</span>
+          <span>{{ t.switch_node }}</span>
         </button>
-        <button class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 transition-colors" title="Expand View">
+        <button class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-500 transition-colors" title="Expand View">
           <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
         </button>
       </div>
@@ -208,36 +208,36 @@
       <div class="flex flex-wrap items-center gap-3">
         
         <!-- Start Live Stream -->
-        <button onclick="startLiveCameraStream()" class="px-5 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+        <button onclick="startLiveCameraStream()" class="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
           <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
-          <span>Start Live Stream</span>
+          <span>{{ t.start_live_stream }}</span>
         </button>
 
         <!-- Upload Batch Photo -->
-        <a href="/employees" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors">
+        <a href="/{{ lang }}/employees" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 transition-colors">
           <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
-          <span>Upload Batch Photo</span>
+          <span>{{ t.upload_batch }}</span>
         </a>
 
         <!-- Camera Setup -->
-        <a href="/settings" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors">
+        <a href="/{{ lang }}/settings" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 transition-colors">
           <i data-lucide="camera" class="w-3.5 h-3.5 text-slate-500"></i>
-          <span>Camera Setup</span>
+          <span>{{ t.camera_setup }}</span>
         </a>
 
       </div>
 
       <!-- Feature Toggles -->
-      <div class="flex items-center gap-6 text-xs text-slate-600 font-medium">
+      <div class="flex items-center gap-6 text-xs text-slate-600 dark:text-slate-400 font-medium">
         
         <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input type="checkbox" checked class="w-4 h-4 rounded text-[#0284c7] focus:ring-sky-400 border-slate-300">
-          <span>Auto Check-in/Close: <strong class="text-slate-900">ON</strong></span>
+          <input type="checkbox" checked class="w-4 h-4 rounded text-[#0ea5e9] focus:ring-sky-400 border-slate-300 dark:border-slate-700 dark:bg-slate-800">
+          <span>{{ t.auto_checkin }}: <strong class="text-slate-900 dark:text-white">ON</strong></span>
         </label>
 
-        <div class="flex items-center gap-1.5 text-slate-500">
-          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
-          <span>Anti-Spoofing: <strong class="text-slate-900">Active (3D Liveness)</strong></span>
+        <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+          <span>{{ t.anti_spoofing }}</span>
         </div>
 
       </div>
@@ -250,29 +250,29 @@
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
     
     <!-- 7-Day Attendance Trend (3 cols) -->
-    <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 flex flex-col justify-between">
+    <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
       
       <div>
         <div class="flex items-center justify-between mb-2">
           <div>
-            <h3 class="font-bold text-base text-slate-900">7-Day Attendance Trend</h3>
-            <p class="text-xs text-slate-500 font-medium">Shift ingress validation comparison across work days</p>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.trend_title }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ t.trend_subtitle }}</p>
           </div>
-          <div class="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold text-slate-600">
-            <button class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-sm">This Week</button>
-            <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 transition-colors">Last Week</button>
+          <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300">
+            <button class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">{{ t.this_week_btn }}</button>
+            <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white transition-colors">{{ t.last_week_btn }}</button>
           </div>
         </div>
 
         <!-- Metrics Row -->
-        <div class="grid grid-cols-2 gap-4 my-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+        <div class="grid grid-cols-2 gap-4 my-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 font-mono">Arrival Accuracy</span>
-            <p class="text-xl font-extrabold text-slate-900 mt-0.5">94.2%</p>
+            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.arrival_accuracy }}</span>
+            <p class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">94.2%</p>
           </div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 font-mono">Peak Ingress Slot</span>
-            <p class="text-xl font-extrabold text-[#0284c7] mt-0.5 font-mono">08:45 - 09:10 AM</p>
+            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.peak_ingress }}</span>
+            <p class="text-xl font-extrabold text-[#0ea5e9] mt-0.5 font-mono">08:45 - 09:10 AM</p>
           </div>
         </div>
 
@@ -283,13 +283,13 @@
       </div>
 
       <!-- Footer Punctuality Note -->
-      <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-        <div class="flex items-center gap-1.5 text-slate-600">
-          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
-          <span>Punctuality is <strong class="text-emerald-700 font-bold">+2.4%</strong> compared to previous week's baseline.</span>
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+          <span>{{ t.punctuality_note }}</span>
         </div>
-        <a href="/reports" class="text-xs text-[#0284c7] font-bold hover:underline flex items-center gap-1">
-          <span>Detailed Analytics</span>
+        <a href="/{{ lang }}/reports" class="text-xs text-[#0ea5e9] font-bold hover:underline flex items-center gap-1">
+          <span>{{ t.detailed_analytics }}</span>
           <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
         </a>
       </div>
@@ -297,107 +297,107 @@
     </div>
 
     <!-- Real-Time Biometric Feed (2 cols) -->
-    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 flex flex-col justify-between">
+    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
       
       <div>
         <div class="flex items-center justify-between mb-1">
           <div class="flex items-center gap-2">
-            <h3 class="font-bold text-base text-slate-900">Real-Time Biometric Feed</h3>
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-50 text-[#0284c7] border border-sky-200">Live Hook</span>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.realtime_feed }}</h3>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-50 dark:bg-sky-950/60 text-[#0ea5e9] border border-sky-200 dark:border-sky-800">{{ t.live_hook }}</span>
           </div>
         </div>
-        <p class="text-xs text-slate-500 font-medium mb-5">Instant audit logs captured by all on-premises recognition lenses</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-5">{{ t.feed_subtitle }}</p>
 
         <!-- Personnel Feed List -->
         <div class="space-y-3.5">
           
           <!-- David Vance -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
             <div class="flex items-center gap-3">
               <div class="relative">
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
               </div>
               <div>
-                <h4 class="text-xs font-bold text-slate-900">David Vance</h4>
-                <p class="text-[10px] text-slate-500">Engineering • Terminal 02</p>
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">David Vance</h4>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Engineering • Terminal 02</p>
               </div>
             </div>
             <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:55:12 AM <span class="text-emerald-600 font-semibold">98.8% Conf.</span></p>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:55:12 AM <span class="text-emerald-500 font-semibold">98.8% Conf.</span></p>
             </div>
           </div>
 
           <!-- Elena Rostova -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
             <div class="flex items-center gap-3">
               <div class="relative">
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
               </div>
               <div>
-                <h4 class="text-xs font-bold text-slate-900">Elena Rostova</h4>
-                <p class="text-[10px] text-slate-500">Design • Terminal 04</p>
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Elena Rostova</h4>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Design • Terminal 04</p>
               </div>
             </div>
             <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:52:04 AM <span class="text-emerald-600 font-semibold">99.1% Conf.</span></p>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:52:04 AM <span class="text-emerald-500 font-semibold">99.1% Conf.</span></p>
             </div>
           </div>
 
           <!-- Marcus Sterling -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
             <div class="flex items-center gap-3">
               <div class="relative">
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-amber-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
               </div>
               <div>
-                <h4 class="text-xs font-bold text-slate-900">Marcus Sterling</h4>
-                <p class="text-[10px] text-slate-500">Finance • Gate 01</p>
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Marcus Sterling</h4>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Finance • Gate 01</p>
               </div>
             </div>
             <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200">Late (+16m)</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">09:16:22 AM <span class="text-slate-600 font-semibold">96.9% Conf.</span></p>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">{{ t.late }} (+16m)</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">09:16:22 AM <span class="text-slate-400 font-semibold">96.9% Conf.</span></p>
             </div>
           </div>
 
           <!-- Chloe Zhang -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
             <div class="flex items-center gap-3">
               <div class="relative">
                 <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
               </div>
               <div>
-                <h4 class="text-xs font-bold text-slate-900">Chloe Zhang</h4>
-                <p class="text-[10px] text-slate-500">People Ops • Terminal 04</p>
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Chloe Zhang</h4>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">People Ops • Terminal 04</p>
               </div>
             </div>
             <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:48:59 AM <span class="text-emerald-600 font-semibold">98.5% Conf.</span></p>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:48:59 AM <span class="text-emerald-500 font-semibold">98.5% Conf.</span></p>
             </div>
           </div>
 
           <!-- Kenji Sato -->
-          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
             <div class="flex items-center gap-3">
               <div class="relative">
                 <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces" class="w-9 h-9 rounded-xl object-cover">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-900"></span>
               </div>
               <div>
-                <h4 class="text-xs font-bold text-slate-900">Kenji Sato</h4>
-                <p class="text-[10px] text-slate-500">Infrastructure • Terminal 03</p>
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Kenji Sato</h4>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Infrastructure • Terminal 03</p>
               </div>
             </div>
             <div class="text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Present</span>
-              <p class="text-[10px] font-mono text-slate-400 mt-1">08:42:10 AM <span class="text-emerald-600 font-semibold">99.3% Conf.</span></p>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">{{ t.present }}</span>
+              <p class="text-[10px] font-mono text-slate-400 mt-1">08:42:10 AM <span class="text-emerald-500 font-semibold">99.3% Conf.</span></p>
             </div>
           </div>
 
@@ -405,10 +405,10 @@
       </div>
 
       <!-- Footer Link -->
-      <div class="mt-4 pt-4 border-t border-slate-100 text-center">
-        <a href="/attendance" class="text-xs font-bold text-[#0284c7] hover:underline flex items-center justify-center gap-1.5">
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+        <a href="/{{ lang }}/attendance" class="text-xs font-bold text-[#0ea5e9] hover:underline flex items-center justify-center gap-1.5">
           <i data-lucide="history" class="w-3.5 h-3.5"></i>
-          <span>View Full Event Stream (420 events) &rarr;</span>
+          <span>{{ t.view_full_stream }} (420 events) &rarr;</span>
         </a>
       </div>
 
@@ -450,6 +450,8 @@
     const ctx = document.getElementById('sevenDayTrendChart');
     if (!ctx) return;
 
+    const isDark = document.documentElement.classList.contains('dark');
+
     new Chart(ctx, {
       type: 'bar',
       data: {
@@ -459,8 +461,7 @@
             label: 'On-Time',
             data: [128, 134, 130, 132, 126, 45, 12],
             backgroundColor: (context) => {
-              // Highlight today in rich deep blue
-              return context.dataIndex === 3 ? '#0284c7' : '#bae6fd';
+              return context.dataIndex === 3 ? '#0ea5e9' : (isDark ? '#1e293b' : '#bae6fd');
             },
             borderRadius: 6,
             barThickness: 28,
@@ -473,19 +474,19 @@
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
           },
           y: {
             beginAtZero: true,
             max: 160,
-            grid: { color: '#f1f5f9' },
-            ticks: { color: '#94a3b8', stepSize: 40, font: { family: 'JetBrains Mono', size: 10 } }
+            grid: { color: isDark ? '#1e293b' : '#f1f5f9' },
+            ticks: { color: isDark ? '#64748b' : '#94a3b8', stepSize: 40, font: { family: 'JetBrains Mono', size: 10 } }
           }
         },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#0f172a',
+            backgroundColor: '#090d16',
             titleFont: { family: 'Plus Jakarta Sans', size: 12 },
             bodyFont: { family: 'JetBrains Mono', size: 11 },
             padding: 10,
