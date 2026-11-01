@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Reports & Analytics — FaceTrack AI{% endblock %}
-{% block breadcrumb %}Workforce Telemetry & Reports{% endblock %}
+{% block title %}{{ t.reports_analytics }} — {{ t.brand_name }}{% endblock %}
+{% block breadcrumb %}{{ t.reports_analytics }}{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
@@ -9,14 +9,14 @@
   <!-- Header Banner -->
   <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Workforce Biometric Analytics & Reports</h2>
-      <p class="text-xs text-slate-500 font-medium mt-1">Ingress punctuality indices, divisional attendance compliance, and historical anomaly reports.</p>
+      <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.reports_analytics }}</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Ingress punctuality indices, divisional attendance compliance, and historical anomaly reports.</p>
     </div>
 
     <div class="flex items-center gap-3">
-      <a href="/api/attendance/export" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold shadow-md shadow-sky-900/10 transition-all shrink-0">
+      <a href="/api/attendance/export" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md shadow-sky-900/10 transition-all shrink-0">
         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-        <span>Download Audit Dossier</span>
+        <span>{{ t.export_csv }}</span>
       </a>
     </div>
   </div>
@@ -24,35 +24,35 @@
   <!-- 3 Performance Scorecards -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
     
-    <div class="aesthetic-card p-6 border border-slate-200">
-      <span class="text-[10px] font-bold uppercase font-mono text-slate-400">Monthly Punctuality Index</span>
+    <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
+      <span class="text-[10px] font-bold uppercase font-mono text-slate-400 dark:text-slate-500">Monthly Punctuality Index</span>
       <div class="flex items-baseline gap-2 mt-2">
-        <span class="text-3xl font-extrabold text-slate-900">96.4%</span>
-        <span class="text-xs text-emerald-600 font-bold">+1.8% vs last month</span>
+        <span class="text-3xl font-extrabold text-slate-900 dark:text-white">96.4%</span>
+        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">+1.8% vs last month</span>
       </div>
-      <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
-        <div class="bg-[#0284c7] h-full rounded-full" style="width: 96.4%"></div>
+      <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
+        <div class="bg-[#0ea5e9] h-full rounded-full" style="width: 96.4%"></div>
       </div>
     </div>
 
-    <div class="aesthetic-card p-6 border border-slate-200">
-      <span class="text-[10px] font-bold uppercase font-mono text-slate-400">Mean Biometric Liveness Score</span>
+    <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
+      <span class="text-[10px] font-bold uppercase font-mono text-slate-400 dark:text-slate-500">Mean Biometric Liveness Score</span>
       <div class="flex items-baseline gap-2 mt-2">
-        <span class="text-3xl font-extrabold text-emerald-600 font-mono">0.992</span>
-        <span class="text-xs text-slate-500 font-medium">3D RGB-D Sensor Array</span>
+        <span class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">0.992</span>
+        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">3D RGB-D Sensor Array</span>
       </div>
-      <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+      <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
         <div class="bg-emerald-500 h-full rounded-full" style="width: 99.2%"></div>
       </div>
     </div>
 
-    <div class="aesthetic-card p-6 border border-slate-200">
-      <span class="text-[10px] font-bold uppercase font-mono text-slate-400">Ingress Anomaly Clearances</span>
+    <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
+      <span class="text-[10px] font-bold uppercase font-mono text-slate-400 dark:text-slate-500">Ingress Anomaly Clearances</span>
       <div class="flex items-baseline gap-2 mt-2">
-        <span class="text-3xl font-extrabold text-slate-900">0</span>
-        <span class="text-xs text-emerald-600 font-bold">100% Cleared</span>
+        <span class="text-3xl font-extrabold text-slate-900 dark:text-white">0</span>
+        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">100% Cleared</span>
       </div>
-      <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+      <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
         <div class="bg-indigo-500 h-full rounded-full" style="width: 100%"></div>
       </div>
     </div>
@@ -60,19 +60,19 @@
   </div>
 
   <!-- Divisional Compliance Comparison Table Card -->
-  <div class="aesthetic-card p-6 border border-slate-200">
+  <div class="aesthetic-card p-6 border border-slate-200 dark:border-slate-800">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h3 class="font-bold text-base text-slate-900">Divisional Attendance & Punctuality Breakdown</h3>
-        <p class="text-xs text-slate-500 font-medium">Compliance aggregated across active organizational departments</p>
+        <h3 class="font-bold text-base text-slate-900 dark:text-white">Divisional Attendance & Punctuality Breakdown</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Compliance aggregated across active organizational departments</p>
       </div>
     </div>
 
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
-        <thead class="text-slate-400 uppercase bg-slate-50/80 border-b border-slate-100 font-mono tracking-wider text-[11px]">
+        <thead class="text-slate-400 dark:text-slate-500 uppercase bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 font-mono tracking-wider text-[11px]">
           <tr>
-            <th class="py-3 px-4">Department</th>
+            <th class="py-3 px-4">{{ t.departments }}</th>
             <th class="py-3 px-4">Head of Unit</th>
             <th class="py-3 px-4">Staff Count</th>
             <th class="py-3 px-4">On-Time Rate</th>
@@ -80,26 +80,26 @@
             <th class="py-3 px-4">Compliance Rating</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 font-medium">
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
           {% for d in dept_stats %}
-          <tr class="hover:bg-slate-50/60 transition-colors">
-            <td class="py-3.5 px-4 font-bold text-slate-900">
+          <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
               {{ d.name }} ({{ d.code }})
             </td>
-            <td class="py-3.5 px-4 text-slate-700">
+            <td class="py-3.5 px-4 text-slate-700 dark:text-slate-300">
               {{ d.head_name or 'Leadership Team' }}
             </td>
-            <td class="py-3.5 px-4 font-mono">
+            <td class="py-3.5 px-4 font-mono text-slate-900 dark:text-white">
               {{ d.count }} employees
             </td>
-            <td class="py-3.5 px-4 font-mono font-bold text-[#0284c7]">
+            <td class="py-3.5 px-4 font-mono font-bold text-[#0ea5e9]">
               {{ 95 + (loop.index % 4) }}%
             </td>
-            <td class="py-3.5 px-4 font-mono text-slate-500">
+            <td class="py-3.5 px-4 font-mono text-slate-500 dark:text-slate-400">
               {{ loop.index % 3 }} late
             </td>
             <td class="py-3.5 px-4">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                 Tier A (Optimal)
               </span>
             </td>
@@ -112,4 +112,3 @@
 
 </div>
 {% endblock %}
-

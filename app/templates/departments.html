@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Departments — FaceTrack AI{% endblock %}
-{% block breadcrumb %}Organizational Structure{% endblock %}
+{% block title %}{{ t.departments }} — {{ t.brand_name }}{% endblock %}
+{% block breadcrumb %}{{ t.departments }}{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -9,64 +9,64 @@
   <!-- Header Banner -->
   <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Organizational Departments</h2>
-      <p class="text-xs text-slate-500 font-medium mt-1">Configure business units, assign department leadership, and inspect divisional biometric compliance.</p>
+      <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.departments }}</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Configure business units, assign department leadership, and inspect divisional biometric compliance.</p>
     </div>
 
     <!-- Create Department Button -->
     <button 
       onclick="openModal('add-dept-modal')" 
-      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold shadow-md shadow-sky-500/20 transition-all shrink-0"
+      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md shadow-sky-500/20 transition-all shrink-0"
     >
       <i data-lucide="plus" class="w-4 h-4"></i>
-      <span>New Department</span>
+      <span>{{ t.add_department }}</span>
     </button>
   </div>
 
   <!-- Departments Table Card -->
-  <div class="aesthetic-card overflow-hidden border border-slate-200">
+  <div class="aesthetic-card overflow-hidden border border-slate-200 dark:border-slate-800">
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
-        <thead class="text-slate-400 uppercase bg-slate-50/80 border-b border-slate-100 font-mono tracking-wider text-[11px]">
+        <thead class="text-slate-400 dark:text-slate-500 uppercase bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 font-mono tracking-wider text-[11px]">
           <tr>
             <th class="py-4 px-6">Code</th>
-            <th class="py-4 px-6">Department Name</th>
+            <th class="py-4 px-6">{{ t.departments }}</th>
             <th class="py-4 px-6">Department Head</th>
             <th class="py-4 px-6">Office Location</th>
             <th class="py-4 px-6">Personnel Count</th>
             <th class="py-4 px-6">Biometric Rate</th>
-            <th class="py-4 px-6 text-right">Actions</th>
+            <th class="py-4 px-6 text-right">{{ t.actions }}</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
           {% for d in dept_list %}
-          <tr class="hover:bg-slate-50/60 transition-colors">
+          <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
             
             <!-- Code Badge -->
             <td class="py-4 px-6">
-              <span class="px-2.5 py-1 rounded-lg bg-sky-50 text-[#0284c7] border border-sky-200 text-xs font-mono font-bold">
+              <span class="px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#0ea5e9] border border-sky-200 dark:border-sky-800 text-xs font-mono font-bold">
                 {{ d.code }}
               </span>
             </td>
 
             <!-- Name & Description -->
             <td class="py-4 px-6">
-              <p class="font-bold text-slate-900 text-xs">{{ d.name }}</p>
-              <p class="text-[11px] text-slate-400 font-medium mt-0.5">{{ d.description or 'Corporate unit' }}</p>
+              <p class="font-bold text-slate-900 dark:text-white text-xs">{{ d.name }}</p>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">{{ d.description or 'Corporate unit' }}</p>
             </td>
 
             <!-- Department Head -->
             <td class="py-4 px-6">
               <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-[10px]">
+                <div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center text-[10px]">
                   {{ d.head_name[0] if d.head_name else 'H' }}
                 </div>
-                <span class="text-slate-700 font-semibold">{{ d.head_name or 'Unassigned' }}</span>
+                <span class="text-slate-700 dark:text-slate-300 font-semibold">{{ d.head_name or 'Unassigned' }}</span>
               </div>
             </td>
 
             <!-- Location -->
-            <td class="py-4 px-6 text-slate-600 font-medium">
+            <td class="py-4 px-6 text-slate-600 dark:text-slate-400 font-medium">
               <span class="flex items-center gap-1.5">
                 <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
                 <span>{{ d.location or 'Main Campus' }}</span>
@@ -74,14 +74,14 @@
             </td>
 
             <!-- Personnel Count -->
-            <td class="py-4 px-6 font-mono font-bold text-slate-900">
+            <td class="py-4 px-6 font-mono font-bold text-slate-900 dark:text-white">
               {{ d.emp_count }} staff
             </td>
 
             <!-- Biometric Rate -->
             <td class="py-4 px-6">
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold">
                   {{ d.attendance_rate }}% Active
                 </span>
               </div>
@@ -90,7 +90,7 @@
             <!-- Actions -->
             <td class="py-4 px-6 text-right">
               <div class="flex items-center justify-end gap-2">
-                <a href="/employees?dept_id={{ d.id }}" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors" title="View Members">
+                <a href="/{{ lang }}/employees?dept_id={{ d.id }}" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors" title="View Members">
                   <i data-lucide="users" class="w-3.5 h-3.5"></i>
                 </a>
               </div>
@@ -107,60 +107,59 @@
 
 <!-- Modal: Add Department -->
 <div id="add-dept-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-  <div class="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
-    <button onclick="closeModal('add-dept-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
+  <div class="aesthetic-card border border-slate-200 dark:border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
+    <button onclick="closeModal('add-dept-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
       <i data-lucide="x" class="w-5 h-5"></i>
     </button>
 
     <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-xl bg-sky-50 text-[#0284c7] border border-sky-100 flex items-center justify-center">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-[#0ea5e9] border border-sky-100 dark:border-sky-800 flex items-center justify-center">
         <i data-lucide="building-2" class="w-5 h-5"></i>
       </div>
       <div>
-        <h3 class="font-bold text-base text-slate-900">Create New Department</h3>
-        <p class="text-xs text-slate-500">Add an organizational division to group personnel and terminals</p>
+        <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.add_department }}</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Add an organizational division to group personnel and terminals</p>
       </div>
     </div>
 
     <form method="POST" action="/api/departments" class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Department Code *</label>
-          <input type="text" name="code" required placeholder="QA" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-[#0284c7]">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Department Code *</label>
+          <input type="text" name="code" required placeholder="QA" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Department Name *</label>
-          <input type="text" name="name" required placeholder="Quality Assurance" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Department Name *</label>
+          <input type="text" name="name" required placeholder="Quality Assurance" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Department Head</label>
-          <input type="text" name="head_name" placeholder="Johnathan Doe" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Department Head</label>
+          <input type="text" name="head_name" placeholder="Johnathan Doe" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Office Location</label>
-          <input type="text" name="location" placeholder="Building B - Floor 3" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Office Location</label>
+          <input type="text" name="location" placeholder="Building B - Floor 3" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Mission / Description</label>
-        <textarea name="description" rows="2" placeholder="Responsibilities and functional scope..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#0284c7]"></textarea>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Mission / Description</label>
+        <textarea name="description" rows="2" placeholder="Responsibilities and functional scope..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]"></textarea>
       </div>
 
       <div class="flex items-center gap-3 pt-3">
-        <button type="button" onclick="closeModal('add-dept-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
-          Cancel
+        <button type="button" onclick="closeModal('add-dept-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors">
+          {{ t.cancel }}
         </button>
-        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20 transition-all">
+        <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20 transition-all">
           <i data-lucide="check" class="w-4 h-4"></i>
-          <span>Save Department</span>
+          <span>{{ t.save }}</span>
         </button>
       </div>
     </form>
   </div>
 </div>
 {% endblock %}
-
