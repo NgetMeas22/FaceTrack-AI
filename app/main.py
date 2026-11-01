@@ -1,4 +1,4 @@
-"""FastAPI Monolith Application Entry Point & Routes for FaceTrack AI."""
+"""FastAPI Monolith Application Entry Point & Bilingual Routes for FaceTrack AI."""
 
 import csv
 import io
@@ -18,7 +18,8 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db, init_db
 from app.face_recognition import FaceBox, FaceEngine, get_face_engine
-from app.models import AttendanceRecord, Department, Employee, FaceEmbedding, ScanLog
+from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting
+from app.translations import TRANSLATIONS
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -29,12 +30,12 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 # FastAPI App setup
 app = FastAPI(
-    title="FaceTrack AI — Face Recognition & Employee Attendance System",
-    description="Clean, modern, pure Python face recognition & employee management system ready for Hostinger.",
-    version="2.0.0",
+    title="FaceTrack AI — Enterprise Biometrics",
+    description="Modern minimalist pure Python face recognition & workforce intelligence system.",
+    version="2.1.0",
 )
 
-# CORS Middleware (allows flexible multi-device and API access)
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -53,43 +54,84 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Custom Jinja2 Filters
+
 def format_datetime(value: Optional[datetime], fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
     if not value:
         return "-"
     return value.strftime(fmt)
+
 
 def format_time(value: Optional[datetime], fmt: str = "%I:%M %p") -> str:
     if not value:
         return "-"
     return value.strftime(fmt)
 
+
 templates.env.filters["format_datetime"] = format_datetime
 templates.env.filters["format_time"] = format_time
 
 
+def resolve_lang(lang: str) -> str:
+    return "kh" if lang == "kh" else "en"
+
+
 @app.on_event("startup")
 def on_startup():
-    """Initialize database schemas, seed records, and pre-load face models."""
     init_db()
-    # Eagerly initialize face engine
     get_face_engine()
 
 
 # ============================================================================
-# WEB VIEW ROUTES (HTML)
+# ROOT & CONVENIENCE REDIRECTS
 # ============================================================================
 
 @app.get("/", response_class=RedirectResponse)
 def root_redirect():
-    return RedirectResponse(url="/dashboard", status_code=302)
+    return RedirectResponse(url="/en/dashboard", status_code=302)
+
+@app.get("/dashboard", response_class=RedirectResponse)
+def dash_redirect():
+    return RedirectResponse(url="/en/dashboard", status_code=302)
+
+@app.get("/employees", response_class=RedirectResponse)
+def emp_redirect():
+    return RedirectResponse(url="/en/employees", status_code=302)
+
+@app.get("/departments", response_class=RedirectResponse)
+def dept_redirect():
+    return RedirectResponse(url="/en/departments", status_code=302)
+
+@app.get("/scanner", response_class=RedirectResponse)
+def scan_redirect():
+    return RedirectResponse(url="/en/scanner", status_code=302)
+
+@app.get("/attendance", response_class=RedirectResponse)
+def att_redirect():
+    return RedirectResponse(url="/en/attendance", status_code=302)
+
+@app.get("/audit-logs", response_class=RedirectResponse)
+def audit_redirect():
+    return RedirectResponse(url="/en/audit-logs", status_code=302)
+
+@app.get("/reports", response_class=RedirectResponse)
+def rep_redirect():
+    return RedirectResponse(url="/en/reports", status_code=302)
+
+@app.get("/settings", response_class=RedirectResponse)
+def set_redirect():
+    return RedirectResponse(url="/en/settings", status_code=302)
 
 
-@app.get("/dashboard", response_class=HTMLResponse)
-def dashboard_view(request: Request, db: Session = Depends(get_db)):
+# ============================================================================
+# LOCALIZED BILINGUAL WEB VIEW ROUTES (/{lang}/...)
+# ============================================================================
+
+@app.get("/{lang}/dashboard", response_class=HTMLResponse)
+def dashboard_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
     today = date.today()
 
-    # Overview Metrics
     total_employees = db.query(Employee).filter(Employee.status == "ACTIVE").count()
     present_today = (
         db.query(AttendanceRecord)
@@ -109,51 +151,33 @@ def dashboard_view(request: Request, db: Session = Depends(get_db)):
         .count()
     )
     pending_faces = max(0, total_employees - employees_with_faces)
-
-    # Attendance rate
     attendance_rate = round((present_today / total_employees * 100), 1) if total_employees > 0 else 0.0
 
-    # Recent Scans
     recent_scans = (
         db.query(ScanLog)
         .options(joinedload(ScanLog.matched_employee))
         .order_by(desc(ScanLog.timestamp))
-        .limit(8)
+        .limit(6)
         .all()
     )
 
-    # Weekly Attendance Trend (Last 7 Days)
-    week_days = []
-    week_present_counts = []
-    week_late_counts = []
-    for i in range(6, -1, -1):
-        day = today - timedelta(days=i)
-        day_str = day.strftime("%a (%m/%d)")
-        p_count = (
-            db.query(AttendanceRecord)
-            .filter(AttendanceRecord.attendance_date == day, AttendanceRecord.status == "PRESENT")
-            .count()
-        )
-        l_count = (
-            db.query(AttendanceRecord)
-            .filter(AttendanceRecord.attendance_date == day, AttendanceRecord.status == "LATE")
-            .count()
-        )
-        week_days.append(day_str)
-        week_present_counts.append(p_count)
-        week_late_counts.append(l_count)
-
-    # Department breakdown
     departments = db.query(Department).all()
     dept_stats = []
     for dept in departments:
         emp_count = db.query(Employee).filter(Employee.department_id == dept.id).count()
-        dept_stats.append({"name": dept.name, "code": dept.code, "count": emp_count})
+        dept_stats.append({
+            "name": dept.name,
+            "code": dept.code,
+            "count": emp_count,
+            "head_name": dept.head_name,
+        })
 
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
         context={
+            "lang": lang,
+            "t": t,
             "current_page": "dashboard",
             "stats": {
                 "total_employees": total_employees,
@@ -163,22 +187,23 @@ def dashboard_view(request: Request, db: Session = Depends(get_db)):
                 "attendance_rate": attendance_rate,
             },
             "recent_scans": recent_scans,
-            "week_days": week_days,
-            "week_present": week_present_counts,
-            "week_late": week_late_counts,
             "dept_stats": dept_stats,
         },
     )
 
 
-@app.get("/employees", response_class=HTMLResponse)
+@app.get("/{lang}/employees", response_class=HTMLResponse)
 def employees_view(
+    lang: str,
     request: Request,
     search: Optional[str] = Query(None),
     dept_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
     query = db.query(Employee).options(joinedload(Employee.department), joinedload(Employee.embeddings))
 
     if search:
@@ -204,6 +229,8 @@ def employees_view(
         request=request,
         name="employees.html",
         context={
+            "lang": lang,
+            "t": t,
             "current_page": "employees",
             "employees": employees,
             "departments": departments,
@@ -214,9 +241,38 @@ def employees_view(
     )
 
 
-@app.get("/scanner", response_class=HTMLResponse)
-def scanner_view(request: Request, db: Session = Depends(get_db)):
-    """Render the animated live face scanner page with glow effects."""
+@app.get("/{lang}/departments", response_class=HTMLResponse)
+def departments_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
+    departments = db.query(Department).all()
+    dept_list = []
+    for d in departments:
+        emp_count = db.query(Employee).filter(Employee.department_id == d.id).count()
+        dept_list.append({
+            "id": d.id,
+            "code": d.code,
+            "name": d.name,
+            "description": d.description,
+            "head_name": d.head_name or "Unit Leadership",
+            "location": d.location or "Main Campus",
+            "emp_count": emp_count,
+            "attendance_rate": 94 + (d.id % 5),
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="departments.html",
+        context={"lang": lang, "t": t, "current_page": "departments", "dept_list": dept_list},
+    )
+
+
+@app.get("/{lang}/scanner", response_class=HTMLResponse)
+def scanner_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
     departments = db.query(Department).all()
     total_enrolled = (
         db.query(Employee.id)
@@ -228,6 +284,8 @@ def scanner_view(request: Request, db: Session = Depends(get_db)):
         request=request,
         name="scanner.html",
         context={
+            "lang": lang,
+            "t": t,
             "current_page": "scanner",
             "departments": departments,
             "total_enrolled": total_enrolled,
@@ -235,8 +293,9 @@ def scanner_view(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.get("/attendance", response_class=HTMLResponse)
+@app.get("/{lang}/attendance", response_class=HTMLResponse)
 def attendance_view(
+    lang: str,
     request: Request,
     target_date: Optional[str] = Query(None),
     dept_id: Optional[int] = Query(None),
@@ -244,6 +303,9 @@ def attendance_view(
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
     filter_date = date.today()
     if target_date:
         try:
@@ -275,7 +337,6 @@ def attendance_view(
     records = query.order_by(desc(AttendanceRecord.check_in_time)).all()
     departments = db.query(Department).all()
 
-    # Metrics for filtered view
     total_present = sum(1 for r in records if r.status in ["PRESENT", "LATE"])
     total_late = sum(1 for r in records if r.status == "LATE")
 
@@ -283,6 +344,8 @@ def attendance_view(
         request=request,
         name="attendance.html",
         context={
+            "lang": lang,
+            "t": t,
             "current_page": "attendance",
             "records": records,
             "departments": departments,
@@ -296,30 +359,88 @@ def attendance_view(
     )
 
 
-@app.get("/departments", response_class=HTMLResponse)
-def departments_view(request: Request, db: Session = Depends(get_db)):
-    """Render the organizational departments overview page."""
+@app.get("/{lang}/audit-logs", response_class=HTMLResponse)
+def audit_logs_view(
+    lang: str,
+    request: Request,
+    action_type: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
+    query = db.query(AuditLog).order_by(desc(AuditLog.timestamp))
+
+    if action_type:
+        query = query.filter(AuditLog.action_type == action_type)
+    if status:
+        query = query.filter(AuditLog.status == status)
+    if search:
+        s_filter = f"%{search.strip()}%"
+        query = query.filter(
+            (AuditLog.details.ilike(s_filter))
+            | (AuditLog.operator.ilike(s_filter))
+            | (AuditLog.action_type.ilike(s_filter))
+        )
+
+    logs = query.limit(50).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="audit_logs.html",
+        context={
+            "lang": lang,
+            "t": t,
+            "current_page": "audit_logs",
+            "logs": logs,
+            "selected_action": action_type or "",
+            "selected_status": status or "",
+            "search": search or "",
+        },
+    )
+
+
+@app.get("/{lang}/reports", response_class=HTMLResponse)
+def reports_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
     departments = db.query(Department).all()
-    dept_list = []
+    dept_stats = []
     for d in departments:
         emp_count = db.query(Employee).filter(Employee.department_id == d.id).count()
-        dept_list.append({
+        dept_stats.append({
             "id": d.id,
             "code": d.code,
             "name": d.name,
-            "description": d.description,
-            "head_name": d.head_name or "Unit Leadership",
-            "location": d.location or "Main Campus",
-            "emp_count": emp_count,
-            "attendance_rate": 94 + (d.id % 5),
+            "head_name": d.head_name or "Leadership Team",
+            "count": emp_count,
         })
 
     return templates.TemplateResponse(
         request=request,
-        name="departments.html",
-        context={"current_page": "departments", "dept_list": dept_list},
+        name="reports.html",
+        context={"lang": lang, "t": t, "current_page": "reports", "dept_stats": dept_stats},
     )
 
+
+@app.get("/{lang}/settings", response_class=HTMLResponse)
+def settings_view(lang: str, request: Request, db: Session = Depends(get_db)):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="settings.html",
+        context={"lang": lang, "t": t, "current_page": "settings"},
+    )
+
+
+# ============================================================================
+# API ACTIONS (Departments, Employees, Biometrics, Export)
+# ============================================================================
 
 @app.post("/api/departments")
 def create_department_api(
@@ -338,230 +459,18 @@ def create_department_api(
         description=description.strip() if description else None,
     )
     db.add(dept)
-    db.commit()
-    return RedirectResponse(url="/departments?success=created", status_code=303)
 
-
-@app.get("/reports", response_class=HTMLResponse)
-def reports_view(request: Request, db: Session = Depends(get_db)):
-    """Render workforce biometric reports & analytics page."""
-    departments = db.query(Department).all()
-    dept_stats = []
-    for d in departments:
-        emp_count = db.query(Employee).filter(Employee.department_id == d.id).count()
-        dept_stats.append({
-            "id": d.id,
-            "code": d.code,
-            "name": d.name,
-            "head_name": d.head_name or "Leadership Team",
-            "count": emp_count,
-        })
-
-    return templates.TemplateResponse(
-        request=request,
-        name="reports.html",
-        context={"current_page": "reports", "dept_stats": dept_stats},
+    # Log to Audit Trail
+    audit = AuditLog(
+        operator="Alex Chen (Admin)",
+        action_type="DEPARTMENT_CREATED",
+        status="SUCCESS",
+        details=f"Created department: {dept.name} ({dept.code})",
     )
-
-
-@app.get("/settings", response_class=HTMLResponse)
-def settings_view(request: Request, db: Session = Depends(get_db)):
-    """Render system settings and camera terminals page."""
-    return templates.TemplateResponse(
-        request=request,
-        name="settings.html",
-        context={"current_page": "settings"},
-    )
-
-
-# ============================================================================
-# API ENDPOINTS (Face Scanning, Employee CRUD, Face Enrollment, Export)
-# ============================================================================
-
-class ScanRequest(BaseModel):
-    image: str  # Base64 data URL
-    direction: str = "CHECK_IN"  # "CHECK_IN" or "CHECK_OUT"
-
-
-@app.post("/api/scan/recognize")
-def recognize_face_api(req: ScanRequest, db: Session = Depends(get_db)):
-    """
-    Process video frame from webcam, detect faces, match against employee gallery,
-    and log attendance automatically with anti-bounce protection.
-    """
-    engine = get_face_engine()
-    img = engine.decode_image(req.image)
-    if img is None:
-        return JSONResponse(
-            status_code=400,
-            content={"outcome": "ERROR", "message": "Invalid image data format."},
-        )
-
-    # 1. Detect faces in frame
-    faces = engine.detect_faces(img)
-    if not faces:
-        return {
-            "outcome": "NO_FACE",
-            "message": "No face detected in scanner frame.",
-            "faces_count": 0,
-        }
-
-    # Focus on the most prominent / largest face in frame
-    primary_box, primary_raw = max(faces, key=lambda f: f[0].width * f[0].height)
-
-    # Assess quality
-    quality_score, quality_msg = engine.assess_quality(img, primary_box)
-
-    # Extract 128-d feature embedding
-    query_emb = engine.extract_embedding(img, primary_raw)
-    if query_emb is None:
-        return {
-            "outcome": "ERROR",
-            "message": "Failed to extract face features. Please look directly at camera.",
-            "box": primary_box.to_dict(),
-        }
-
-    # 2. Load Gallery of Registered Employees
-    all_embeddings = (
-        db.query(FaceEmbedding.employee_id, FaceEmbedding.embedding_data)
-        .join(Employee, Employee.id == FaceEmbedding.employee_id)
-        .filter(Employee.status == "ACTIVE")
-        .all()
-    )
-
-    gallery = []
-    for emp_id, emb_str in all_embeddings:
-        try:
-            import json
-            gallery.append((emp_id, json.loads(emb_str)))
-        except Exception:
-            continue
-
-    # 3. Match against gallery
-    matched_emp_id, sim_score = engine.match_against_gallery(query_emb, gallery)
-
-    now = datetime.now()
-    today = date.today()
-
-    if matched_emp_id is None:
-        # Unknown Face
-        scan_log = ScanLog(
-            timestamp=now,
-            outcome="UNKNOWN",
-            similarity_score=sim_score,
-            direction=req.direction,
-            notes="Unrecognized face in scanner",
-        )
-        db.add(scan_log)
-        db.commit()
-
-        return {
-            "outcome": "UNKNOWN",
-            "message": "Unknown face. Please register face in Employee Directory.",
-            "similarity": sim_score,
-            "box": primary_box.to_dict(),
-        }
-
-    # 4. Known Employee Matched!
-    employee = db.query(Employee).options(joinedload(Employee.department)).filter_by(id=matched_emp_id).first()
-    if not employee:
-        return {"outcome": "ERROR", "message": "Employee record not found."}
-
-    # Anti-bounce / Debounce Check (prevent repeat scans within 45 seconds for same person)
-    recent_scan = (
-        db.query(ScanLog)
-        .filter(
-            ScanLog.matched_employee_id == employee.id,
-            ScanLog.timestamp >= now - timedelta(seconds=45),
-            ScanLog.outcome == "MATCH",
-        )
-        .first()
-    )
-
-    already_scanned = recent_scan is not None
-
-    # Attendance Logic:
-    # Check if attendance record exists for today
-    att_record = (
-        db.query(AttendanceRecord)
-        .filter(
-            AttendanceRecord.employee_id == employee.id,
-            AttendanceRecord.attendance_date == today,
-        )
-        .first()
-    )
-
-    direction = req.direction.upper()
-    status_text = "PRESENT"
-    # Company policy: Late if check-in after 09:00 AM
-    work_start_time = time(9, 0, 0)
-
-    if not already_scanned:
-        if direction == "CHECK_IN":
-            is_late = now.time() > work_start_time
-            status_text = "LATE" if is_late else "PRESENT"
-
-            if not att_record:
-                att_record = AttendanceRecord(
-                    employee_id=employee.id,
-                    attendance_date=today,
-                    check_in_time=now,
-                    status=status_text,
-                    method="FACE_SCAN",
-                    confidence=sim_score,
-                    notes=f"Scanned at {now.strftime('%H:%M:%S')}",
-                )
-                db.add(att_record)
-            else:
-                # If already checked in earlier, update check-in note or maintain time
-                if not att_record.check_in_time:
-                    att_record.check_in_time = now
-                    att_record.status = status_text
-        else:
-            # CHECK_OUT
-            if not att_record:
-                att_record = AttendanceRecord(
-                    employee_id=employee.id,
-                    attendance_date=today,
-                    check_out_time=now,
-                    status="PRESENT",
-                    method="FACE_SCAN",
-                    confidence=sim_score,
-                    notes=f"Check-out only at {now.strftime('%H:%M:%S')}",
-                )
-                db.add(att_record)
-            else:
-                att_record.check_out_time = now
-
-    # Record Scan Log
-    scan_log = ScanLog(
-        timestamp=now,
-        outcome="MATCH",
-        matched_employee_id=employee.id,
-        similarity_score=sim_score,
-        direction=direction,
-        notes=f"{direction} verified ({round(sim_score * 100, 1)}%)",
-    )
-    db.add(scan_log)
+    db.add(audit)
     db.commit()
 
-    return {
-        "outcome": "MATCH",
-        "already_scanned": already_scanned,
-        "message": f"Welcome, {employee.full_name}!" if direction == "CHECK_IN" else f"Goodbye, {employee.full_name}!",
-        "employee": {
-            "id": employee.id,
-            "code": employee.employee_code,
-            "name": employee.full_name,
-            "position": employee.position or "Staff",
-            "department": employee.department.name if employee.department else "Unassigned",
-            "photo_path": employee.photo_path,
-        },
-        "direction": direction,
-        "confidence": round(sim_score * 100, 1),
-        "timestamp": now.strftime("%I:%M:%S %p"),
-        "box": primary_box.to_dict(),
-    }
+    return RedirectResponse(url="/en/departments?success=created", status_code=303)
 
 
 @app.post("/api/employees")
@@ -576,7 +485,6 @@ def create_employee_api(
     status: str = Form("ACTIVE"),
     db: Session = Depends(get_db),
 ):
-    # Check duplicate code
     existing = db.query(Employee).filter_by(employee_code=employee_code.strip()).first()
     if existing:
         raise HTTPException(status_code=400, detail="Employee Code already exists.")
@@ -592,10 +500,17 @@ def create_employee_api(
         status=status,
     )
     db.add(emp)
-    db.commit()
-    db.refresh(emp)
 
-    return RedirectResponse(url="/employees?success=created", status_code=303)
+    audit = AuditLog(
+        operator="Alex Chen (Admin)",
+        action_type="EMPLOYEE_ENROLL",
+        status="SUCCESS",
+        details=f"Created employee profile: {emp.full_name} ({emp.employee_code})",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url="/en/employees?success=created", status_code=303)
 
 
 @app.post("/api/employees/{emp_id}/update")
@@ -624,8 +539,16 @@ def update_employee_api(
     emp.department_id = department_id if department_id else None
     emp.status = status
 
+    audit = AuditLog(
+        operator="Alex Chen (Admin)",
+        action_type="EMPLOYEE_UPDATE",
+        status="SUCCESS",
+        details=f"Updated profile for: {emp.full_name} ({emp.employee_code})",
+    )
+    db.add(audit)
     db.commit()
-    return RedirectResponse(url="/employees?success=updated", status_code=303)
+
+    return RedirectResponse(url="/en/employees?success=updated", status_code=303)
 
 
 @app.post("/api/employees/{emp_id}/delete")
@@ -634,18 +557,27 @@ def delete_employee_api(emp_id: int, db: Session = Depends(get_db)):
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")
 
+    emp_name = emp.full_name
     db.delete(emp)
+
+    audit = AuditLog(
+        operator="Alex Chen (Admin)",
+        action_type="EMPLOYEE_DELETE",
+        status="WARN",
+        details=f"Deleted employee record: {emp_name} (ID: {emp_id})",
+    )
+    db.add(audit)
     db.commit()
-    return RedirectResponse(url="/employees?success=deleted", status_code=303)
+
+    return RedirectResponse(url="/en/employees?success=deleted", status_code=303)
 
 
 class FaceEnrollRequest(BaseModel):
-    image: str  # Base64 string from webcam or file picker
+    image: str
 
 
 @app.post("/api/employees/{emp_id}/register-face")
 def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends(get_db)):
-    """Register face sample for an employee from webcam snapshot or file."""
     emp = db.query(Employee).filter_by(id=emp_id).first()
     if not emp:
         raise HTTPException(status_code=404, detail="Employee not found.")
@@ -657,10 +589,7 @@ def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends
 
     faces = engine.detect_faces(img)
     if not faces:
-        return JSONResponse(status_code=400, content={"success": False, "message": "No face found in image. Please center your face."})
-
-    if len(faces) > 1:
-        return JSONResponse(status_code=400, content={"success": False, "message": "Multiple faces detected. Please ensure only one person is in frame."})
+        return JSONResponse(status_code=400, content={"success": False, "message": "No face found in image. Please center face."})
 
     box, raw_yunet = faces[0]
     quality, quality_msg = engine.assess_quality(img, box)
@@ -671,7 +600,6 @@ def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends
     if not emb:
         return JSONResponse(status_code=500, content={"success": False, "message": "Failed to compute face embedding."})
 
-    # Save photo crop for employee avatar
     import cv2
     import json
     h, w = img.shape[:2]
@@ -685,8 +613,6 @@ def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends
     cv2.imwrite(str(avatar_path), crop)
 
     emp.photo_path = f"/uploads/{avatar_filename}"
-
-    # Remove previous embeddings or append
     db.query(FaceEmbedding).filter_by(employee_id=emp.id).delete()
 
     face_rec = FaceEmbedding(
@@ -696,6 +622,14 @@ def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends
         source="WEBCAM",
     )
     db.add(face_rec)
+
+    audit = AuditLog(
+        operator="Alex Chen (Admin)",
+        action_type="FACE_ENROLL",
+        status="SUCCESS",
+        details=f"Enrolled biometric SFace template for {emp.full_name} (Quality: {quality})",
+    )
+    db.add(audit)
     db.commit()
 
     return {
@@ -706,6 +640,145 @@ def register_face_api(emp_id: int, req: FaceEnrollRequest, db: Session = Depends
     }
 
 
+class ScanRequest(BaseModel):
+    image: str
+    direction: str = "CHECK_IN"
+
+
+@app.post("/api/scan/recognize")
+def recognize_face_api(req: ScanRequest, db: Session = Depends(get_db)):
+    engine = get_face_engine()
+    img = engine.decode_image(req.image)
+    if img is None:
+        return JSONResponse(status_code=400, content={"outcome": "ERROR", "message": "Invalid image format."})
+
+    faces = engine.detect_faces(img)
+    if not faces:
+        return {"outcome": "NO_FACE", "message": "No face detected in scanner frame."}
+
+    primary_box, primary_raw = max(faces, key=lambda f: f[0].width * f[0].height)
+    query_emb = engine.extract_embedding(img, primary_raw)
+    if query_emb is None:
+        return {"outcome": "ERROR", "message": "Failed to extract face features.", "box": primary_box.to_dict()}
+
+    all_embeddings = (
+        db.query(FaceEmbedding.employee_id, FaceEmbedding.embedding_data)
+        .join(Employee, Employee.id == FaceEmbedding.employee_id)
+        .filter(Employee.status == "ACTIVE")
+        .all()
+    )
+
+    import json
+    gallery = []
+    for emp_id, emb_str in all_embeddings:
+        try:
+            gallery.append((emp_id, json.loads(emb_str)))
+        except Exception:
+            continue
+
+    matched_emp_id, sim_score = engine.match_against_gallery(query_emb, gallery)
+    now = datetime.now()
+    today = date.today()
+
+    if matched_emp_id is None:
+        scan_log = ScanLog(timestamp=now, outcome="UNKNOWN", similarity_score=sim_score, direction=req.direction)
+        db.add(scan_log)
+        db.commit()
+        return {"outcome": "UNKNOWN", "message": "Unregistered face detected.", "similarity": sim_score, "box": primary_box.to_dict()}
+
+    employee = db.query(Employee).options(joinedload(Employee.department)).filter_by(id=matched_emp_id).first()
+    if not employee:
+        return {"outcome": "ERROR", "message": "Employee not found."}
+
+    recent_scan = (
+        db.query(ScanLog)
+        .filter(
+            ScanLog.matched_employee_id == employee.id,
+            ScanLog.timestamp >= now - timedelta(seconds=45),
+            ScanLog.outcome == "MATCH",
+        )
+        .first()
+    )
+    already_scanned = recent_scan is not None
+
+    att_record = db.query(AttendanceRecord).filter_by(employee_id=employee.id, attendance_date=today).first()
+    direction = req.direction.upper()
+
+    if not already_scanned:
+        is_late = now.time() > time(9, 0)
+        status_text = "LATE" if is_late else "PRESENT"
+
+        if direction == "CHECK_IN":
+            if not att_record:
+                att_record = AttendanceRecord(
+                    employee_id=employee.id,
+                    attendance_date=today,
+                    check_in_time=now,
+                    status=status_text,
+                    method="FACE_SCAN",
+                    terminal_node="Terminal 04",
+                    confidence=sim_score,
+                    notes=f"Scanned at {now.strftime('%H:%M:%S')}",
+                )
+                db.add(att_record)
+            elif not att_record.check_in_time:
+                att_record.check_in_time = now
+                att_record.status = status_text
+        else:
+            if not att_record:
+                att_record = AttendanceRecord(
+                    employee_id=employee.id,
+                    attendance_date=today,
+                    check_out_time=now,
+                    status="PRESENT",
+                    method="FACE_SCAN",
+                    terminal_node="Terminal 04",
+                    confidence=sim_score,
+                )
+                db.add(att_record)
+            else:
+                att_record.check_out_time = now
+
+    scan_log = ScanLog(
+        timestamp=now,
+        outcome="MATCH",
+        matched_employee_id=employee.id,
+        terminal_node="Terminal 04",
+        similarity_score=sim_score,
+        direction=direction,
+        notes=f"{direction} verified ({round(sim_score * 100, 1)}%)",
+    )
+    db.add(scan_log)
+
+    audit = AuditLog(
+        timestamp=now,
+        operator="Optical Terminal #04",
+        action_type="FACE_SCAN_MATCH",
+        status="SUCCESS",
+        details=f"{direction} verified for {employee.full_name} ({round(sim_score * 100, 1)}% Conf.)",
+    )
+    db.add(audit)
+    db.commit()
+
+    return {
+        "outcome": "MATCH",
+        "already_scanned": already_scanned,
+        "message": f"Welcome, {employee.full_name}!" if direction == "CHECK_IN" else f"Goodbye, {employee.full_name}!",
+        "employee": {
+            "id": employee.id,
+            "code": employee.employee_code,
+            "name": employee.full_name,
+            "position": employee.position or "Staff",
+            "department": employee.department.name if employee.department else "Unassigned",
+            "photo_path": employee.photo_path,
+        },
+        "direction": direction,
+        "confidence": round(sim_score * 100, 1),
+        "timestamp": now.strftime("%I:%M:%S %p"),
+        "box": primary_box.to_dict(),
+    }
+
+
 @app.get("/api/attendance/export")
 def export_attendance_csv(
     target_date: Optional[str] = None,
@@ -713,7 +786,6 @@ def export_attendance_csv(
     status: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Export attendance data to a clean CSV file."""
     query = (
         db.query(AttendanceRecord)
         .join(Employee, Employee.id == AttendanceRecord.employee_id)
@@ -747,7 +819,7 @@ def export_attendance_csv(
         "Check In",
         "Check Out",
         "Status",
-        "Method",
+        "Terminal",
         "Confidence",
         "Notes",
     ])
@@ -763,13 +835,13 @@ def export_attendance_csv(
             r.check_in_time.strftime("%I:%M:%S %p") if r.check_in_time else "-",
             r.check_out_time.strftime("%I:%M:%S %p") if r.check_out_time else "-",
             r.status,
-            r.method,
+            r.terminal_node or "-",
             f"{round(r.confidence * 100, 1)}%" if r.confidence else "-",
             r.notes or "-",
         ])
 
     output.seek(0)
-    filename = f"attendance_export_{target_date or date.today().strftime('%Y%m%d')}.csv"
+    filename = f"attendance_dossier_{target_date or date.today().strftime('%Y%m%d')}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",

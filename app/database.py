@@ -43,7 +43,7 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     """Create all tables and seed default departments/employees/logs if empty."""
-    from app.models import AttendanceRecord, Department, Employee, FaceEmbedding, ScanLog, SystemSetting
+    from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting
 
     Base.metadata.create_all(bind=engine)
 
@@ -103,7 +103,6 @@ def init_db() -> None:
             all_emps = db.query(Employee).all()
 
             for emp in all_emps[:6]:
-                # Staggered morning check-ins
                 check_in_dt = datetime.combine(today, time(8, 40)) + timedelta(minutes=emp.id * 3)
                 is_late = check_in_dt.time() > time(9, 0)
                 status_str = "LATE" if is_late else "PRESENT"
@@ -150,4 +149,18 @@ def init_db() -> None:
                     )
                     db.add(att)
 
+            db.commit()
+
+        # Seed Audit Logs if empty
+        if db.query(AuditLog).count() == 0:
+            now = datetime.now()
+            sample_audits = [
+                AuditLog(timestamp=now - timedelta(minutes=4), operator="Optical Terminal #04", action_type="FACE_SCAN_MATCH", status="SUCCESS", details="Face verified for Sarah Jenkins (98.4% similarity)", ip_address="192.168.1.104"),
+                AuditLog(timestamp=now - timedelta(minutes=9), operator="Optical Terminal #02", action_type="FACE_SCAN_MATCH", status="SUCCESS", details="Face verified for David Vance (98.8% similarity)", ip_address="192.168.1.102"),
+                AuditLog(timestamp=now - timedelta(minutes=24), operator="Alex Chen (Admin)", action_type="EMPLOYEE_ENROLL", status="SUCCESS", details="Registered new personnel: Sarah Connor (EMP-1011)", ip_address="192.168.1.50"),
+                AuditLog(timestamp=now - timedelta(minutes=38), operator="Gate 01 Scanner", action_type="LATE_INGRESS", status="WARN", details="Marcus Sterling arrived after shift cutoff (09:16 AM)", ip_address="192.168.1.101"),
+                AuditLog(timestamp=now - timedelta(hours=2), operator="Alex Chen (Admin)", action_type="SETTINGS_UPDATE", status="SUCCESS", details="Adjusted SFace cosine distance threshold to 0.38", ip_address="192.168.1.50"),
+                AuditLog(timestamp=now - timedelta(hours=5), operator="Lobby Turnstile #01", action_type="FACE_UNKNOWN", status="WARN", details="Unregistered visitor face detected in camera viewport", ip_address="192.168.1.101"),
+            ]
+            db.add_all(sample_audits)
             db.commit()

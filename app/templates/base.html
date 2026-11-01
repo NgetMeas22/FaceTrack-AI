@@ -1,9 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="{{ lang or 'en' }}" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}FaceTrack AI — Enterprise Biometrics{% endblock %}</title>
+  <title>{% block title %}{{ t.brand_name }} — {{ t.brand_tagline }}{% endblock %}</title>
+
+  <!-- Prevent Theme Flash (Early Theme Evaluator) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('facetrack-theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
 
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,90 +53,96 @@
   <link rel="stylesheet" href="/static/css/styles.css">
   {% block head %}{% endblock %}
 </head>
-<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex antialiased">
+<body class="bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 min-h-screen flex antialiased transition-colors duration-200">
 
-  <!-- Left Sidebar (Enterprise Modern Navigation) -->
-  <aside class="w-64 bg-white border-r border-slate-200/90 flex flex-col fixed inset-y-0 z-30 shadow-[1px_0_10px_rgba(0,0,0,0.02)]">
+  <!-- Left Sidebar (Enterprise Navigation) -->
+  <aside class="w-64 bg-white dark:bg-[#0d1322] border-r border-slate-200/90 dark:border-slate-800 flex flex-col fixed inset-y-0 z-30 shadow-[1px_0_10px_rgba(0,0,0,0.02)] transition-colors duration-200">
     
     <!-- Brand Header -->
-    <div class="h-20 flex items-center gap-3 px-6 border-b border-slate-100">
+    <div class="h-20 flex items-center gap-3 px-6 border-b border-slate-100 dark:border-slate-800">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] flex items-center justify-center shadow-md shadow-sky-500/20 text-white">
         <i data-lucide="scan-face" class="w-5 h-5"></i>
       </div>
       <div>
-        <h1 class="font-extrabold text-base tracking-tight text-slate-900 leading-none">FaceTrack AI</h1>
-        <p class="text-[9px] text-[#0284c7] font-bold font-mono tracking-wider mt-1">ENTERPRISE BIOMETRICS</p>
+        <h1 class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white leading-none">{{ t.brand_name }}</h1>
+        <p class="text-[9px] text-[#0ea5e9] font-bold font-mono tracking-wider mt-1">{{ t.brand_tagline }}</p>
       </div>
     </div>
 
     <!-- Operational Navigation Header -->
-    <div class="px-6 pt-6 pb-2">
-      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">OPERATIONAL NAVIGATION</span>
+    <div class="px-6 pt-5 pb-2">
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-mono">{{ t.operational_nav }}</span>
     </div>
 
     <!-- Navigation Menu Items -->
-    <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto">
+    <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
       
       <!-- Dashboard -->
-      <a href="/dashboard" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'dashboard' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/dashboard" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'dashboard' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="layout-grid" class="w-4 h-4"></i>
-        <span>Dashboard</span>
+        <span>{{ t.dashboard }}</span>
       </a>
 
       <!-- Employees -->
-      <a href="/employees" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'employees' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/employees" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'employees' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="users" class="w-4 h-4"></i>
-        <span>Employees</span>
+        <span>{{ t.employees }}</span>
       </a>
 
       <!-- Departments -->
-      <a href="/departments" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'departments' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/departments" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'departments' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="building-2" class="w-4 h-4"></i>
-        <span>Departments</span>
+        <span>{{ t.departments }}</span>
       </a>
 
       <!-- Live Scanner Mode -->
-      <a href="/scanner" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'scanner' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/scanner" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'scanner' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <div class="flex items-center gap-3.5">
           <i data-lucide="scan" class="w-4 h-4"></i>
-          <span>Live Scanner Mode</span>
+          <span>{{ t.scanner_mode }}</span>
         </div>
-        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-md {% if current_page == 'scanner' %} bg-white/20 text-white {% else %} bg-sky-100 text-[#0284c7] {% endif %} animate-pulse">LIVE</span>
+        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-md {% if current_page == 'scanner' %} bg-white/20 text-white {% else %} bg-sky-100 dark:bg-sky-950 text-[#0284c7] dark:text-cyan-400 border border-sky-200 dark:border-sky-800 {% endif %} animate-pulse">{{ t.live_badge }}</span>
       </a>
 
       <!-- View Attendance Logs -->
-      <a href="/attendance" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'attendance' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/attendance" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'attendance' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="calendar-check" class="w-4 h-4"></i>
-        <span>View Attendance Logs</span>
+        <span>{{ t.attendance_logs }}</span>
+      </a>
+
+      <!-- System Audit Logs -->
+      <a href="/{{ lang }}/audit-logs" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'audit_logs' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="shield-alert" class="w-4 h-4"></i>
+        <span>{{ t.audit_logs }}</span>
       </a>
 
       <!-- Reports & Analytics -->
-      <a href="/reports" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'reports' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/reports" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'reports' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-        <span>Reports & Analytics</span>
+        <span>{{ t.reports_analytics }}</span>
       </a>
 
       <!-- System Settings -->
-      <a href="/settings" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'settings' %} nav-link-active {% else %} text-slate-600 hover:text-slate-900 hover:bg-slate-50 {% endif %}">
+      <a href="/{{ lang }}/settings" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'settings' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
         <i data-lucide="settings" class="w-4 h-4"></i>
-        <span>System Settings</span>
+        <span>{{ t.system_settings }}</span>
       </a>
 
     </nav>
 
     <!-- Bottom Profile Card -->
-    <div class="p-4 m-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+    <div class="p-4 m-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="relative">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-9 h-9 rounded-xl object-cover ring-2 ring-white">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white"></span>
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-9 h-9 rounded-xl object-cover ring-2 ring-white dark:ring-slate-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -bottom-0.5 -right-0.5 ring-2 ring-white dark:ring-slate-800"></span>
         </div>
         <div>
-          <h4 class="text-xs font-bold text-slate-900 leading-tight">Alex Chen</h4>
-          <p class="text-[10px] text-[#0284c7] font-semibold tracking-wide">SYSTEM ADMIN</p>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white leading-tight">Alex Chen</h4>
+          <p class="text-[10px] text-[#0ea5e9] font-bold tracking-wide">{{ t.system_admin }}</p>
         </div>
       </div>
-      <button title="Log Out" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">
+      <button title="Log Out" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="log-out" class="w-4 h-4"></i>
       </button>
     </div>
@@ -133,69 +153,70 @@
   <div class="flex-1 ml-64 flex flex-col min-h-screen">
     
     <!-- Topbar Header -->
-    <header class="h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-10 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+    <header class="h-20 bg-white/95 dark:bg-[#0d1322]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-10 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-colors duration-200">
       
       <!-- Breadcrumb -->
-      <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
-        <span class="text-slate-400">Dashboard</span>
-        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
-        <span class="text-slate-800 font-semibold">{% block breadcrumb %}Overview{% endblock %}</span>
+      <div class="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+        <span>{{ t.dashboard }}</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 dark:text-slate-600"></i>
+        <span class="text-slate-800 dark:text-slate-200 font-semibold">{% block breadcrumb %}{{ t.dashboard }}{% endblock %}</span>
       </div>
 
       <!-- Right Header Actions -->
-      <div class="flex items-center gap-5">
+      <div class="flex items-center gap-4">
         
         <!-- Live System Status Pill -->
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-medium">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>System Running</span>
+          <span>{{ t.system_running }}</span>
         </div>
 
         <!-- Language Switcher Pill -->
-        <div class="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold text-slate-600">
-          <button class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-sm">EN</button>
-          <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 transition-colors">KM</button>
+        <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+          <a href="/en/{{ current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'en' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">EN</a>
+          <a href="/kh/{{ current_page }}" class="px-2.5 py-1 rounded-lg transition-colors {% if lang == 'kh' %} bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm {% else %} hover:text-slate-900 dark:hover:text-white {% endif %}">KM</a>
         </div>
 
-        <!-- Theme Toggle -->
-        <button class="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">
-          <i data-lucide="sun" class="w-4 h-4"></i>
+        <!-- Theme Toggle Button (Sun/Moon) -->
+        <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Toggle Light / Dark Mode">
+          <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+          <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-600"></i>
         </button>
 
         <!-- Notification Bell -->
-        <button class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">
+        <button class="relative p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
           <i data-lucide="bell" class="w-4 h-4"></i>
-          <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white"></span>
+          <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-900"></span>
         </button>
 
         <!-- Header Profile Avatar -->
-        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-100">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" alt="Admin" class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-100 dark:ring-slate-800">
 
       </div>
 
     </header>
 
     <!-- Page Body Content -->
-    <main class="flex-1 p-10 max-w-[1600px] w-full mx-auto">
+    <main class="flex-1 p-8 max-w-[1600px] w-full mx-auto">
       {% block content %}{% endblock %}
     </main>
 
   </div>
 
   <!-- Global Face Enrollment Modal -->
-  <div id="face-enroll-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
-      <button onclick="closeFaceEnrollModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
+  <div id="face-enroll-modal" class="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
+      <button onclick="closeFaceEnrollModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-sky-50 text-[#0284c7] border border-sky-100 flex items-center justify-center">
+        <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950 text-[#0ea5e9] border border-sky-100 dark:border-sky-900 flex items-center justify-center">
           <i data-lucide="camera" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="font-bold text-base text-slate-900">Register Biometric Sample</h3>
-          <p id="enroll-emp-name" class="text-xs text-slate-500">Employee Name</p>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.register_face }}</h3>
+          <p id="enroll-emp-name" class="text-xs text-slate-500 dark:text-slate-400">Employee Name</p>
         </div>
       </div>
 
@@ -208,13 +229,13 @@
         <div class="reticle-bracket reticle-bracket-br"></div>
       </div>
 
-      <p id="enroll-status" class="text-xs text-slate-500 text-center mb-5">Align face directly into the camera frame.</p>
+      <p id="enroll-status" class="text-xs text-slate-500 dark:text-slate-400 text-center mb-5">Align face directly into the camera frame.</p>
 
       <div class="flex items-center gap-3">
-        <button onclick="closeFaceEnrollModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
-          Cancel
+        <button onclick="closeFaceEnrollModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors">
+          {{ t.cancel }}
         </button>
-        <button onclick="captureAndEnrollFace()" class="flex-1 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/25 transition-all">
+        <button onclick="captureAndEnrollFace()" class="flex-1 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/25 transition-all">
           <i data-lucide="check-circle" class="w-4 h-4"></i>
           <span>Capture & Enroll</span>
         </button>
@@ -222,8 +243,23 @@
     </div>
   </div>
 
-  <!-- Global Scripts -->
+  <!-- Global Scripts & Theme Toggle Engine -->
   <script src="/static/js/main.js"></script>
+  <script>
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('facetrack-theme', 'light');
+      } else {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('facetrack-theme', 'dark');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

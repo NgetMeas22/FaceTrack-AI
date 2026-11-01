@@ -1,24 +1,55 @@
-/* FaceTrack AI — Enterprise Biometrics Modern Minimalist Aesthetics */
+/* FaceTrack AI — Modern Minimalist Aesthetics (Light & Dark Mode + Khmer Typography) */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
-  --primary-light: #e0f2fe;
+  --primary: #0ea5e9;
+  --primary-hover: #0284c7;
   --primary-glow: rgba(14, 165, 233, 0.25);
+
+  /* Light Mode Palette */
   --bg-page: #f8fafc;
   --card-bg: #ffffff;
+  --card-border: #e2e8f0;
   --text-main: #0f172a;
   --text-muted: #64748b;
-  --border-light: #e2e8f0;
+  --sidebar-bg: #ffffff;
+  --table-head-bg: #f8fafc;
+  --table-hover: #f1f5f9;
+}
+
+html.dark {
+  /* Dark Mode Palette (Dark Obsidian / Cybernetic Navy) */
+  --bg-page: #090d16;
+  --card-bg: #0f172a;
+  --card-border: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --sidebar-bg: #0d1322;
+  --table-head-bg: #1e293b;
+  --table-hover: #1e293b;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-page);
   color: var(--text-main);
+  transition: background-color 0.25s ease, color 0.25s ease;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Khmer Font Adjustment */
+html[lang="kh"] body,
+html[lang="kh"] h1,
+html[lang="kh"] h2,
+html[lang="kh"] h3,
+html[lang="kh"] h4,
+html[lang="kh"] span,
+html[lang="kh"] p,
+html[lang="kh"] button,
+html[lang="kh"] table {
+  font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif !important;
+  line-height: 1.6;
 }
 
 .font-mono {
@@ -37,47 +68,43 @@ body {
   background: #cbd5e1;
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 
-/* Modern Minimalist Aesthetic Card */
+/* Aesthetic Cards (Light & Dark Adaptive) */
 .aesthetic-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 1.25rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 4px 16px -2px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .aesthetic-card-hover:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 12px 28px -4px rgba(15, 23, 42, 0.08);
   transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 12px 28px -4px rgba(15, 23, 42, 0.08);
+}
+html.dark .aesthetic-card-hover:hover {
+  border-color: rgba(14, 165, 233, 0.4);
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.12);
 }
 
-/* Top Stat Card Subtle Gradient Glow */
+/* Stat Cards Subtle Gradients */
 .stat-card-cyan {
-  background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
-  border: 1px solid #ccfbf1;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(204, 251, 241, 0.2) 100%);
 }
-
 .stat-card-blue {
-  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
-  border: 1px solid #e0f2fe;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(224, 242, 254, 0.2) 100%);
 }
-
 .stat-card-amber {
-  background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
-  border: 1px solid #fef3c7;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(254, 243, 199, 0.2) 100%);
 }
-
 .stat-card-indigo {
-  background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
-  border: 1px solid #ede9fe;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(237, 233, 254, 0.2) 100%);
 }
 
-/* Active Sidebar Navigation Pill */
+/* Active Navigation Pill */
 .nav-link-active {
   background: #0ea5e9 !important;
   color: #ffffff !important;
@@ -85,19 +112,18 @@ body {
 }
 
 /* ==========================================================================
-   LIVE ATTENDANCE FACE SCANNER (DEEP HUD VIEWPORT)
+   DEEP HUD VIEWPORT FOR CAMERA SCANNER
    ========================================================================== */
 
 .hud-viewport {
   position: relative;
-  background: #070c18;
+  background: #050811;
   border: 1px solid #1e293b;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 8px 30px rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 8px 30px rgba(15, 23, 42, 0.15);
 }
 
-/* Hologram Grid Overlay */
 .hologram-grid-dark {
   background-image: 
     linear-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
@@ -105,7 +131,6 @@ body {
   background-size: 24px 24px;
 }
 
-/* Laser Scan Line */
 .hud-laser {
   position: absolute;
   left: 0;
@@ -124,7 +149,6 @@ body {
   100% { top: 92%; opacity: 0.7; }
 }
 
-/* Corner Reticle Brackets */
 .reticle-bracket {
   position: absolute;
   width: 24px;
@@ -163,7 +187,6 @@ body {
   border-bottom-right-radius: 6px;
 }
 
-/* Telemetry Badge */
 .telemetry-chip {
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(8px);
@@ -178,7 +201,6 @@ body {
   gap: 6px;
 }
 
-/* Flash animation on successful face lock */
 .flash-verified {
   animation: flashVerifiedAnim 0.7s ease-out;
 }

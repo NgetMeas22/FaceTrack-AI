@@ -142,3 +142,16 @@ class SystemSetting(Base):
     setting_key: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     setting_value: Mapped[str] = mapped_column(String(255))
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
+    operator: Mapped[str] = mapped_column(String(100), default="System Engine")
+    action_type: Mapped[str] = mapped_column(String(50), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="SUCCESS")  # SUCCESS, WARN, FAILED
+    details: Mapped[str] = mapped_column(String(255))
+    ip_address: Mapped[Optional[str]] = mapped_column(String(50), default="127.0.0.1")
+
