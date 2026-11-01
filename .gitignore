@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local & Production Database / Uploads
+data/
+*.db
+*.sqlite3
+
+# Model weights (downloaded via python download_models.py)
+ml_models/*.onnx
+ml_models/*.part
+!ml_models/.gitkeep
+
+# Secrets & Environment
+.env
+.env.*
+!.env.example
+
+# OS / Editors
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

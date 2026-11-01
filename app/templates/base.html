@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FaceTrack AI — Face Recognition & Attendance{% endblock %}</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+              900: '#164e63',
+              950: '#083344',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Chart.js via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Styles & Scanner Animations -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+  {% block head %}{% endblock %}
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- Sidebar Navigation -->
+  <aside class="w-64 bg-[#0d1322] border-r border-slate-800/80 flex flex-col fixed inset-y-0 z-30 transition-all duration-300">
+    <!-- Brand Header -->
+    <div class="h-16 flex items-center gap-3 px-6 border-b border-slate-800/80 bg-[#0d1322]/80 backdrop-blur">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <i data-lucide="scan-face" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">FaceTrack AI</h1>
+        <p class="text-[10px] text-cyan-400/80 font-mono tracking-wider">EMPLOYEE EDITION</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto">
+      <a href="/dashboard" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group {% if current_page == 'dashboard' %} bg-gradient-to-r from-cyan-500/15 to-blue-500/10 text-cyan-400 border border-cyan-500/30 {% else %} text-slate-400 hover:text-white hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="layout-dashboard" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="/scanner" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group {% if current_page == 'scanner' %} bg-gradient-to-r from-cyan-500/20 to-blue-500/15 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-500/10 {% else %} text-slate-400 hover:text-white hover:bg-slate-800/60 {% endif %}">
+        <div class="flex items-center gap-3">
+          <i data-lucide="camera" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+          <span>Live Face Scanner</span>
+        </div>
+        <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 animate-pulse">LIVE</span>
+      </a>
+
+      <a href="/employees" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group {% if current_page == 'employees' %} bg-gradient-to-r from-cyan-500/15 to-blue-500/10 text-cyan-400 border border-cyan-500/30 {% else %} text-slate-400 hover:text-white hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="users" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+        <span>Employee Directory</span>
+      </a>
+
+      <a href="/attendance" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group {% if current_page == 'attendance' %} bg-gradient-to-r from-cyan-500/15 to-blue-500/10 text-cyan-400 border border-cyan-500/30 {% else %} text-slate-400 hover:text-white hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="calendar-check" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+        <span>View Attendance</span>
+      </a>
+    </nav>
+
+    <!-- Hostinger / System Status Widget -->
+    <div class="p-4 m-3 rounded-xl bg-slate-900/60 border border-slate-800">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          Python Monolith
+        </span>
+        <span class="text-[10px] text-slate-400 font-mono">v2.0</span>
+      </div>
+      <p class="text-[11px] text-slate-400">OpenCV YuNet + SFace ready for Hostinger VPS.</p>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <div class="flex-1 ml-64 flex flex-col min-h-screen">
+    <!-- Topbar -->
+    <header class="h-16 bg-[#0d1322]/80 backdrop-blur border-b border-slate-800/80 px-8 flex items-center justify-between sticky top-0 z-20">
+      <div>
+        <h2 class="text-lg font-bold text-white">{% block header_title %}Overview{% endblock %}</h2>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Live Clock -->
+        <div id="live-clock" class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 flex items-center gap-2">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span id="clock-display">--:--:--</span>
+        </div>
+
+        <a href="/scanner" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-semibold text-xs transition-all shadow-md shadow-cyan-500/20">
+          <i data-lucide="scan" class="w-3.5 h-3.5"></i>
+          <span>Launch Scanner</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 p-8">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Global Face Enrollment Modal -->
+  <div id="face-enroll-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-cyan-500/30 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+      <button onclick="closeFaceEnrollModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center">
+          <i data-lucide="camera" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-white">Register Face Sample</h3>
+          <p id="enroll-emp-name" class="text-xs text-slate-400 font-medium">Employee Name</p>
+        </div>
+      </div>
+
+      <!-- Camera Capture Box -->
+      <div class="relative rounded-xl overflow-hidden bg-black border border-slate-800 aspect-video flex items-center justify-center mb-4">
+        <video id="enroll-video" autoplay playsinline class="w-full h-full object-cover"></video>
+        <div class="absolute inset-0 border-2 border-cyan-500/40 rounded-xl pointer-events-none"></div>
+        <div class="reticle-corner reticle-tl"></div>
+        <div class="reticle-corner reticle-tr"></div>
+        <div class="reticle-corner reticle-bl"></div>
+        <div class="reticle-corner reticle-br"></div>
+      </div>
+
+      <p id="enroll-status" class="text-xs text-slate-400 text-center mb-5">Align face directly into the camera frame.</p>
+
+      <div class="flex items-center gap-3">
+        <button onclick="closeFaceEnrollModal()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+          Cancel
+        </button>
+        <button onclick="captureAndEnrollFace()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Capture & Enroll</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Main Scripts -->
+  <script src="/static/js/main.js"></script>
+  <script>
+    // Live Clock Runner
+    function updateClock() {
+      const now = new Date();
+      const el = document.getElementById('clock-display');
+      if (el) {
+        el.textContent = now.toLocaleTimeString('en-US', { hour12: true });
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+

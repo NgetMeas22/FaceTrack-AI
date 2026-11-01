@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Live Face Scanner — FaceTrack AI{% endblock %}
+{% block header_title %}Live Biometric Terminal{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+  <!-- Scanner Controls & Status Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel rounded-2xl p-5 border border-cyan-500/20">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-700/60 flex items-center justify-center text-cyan-400 shadow-md shadow-cyan-500/20">
+        <i data-lucide="scan" class="w-5 h-5 animate-pulse"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <span>Live Face Recognition Scanner</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+        </h3>
+        <p class="text-xs text-slate-400 font-mono">YuNet Neural Detector + SFace 128-d Biometrics</p>
+      </div>
+    </div>
+
+    <!-- Direction Mode & Camera Selector -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Mode Toggle -->
+      <div class="flex items-center bg-slate-900 border border-slate-700/80 rounded-xl p-1">
+        <button 
+          id="btn-mode-checkin"
+          onclick="setDirection('CHECK_IN')" 
+          class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-950 text-emerald-300 border border-emerald-700/60 shadow-sm shadow-emerald-500/20"
+        >
+          Check In
+        </button>
+        <button 
+          id="btn-mode-checkout"
+          onclick="setDirection('CHECK_OUT')" 
+          class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white"
+        >
+          Check Out
+        </button>
+      </div>
+
+      <!-- Hidden direction input for scanner engine -->
+      <select id="direction-select" class="hidden">
+        <option value="CHECK_IN" selected>CHECK_IN</option>
+        <option value="CHECK_OUT">CHECK_OUT</option>
+      </select>
+
+      <!-- Camera Device Dropdown -->
+      <div class="relative">
+        <select 
+          id="camera-select" 
+          class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 max-w-[180px]"
+        >
+          <option value="">Default Camera</option>
+        </select>
+      </div>
+
+      <!-- Status Pill -->
+      <div id="scanner-status" class="px-3 py-1.5 rounded-full text-xs font-mono border flex items-center gap-1.5 text-cyan-400 bg-cyan-950/40 border-cyan-800/60">
+        Initializing camera...
+      </div>
+    </div>
+  </div>
+
+  <!-- Big Animated Scanner Viewport -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Camera Feed & Cybernetic Reticle (2 cols) -->
+    <div class="lg:col-span-2 relative">
+      <div class="scanner-viewport aspect-[4/3] bg-black border-2 border-cyan-500/30 flex items-center justify-center">
+        
+        <!-- Video Stream -->
+        <video id="webcam-feed" autoplay playsinline muted class="w-full h-full object-cover transform scale-x-[-1]"></video>
+        
+        <!-- Dynamic Face Bounding Box Canvas -->
+        <canvas id="face-canvas" class="absolute inset-0 w-full h-full pointer-events-none transform scale-x-[-1] z-10"></canvas>
+
+        <!-- Laser Sweep Beam -->
+        <div id="scanner-laser" class="scanner-laser"></div>
+
+        <!-- Radar Pulse Waves -->
+        <div class="radar-pulse"></div>
+
+        <!-- Hologram Grid Overlay -->
+        <div class="absolute inset-0 hologram-grid pointer-events-none opacity-40"></div>
+
+        <!-- Corner Targeting Reticles -->
+        <div class="reticle-corner reticle-tl"></div>
+        <div class="reticle-corner reticle-tr"></div>
+        <div class="reticle-corner reticle-bl"></div>
+        <div class="reticle-corner reticle-br"></div>
+
+        <!-- Flash Effect on Verified Match -->
+        <div id="scanner-flash" class="absolute inset-0 pointer-events-none z-20"></div>
+
+        <!-- Bottom Overlay Status -->
+        <div class="absolute bottom-4 left-6 right-6 flex items-center justify-between text-[11px] font-mono text-cyan-400 bg-slate-950/80 backdrop-blur px-4 py-2 rounded-xl border border-cyan-500/20 z-15">
+          <span class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            ACTIVE BIOMETRIC SENSORS
+          </span>
+          <span>THRESHOLD: 0.38 COSINE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Match Information Card & Real-Time Feedback (1 col) -->
+    <div class="space-y-6 flex flex-col justify-between">
+      
+      <!-- Instant Verified Match HUD Card -->
+      <div 
+        id="match-result-card" 
+        class="glass-panel rounded-2xl p-6 border border-emerald-500/40 shadow-xl shadow-emerald-950/20 opacity-0 translate-y-4 pointer-events-none transition-all duration-500 bg-gradient-to-b from-[#0f1d2a] to-[#091522]"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+            Identity Verified
+          </span>
+          <span id="match-direction" class="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
+            Check In
+          </span>
+        </div>
+
+        <div class="flex items-center gap-4 mb-4">
+          <img 
+            id="match-avatar" 
+            src="https://ui-avatars.com/api/?name=User&background=06b6d4&color=fff" 
+            alt="Matched employee avatar" 
+            class="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-400/80 shadow-md shadow-emerald-500/20"
+          >
+          <div>
+            <h4 id="match-name" class="font-bold text-lg text-white">Employee Name</h4>
+            <p id="match-dept" class="text-xs text-slate-300">Department • Position</p>
+            <p id="match-time" class="text-xs font-mono text-cyan-300 mt-1">--:--:--</p>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
+          <span class="text-slate-400">Biometric Match:</span>
+          <span id="match-confidence" class="font-bold font-mono text-emerald-400">98.4% Match</span>
+        </div>
+      </div>
+
+      <!-- Quick Guidance & Instruction Card -->
+      <div class="glass-panel rounded-2xl p-6 border border-slate-800">
+        <h4 class="font-bold text-sm text-white mb-2 flex items-center gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i>
+          <span>Scanner Tips</span>
+        </h4>
+        <ul class="text-xs text-slate-400 space-y-2.5">
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span>Stand directly in front of the lens with adequate room lighting.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span>Face recognition triggers automatically when aligned with the frame.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span>Anti-duplicate debounce ensures you aren't marked multiple times.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-cyan-400 font-bold">•</span>
+            <span>Currently enrolled employees: <strong class="text-white">{{ total_enrolled }}</strong></span>
+          </li>
+        </ul>
+
+        <div class="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-xs text-slate-400">Need to register a new face?</span>
+          <a href="/employees" class="text-xs text-cyan-400 font-semibold hover:underline flex items-center gap-1">
+            <span>Employee List</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/scanner.js"></script>
+<script>
+  function setDirection(dir) {
+    const sel = document.getElementById('direction-select');
+    const btnIn = document.getElementById('btn-mode-checkin');
+    const btnOut = document.getElementById('btn-mode-checkout');
+
+    if (sel) {
+      sel.value = dir;
+      sel.dispatchEvent(new Event('change'));
+    }
+
+    if (dir === 'CHECK_IN') {
+      btnIn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-950 text-emerald-300 border border-emerald-700/60 shadow-sm shadow-emerald-500/20';
+      btnOut.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white';
+    } else {
+      btnOut.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-cyan-950 text-cyan-300 border border-cyan-700/60 shadow-sm shadow-cyan-500/20';
+      btnIn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white';
+    }
+  }
+</script>
+{% endblock %}
+

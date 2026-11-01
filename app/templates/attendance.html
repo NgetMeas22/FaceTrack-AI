@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Logs — FaceTrack AI{% endblock %}
+{% block header_title %}Attendance Logs & Auditing{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl mx-auto">
+
+  <!-- Summary Cards for Filtered View -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="glass-panel rounded-xl p-4 flex items-center justify-between border border-slate-800">
+      <div>
+        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Filtered Records</p>
+        <p class="text-2xl font-bold text-white mt-1">{{ records | length }}</p>
+      </div>
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
+        <i data-lucide="list-checks" class="w-4 h-4"></i>
+      </div>
+    </div>
+
+    <div class="glass-panel rounded-xl p-4 flex items-center justify-between border border-slate-800">
+      <div>
+        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Present Count</p>
+        <p class="text-2xl font-bold text-emerald-400 mt-1">{{ total_present }}</p>
+      </div>
+      <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+        <i data-lucide="user-check" class="w-4 h-4"></i>
+      </div>
+    </div>
+
+    <div class="glass-panel rounded-xl p-4 flex items-center justify-between border border-slate-800">
+      <div>
+        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Late Arrivals</p>
+        <p class="text-2xl font-bold text-amber-400 mt-1">{{ total_late }}</p>
+      </div>
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center">
+        <i data-lucide="clock" class="w-4 h-4"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Export Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel rounded-2xl p-5 border border-slate-800">
+    <form method="GET" action="/attendance" class="flex flex-wrap items-center gap-3 flex-1">
+      
+      <!-- Date Picker -->
+      <div>
+        <input 
+          type="date" 
+          name="target_date" 
+          value="{{ filter_date }}" 
+          onchange="this.form.submit()" 
+          class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+        >
+      </div>
+
+      <!-- Department Filter -->
+      <select 
+        name="dept_id" 
+        onchange="this.form.submit()"
+        class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+      >
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+          <option value="{{ dept.id }}" {% if selected_dept == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Status Filter -->
+      <select 
+        name="status" 
+        onchange="this.form.submit()"
+        class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+      >
+        <option value="">All Statuses</option>
+        <option value="PRESENT" {% if selected_status == 'PRESENT' %}selected{% endif %}>Present</option>
+        <option value="LATE" {% if selected_status == 'LATE' %}selected{% endif %}>Late</option>
+        <option value="ABSENT" {% if selected_status == 'ABSENT' %}selected{% endif %}>Absent</option>
+      </select>
+
+      <!-- Search Input -->
+      <div class="relative min-w-[180px]">
+        <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+        <input 
+          type="text" 
+          name="search" 
+          value="{{ search }}" 
+          placeholder="Filter employee..." 
+          class="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500"
+        >
+      </div>
+
+      {% if filter_date or selected_dept or selected_status or search %}
+        <a href="/attendance" class="text-xs text-rose-400 hover:underline px-2">Reset</a>
+      {% endif %}
+    </form>
+
+    <!-- Export Button -->
+    <a 
+      href="/api/attendance/export?target_date={{ filter_date }}&dept_id={{ selected_dept or '' }}&status={{ selected_status or '' }}" 
+      class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-all shrink-0"
+    >
+      <i data-lucide="download" class="w-4 h-4 text-cyan-400"></i>
+      <span>Export CSV</span>
+    </a>
+  </div>
+
+  <!-- Attendance Table -->
+  <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800 tracking-wider">
+          <tr>
+            <th class="py-3.5 px-5">Employee</th>
+            <th class="py-3.5 px-5">Department</th>
+            <th class="py-3.5 px-5">Check In</th>
+            <th class="py-3.5 px-5">Check Out</th>
+            <th class="py-3.5 px-5">Status</th>
+            <th class="py-3.5 px-5">Method</th>
+            <th class="py-3.5 px-5">Confidence</th>
+            <th class="py-3.5 px-5">Notes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60">
+          {% for r in records %}
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            
+            <!-- Employee Info -->
+            <td class="py-3.5 px-5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-800 overflow-hidden border border-slate-700 flex items-center justify-center shrink-0">
+                  {% if r.employee.photo_path %}
+                    <img src="{{ r.employee.photo_path }}" alt="{{ r.employee.full_name }}" class="w-full h-full object-cover">
+                  {% else %}
+                    <span class="text-xs font-bold text-cyan-400">{{ r.employee.first_name[0] }}</span>
+                  {% endif %}
+                </div>
+                <div>
+                  <p class="font-semibold text-white">{{ r.employee.full_name }}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">{{ r.employee.employee_code }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Department -->
+            <td class="py-3.5 px-5 text-slate-300">
+              {% if r.employee.department %}
+                {{ r.employee.department.name }}
+              {% else %}
+                <span class="text-slate-400">-</span>
+              {% endif %}
+            </td>
+
+            <!-- Check In -->
+            <td class="py-3.5 px-5 font-mono text-slate-200">
+              {{ r.check_in_time | format_time }}
+            </td>
+
+            <!-- Check Out -->
+            <td class="py-3.5 px-5 font-mono text-slate-400">
+              {{ r.check_out_time | format_time }}
+            </td>
+
+            <!-- Status Badge -->
+            <td class="py-3.5 px-5">
+              {% if r.status == 'PRESENT' %}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+                  Present
+                </span>
+              {% elif r.status == 'LATE' %}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-950/80 text-amber-400 border border-amber-800">
+                  Late
+                </span>
+              {% else %}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-950/80 text-rose-400 border border-rose-800">
+                  {{ r.status }}
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Method -->
+            <td class="py-3.5 px-5 text-slate-400 flex items-center gap-1.5 pt-4">
+              {% if r.method == 'FACE_SCAN' %}
+                <i data-lucide="scan-face" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span class="text-[11px] text-cyan-300">Face Scan</span>
+              {% else %}
+                <i data-lucide="clipboard-pen" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span class="text-[11px]">Manual</span>
+              {% endif %}
+            </td>
+
+            <!-- Confidence -->
+            <td class="py-3.5 px-5 font-mono">
+              {% if r.confidence %}
+                <span class="text-emerald-400 font-bold">{{ (r.confidence * 100) | round(1) }}%</span>
+              {% else %}
+                <span class="text-slate-400">-</span>
+              {% endif %}
+            </td>
+
+            <!-- Notes -->
+            <td class="py-3.5 px-5 text-slate-400 text-[11px]">
+              {{ r.notes or '-' }}
+            </td>
+
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="py-12 text-center text-slate-400">
+              No attendance records found for {{ filter_date }}.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
