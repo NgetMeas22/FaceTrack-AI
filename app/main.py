@@ -819,6 +819,7 @@ def create_department_api(
 
 @app.post("/api/employees")
 def create_employee_api(
+    request: Request,
     employee_code: str = Form(...),
     first_name: str = Form(...),
     last_name: str = Form(...),
@@ -878,11 +879,15 @@ def create_employee_api(
         except Exception as e:
             print("Photo save error:", e)
 
+    curr_user = get_current_user(request, db)
+    operator_name = curr_user.full_name if curr_user else "System Admin"
+
     audit = AuditLog(
-        operator="Alex Chen (Admin)",
+        operator=operator_name,
         action_type="EMPLOYEE_ENROLL",
         status="SUCCESS",
         details=f"Created employee profile: {emp.full_name} ({emp.employee_code})",
+        ip_address=request.client.host if request.client else "127.0.0.1",
     )
     db.add(audit)
     db.commit()
@@ -893,6 +898,7 @@ def create_employee_api(
 @app.post("/api/employees/{emp_id}/update")
 def update_employee_api(
     emp_id: int,
+    request: Request,
     employee_code: str = Form(...),
     first_name: str = Form(...),
     last_name: str = Form(...),
@@ -947,6 +953,21 @@ def update_employee_api(
                             ))
         except Exception as e:
             print("Photo update error:", e)
+
+    curr_user = get_current_user(request, db)
+    operator_name = curr_user.full_name if curr_user else "System Admin"
+
+    audit = AuditLog(
+        operator=operator_name,
+        action_type="SETTINGS_UPDATE",
+        status="SUCCESS",
+        details=f"Updated employee profile: {emp.full_name} ({emp.employee_code})",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+
+    return RedirectResponse(url="/en/employees?success=updated", status_code=303)
 
     audit = AuditLog(
         operator="Alex Chen (Admin)",
