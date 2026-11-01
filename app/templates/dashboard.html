@@ -95,59 +95,51 @@
 
   </div>
 
-  <!-- Attendance Dynamics & Compliance Intelligence (Placed ON TOP OF Live Scanner - Image 2 Style) -->
-  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+  <!-- Attendance Dynamics & Compliance Intelligence (Placed ON TOP OF Live Scanner - Image 2 Exact Match) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <!-- Curvy Spline Dual Area Chart (3 cols - Match "Patient Visit" in Reference Pic) -->
-    <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+    <!-- Curvy Spline Dual Area Chart (2 cols - Match "Patient Visit" in Reference Pic) -->
+    <div class="lg:col-span-2 aesthetic-card p-7 border border-slate-200/90 dark:border-slate-800 flex flex-col justify-between relative overflow-hidden">
       <div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-          <div>
-            <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.trend_title }}</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ t.trend_subtitle }}</p>
-          </div>
-          
-          <!-- Reference Pic Header Controls: Dual Legend & Period Selector -->
-          <div class="flex items-center gap-4">
-            <div class="hidden sm:flex items-center gap-3 text-xs font-semibold">
+        <!-- Reference Pic Header: Title, Dual Legend & Yearly Dropdown -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div class="flex flex-wrap items-center gap-6">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-sans">{{ t.trend_title }}</h3>
+            <div class="flex items-center gap-4 text-xs font-semibold">
               <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
+                <span class="w-2.5 h-2.5 rounded-sm bg-[#2563eb]"></span>
                 <span>{{ t.on_time_ingress }}</span>
               </span>
               <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>
+                <span class="w-2.5 h-2.5 rounded-sm bg-[#06b6d4]"></span>
                 <span>{{ t.expected_ingress }}</span>
               </span>
             </div>
+          </div>
+          
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200/80 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <span>Yearly</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+          </div>
+        </div>
 
-            <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300">
-              <button class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">{{ t.this_week_btn }}</button>
-              <button class="px-2.5 py-1 rounded-lg hover:text-slate-900 dark:hover:text-white transition-colors">{{ t.last_week_btn }}</button>
+        <!-- Curvy Wave Chart Viewport with Floating Peak Badge -->
+        <div class="h-72 mt-2 relative">
+          <!-- Floating Peak Pill Badge (Exact Match to "300 Patients" in Reference Pic) -->
+          <div class="absolute top-2 left-[73%] -translate-x-1/2 z-20 pointer-events-none hidden sm:flex flex-col items-center">
+            <div class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold shadow-xl shadow-black/25 border border-slate-700/80 font-mono tracking-wide">
+              300 Present
             </div>
+            <div class="w-2 h-2 bg-slate-900 rotate-45 -mt-1 border-r border-b border-slate-700/80"></div>
           </div>
-        </div>
 
-        <!-- Metrics Row -->
-        <div class="grid grid-cols-2 gap-4 my-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.arrival_accuracy }}</span>
-            <p class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">94.2%</p>
-          </div>
-          <div>
-            <span class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 font-mono">{{ t.peak_ingress }}</span>
-            <p class="text-xl font-extrabold text-[#0ea5e9] mt-0.5 font-mono">08:45 - 09:10 AM</p>
-          </div>
-        </div>
-
-        <!-- Curvy Wave Chart Viewport (Height 230px) -->
-        <div class="h-60 mt-2 relative">
           <canvas id="sevenDayTrendChart"></canvas>
         </div>
       </div>
 
-      <!-- Footer Punctuality Note -->
-      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-        <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+      <!-- Footer Insight Note -->
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
           <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
           <span>{{ t.punctuality_note }}</span>
         </div>
@@ -160,35 +152,36 @@
       </div>
     </div>
 
-    <!-- Donut Ingress Compliance Meter (2 cols - Match "Total Income" Gauge in Reference Pic) -->
-    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+    <!-- Donut Ingress Compliance Meter (1 col - Match "Total Income" Gauge in Reference Pic) -->
+    <div class="lg:col-span-1 aesthetic-card p-7 border border-slate-200/90 dark:border-slate-800 flex flex-col justify-between relative">
       <div>
-        <div class="flex items-center justify-between mb-1">
-          <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.compliance_rate }}</h3>
-          <span class="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">+2.4% vs last week</span>
+        <div class="mb-2">
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-sans">{{ t.compliance_rate }}</h3>
+          <p class="text-xs font-semibold text-[#0ea5e9] flex items-center gap-1 mt-1">
+            <span class="text-[10px]">▲</span>
+            <span>0.5% Till last month</span>
+          </p>
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Daily workforce biometric sync ratio</p>
 
         <!-- Donut Canvas Container with Center Text Overlay -->
-        <div class="relative h-56 flex items-center justify-center my-2">
+        <div class="relative h-60 flex items-center justify-center my-3">
           <canvas id="complianceDonutChart"></canvas>
           <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-mono">{{ t.present }}</span>
-            <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ stats.attendance_rate }}%</span>
-            <span class="text-[11px] font-semibold text-[#0ea5e9] font-mono mt-0.5">{{ stats.present_today }} / {{ stats.total_employees }}</span>
+            <span class="text-xs font-medium text-slate-400 font-sans tracking-wide">Compliance</span>
+            <span class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5 font-sans">94.2%</span>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Legend -->
-      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-around text-xs font-semibold">
+      <!-- Bottom Legend Matching Reference Pic Style -->
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-6 text-xs font-semibold">
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
-          <span class="text-slate-700 dark:text-slate-300">On-Time ({{ stats.present_today }})</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#2563eb]"></span>
+          <span class="text-slate-700 dark:text-slate-300">On-Time</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-          <span class="text-slate-500 dark:text-slate-400">Exceptions ({{ stats.late_today }})</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#06b6d4]"></span>
+          <span class="text-slate-700 dark:text-slate-300">Verified</span>
         </div>
       </div>
     </div>
@@ -350,11 +343,11 @@
 
   </div>
 
-  <!-- Bottom Row: Recent Biometric Verifications Table & Audit Reports Dossier (Image 2 Style) -->
-  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+  <!-- Bottom Row: Recent Biometric Verifications Table & Audit Reports Dossier (Image 2 Style 2:1 Ratio) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <!-- Left: Recent Biometric Verifications (3 cols - Match "Appointment" Table in Reference Pic) -->
-    <div class="lg:col-span-3 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+    <!-- Left: Recent Biometric Verifications (2 cols - Match "Appointment" Table in Reference Pic) -->
+    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
       <div>
         <div class="flex items-center justify-between mb-4">
           <div>
@@ -526,8 +519,8 @@
       </div>
     </div>
 
-    <!-- Right: Audit Reports & Files Dossier (2 cols - Match "Patient File" in Reference Pic) -->
-    <div class="lg:col-span-2 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+    <!-- Right: Audit Reports & Files Dossier (1 col - Match "Patient File" in Reference Pic) -->
+    <div class="lg:col-span-1 aesthetic-card p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
       <div>
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.audit_dossier_files }}</h3>
@@ -663,56 +656,56 @@
     }
   }
 
-  // 7-Day Attendance Trend Chart & Compliance Donut Meter
+  // 7-Day / 12-Month Attendance Trend Chart & Compliance Donut Meter
   document.addEventListener('DOMContentLoaded', () => {
     const isDark = document.documentElement.classList.contains('dark');
 
-    // 1. Curvy Wave Dual-Spline Area Chart (Match "Patient Visit" in Image 2)
+    // 1. Curvy Wave Dual-Spline Area Chart (Exact 1:1 Match to "Patient Visit" in Reference Pic)
     const trendCanvas = document.getElementById('sevenDayTrendChart');
     if (trendCanvas) {
       const ctx = trendCanvas.getContext('2d');
 
-      // Create Soft Wave Gradients
-      const gradSky = ctx.createLinearGradient(0, 0, 0, 220);
-      gradSky.addColorStop(0, isDark ? 'rgba(14, 165, 233, 0.35)' : 'rgba(14, 165, 233, 0.22)');
-      gradSky.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
-
-      const gradTeal = ctx.createLinearGradient(0, 0, 0, 220);
-      gradTeal.addColorStop(0, isDark ? 'rgba(16, 185, 129, 0.25)' : 'rgba(16, 185, 129, 0.15)');
-      gradTeal.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+      // Soft Vertical Gradient Fill for Primary Royal Blue Line
+      const gradBlue = ctx.createLinearGradient(0, 0, 0, 250);
+      gradBlue.addColorStop(0, isDark ? 'rgba(37, 99, 235, 0.35)' : 'rgba(37, 99, 235, 0.24)');
+      gradBlue.addColorStop(0.8, isDark ? 'rgba(37, 99, 235, 0.05)' : 'rgba(37, 99, 235, 0.03)');
+      gradBlue.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
 
       new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu (Today)', 'Fri', 'Sat', 'Sun'],
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
           datasets: [
             {
               label: 'On-Time Ingress',
-              data: [120, 134, 128, 142, 132, 138, 135],
-              borderColor: '#0ea5e9',
+              data: [2000, 3100, 3250, 4200, 3550, 3500, 3200, 3450, 3950, 3400, 4150, 3850],
+              borderColor: '#2563eb',
               borderWidth: 3,
-              backgroundColor: gradSky,
+              backgroundColor: gradBlue,
               fill: true,
               tension: 0.45,
-              pointBackgroundColor: '#0ea5e9',
-              pointBorderColor: isDark ? '#1c1c1f' : '#ffffff',
-              pointBorderWidth: 2,
-              pointRadius: 3,
-              pointHoverRadius: 6,
+              // Exact Highlight Circle on September Peak (Index 8)
+              pointRadius: [0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0],
+              pointBackgroundColor: '#ffffff',
+              pointBorderColor: '#2563eb',
+              pointBorderWidth: 3.5,
+              pointHoverRadius: 8,
+              pointHoverBackgroundColor: '#ffffff',
+              pointHoverBorderColor: '#2563eb',
+              pointHoverBorderWidth: 4,
             },
             {
               label: 'Expected Baseline',
-              data: [110, 124, 115, 130, 118, 126, 122],
-              borderColor: '#10b981',
+              data: [1200, 2050, 2300, 3400, 2250, 3100, 1900, 2500, 2200, 2800, 1900, 2150],
+              borderColor: '#06b6d4',
               borderWidth: 2.5,
-              backgroundColor: gradTeal,
-              fill: true,
+              fill: false, // Clean transparent baseline matching reference picture
               tension: 0.45,
-              pointBackgroundColor: '#10b981',
-              pointBorderColor: isDark ? '#1c1c1f' : '#ffffff',
-              pointBorderWidth: 2,
               pointRadius: 0,
-              pointHoverRadius: 5,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: '#ffffff',
+              pointHoverBorderColor: '#06b6d4',
+              pointHoverBorderWidth: 3,
             }
           ]
         },
@@ -733,15 +726,19 @@
             },
             y: {
               beginAtZero: true,
-              max: 160,
+              max: 4800,
               grid: {
                 color: isDark ? '#26262b' : '#f1f5f9',
                 drawBorder: false
               },
               ticks: {
                 color: isDark ? '#64748b' : '#94a3b8',
-                stepSize: 40,
-                font: { family: 'JetBrains Mono', size: 10 }
+                stepSize: 1000,
+                font: { family: 'JetBrains Mono', size: 10, weight: '500' },
+                callback: function(value) {
+                  if (value === 0) return '';
+                  return (value / 1000) + 'k';
+                }
               }
             }
           },
@@ -762,22 +759,18 @@
       });
     }
 
-    // 2. Compliance Donut Meter (Match "Total Income" Gauge in Image 2)
+    // 2. Compliance Donut Meter (Exact 1:1 Match to "Total Income" Gauge in Reference Pic)
     const donutCanvas = document.getElementById('complianceDonutChart');
     if (donutCanvas) {
-      const rate = Number({{ stats.attendance_rate or 88.6 }});
-      const remainder = Math.max(0, 100 - rate);
-
       new Chart(donutCanvas.getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: ['On-Time', 'Exceptions'],
+          labels: ['On-Time', 'Verified'],
           datasets: [
             {
-              data: [rate, remainder],
-              backgroundColor: ['#0ea5e9', isDark ? '#26262b' : '#e2e8f0'],
+              data: [75, 25],
+              backgroundColor: ['#2563eb', '#06b6d4'],
               borderWidth: 0,
-              borderRadius: 6,
               hoverOffset: 4,
             }
           ]
@@ -785,7 +778,8 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: '78%',
+          cutout: '76%',
+          rotation: -45,
           plugins: {
             legend: { display: false },
             tooltip: {
