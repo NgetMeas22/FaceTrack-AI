@@ -5,7 +5,7 @@ import io
 import os
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +18,29 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db, init_db
 from app.face_recognition import FaceBox, FaceEngine, get_face_engine
-from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting, User
+from app.models import (
+    AttendanceCorrection,
+    AttendanceRecord,
+    AuditLog,
+    BiometricConsent,
+    Department,
+    Device,
+    Employee,
+    EmployeeShift,
+    FaceEmbedding,
+    Holiday,
+    LeaveRequest,
+    LeaveType,
+    Notification,
+    Permission,
+    Role,
+    RolePermission,
+    ScanLog,
+    Shift,
+    SystemSetting,
+    User,
+)
+from app.pagination import paginate
 from app.security import (
     ROLE_ADMIN,
     ROLE_EMPLOYEE,
@@ -27,7 +49,9 @@ from app.security import (
     SESSION_COOKIE_NAME,
     can_access_page,
     create_session_token,
+    generate_csrf_token,
     hash_password,
+    verify_csrf_token,
     verify_password,
     verify_session_token,
 )
@@ -67,16 +91,32 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
-def format_datetime(value: Optional[datetime], fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
+def format_datetime(value: Any, fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
     if not value:
         return "-"
-    return value.strftime(fmt)
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value).strftime(fmt)
+        except Exception:
+            return value
+    if hasattr(value, "strftime"):
+        return value.strftime(fmt)
+    return str(value)
 
 
-def format_time(value: Optional[datetime], fmt: str = "%I:%M %p") -> str:
+def format_time(value: Any, fmt: str = "%I:%M %p") -> str:
     if not value:
         return "-"
-    return value.strftime(fmt)
+    if isinstance(value, str):
+        try:
+            parts = value.split(":")
+            h, m = int(parts[0]), int(parts[1])
+            return time(h, m).strftime(fmt)
+        except Exception:
+            return value
+    if hasattr(value, "strftime"):
+        return value.strftime(fmt)
+    return str(value)
 
 
 templates.env.filters["format_datetime"] = format_datetime
@@ -87,6 +127,12 @@ templates.env.globals["ROLE_ADMIN"] = ROLE_ADMIN
 templates.env.globals["ROLE_HR"] = ROLE_HR
 templates.env.globals["ROLE_SECURITY"] = ROLE_SECURITY
 templates.env.globals["ROLE_EMPLOYEE"] = ROLE_EMPLOYEE
+
+def get_csrf_token_for_request(request: Request) -> str:
+    session_id = request.cookies.get(SESSION_COOKIE_NAME) or "facetrack_default_session"
+    return generate_csrf_token(session_id)
+
+templates.env.globals["get_csrf_token"] = get_csrf_token_for_request
 
 
 def resolve_lang(lang: str) -> str:
@@ -123,6 +169,9 @@ PAGE_REQUIRED_ROLES = {
     "audit_logs": ["ADMIN", "SECURITY_OFFICER"],
     "departments": ["ADMIN", "HR_MANAGER"],
     "employees": ["ADMIN", "HR_MANAGER"],
+    "shifts": ["ADMIN", "HR_MANAGER"],
+    "leave": ["ADMIN", "HR_MANAGER", "SECURITY_OFFICER", "EMPLOYEE"],
+    "devices": ["ADMIN", "SECURITY_OFFICER"],
     "reports": ["ADMIN", "HR_MANAGER"],
     "attendance": ["ADMIN", "HR_MANAGER", "SECURITY_OFFICER"],
     "scanner": ["ADMIN", "HR_MANAGER", "SECURITY_OFFICER", "EMPLOYEE"],
@@ -187,6 +236,18 @@ def rep_redirect():
 @app.get("/settings", response_class=RedirectResponse)
 def set_redirect():
     return RedirectResponse(url="/en/settings", status_code=302)
+
+@app.get("/shifts", response_class=RedirectResponse)
+def shifts_redirect():
+    return RedirectResponse(url="/en/shifts", status_code=302)
+
+@app.get("/leave", response_class=RedirectResponse)
+def leave_redirect():
+    return RedirectResponse(url="/en/leave", status_code=302)
+
+@app.get("/devices", response_class=RedirectResponse)
+def devices_redirect():
+    return RedirectResponse(url="/en/devices", status_code=302)
 
 
 def check_view_access(request: Request, db: Session, lang: str, page_name: str):
@@ -388,16 +449,23 @@ def dashboard_view(lang: str, request: Request, db: Session = Depends(get_db)):
         .all()
     )
 
+    # Optimized SQL aggregation for department stats
+    dept_counts = dict(
+        db.query(Employee.department_id, func.count(Employee.id))
+        .filter(Employee.status == "ACTIVE")
+        .group_by(Employee.department_id)
+        .all()
+    )
     departments = db.query(Department).all()
-    dept_stats = []
-    for dept in departments:
-        emp_count = db.query(Employee).filter(Employee.department_id == dept.id).count()
-        dept_stats.append({
+    dept_stats = [
+        {
             "name": dept.name,
             "code": dept.code,
-            "count": emp_count,
+            "count": dept_counts.get(dept.id, 0),
             "head_name": dept.head_name,
-        })
+        }
+        for dept in departments
+    ]
 
     return templates.TemplateResponse(
         request=request,
@@ -424,6 +492,8 @@ def dashboard_view(lang: str, request: Request, db: Session = Depends(get_db)):
 def employees_view(
     lang: str,
     request: Request,
+    page: int = Query(1),
+    page_size: int = Query(10),
     search: Optional[str] = Query(None),
     dept_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
@@ -453,7 +523,7 @@ def employees_view(
     if status:
         query = query.filter(Employee.status == status)
 
-    employees = query.order_by(Employee.employee_code).all()
+    pagination = paginate(query.order_by(Employee.employee_code), page=page, page_size=page_size)
     departments = db.query(Department).order_by(Department.name).all()
 
     return templates.TemplateResponse(
@@ -464,7 +534,8 @@ def employees_view(
             "t": t,
             "current_user": current_user,
             "current_page": "employees",
-            "employees": employees,
+            "employees": pagination["items"],
+            "pagination": pagination,
             "departments": departments,
             "search": search or "",
             "selected_dept": dept_id,
@@ -474,27 +545,48 @@ def employees_view(
 
 
 @app.get("/{lang}/departments", response_class=HTMLResponse)
-def departments_view(lang: str, request: Request, db: Session = Depends(get_db)):
+def departments_view(
+    lang: str,
+    request: Request,
+    page: int = Query(1),
+    page_size: int = Query(10),
+    search: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
     lang = resolve_lang(lang)
     t = TRANSLATIONS[lang]
     guard_resp, current_user = check_view_access(request, db, lang, "departments")
     if guard_resp:
         return guard_resp
 
-    departments = db.query(Department).all()
-    dept_list = []
-    for d in departments:
-        emp_count = db.query(Employee).filter(Employee.department_id == d.id).count()
-        dept_list.append({
+    query = db.query(Department)
+    if search:
+        s_filter = f"%{search.strip()}%"
+        query = query.filter((Department.name.ilike(s_filter)) | (Department.code.ilike(s_filter)))
+
+    dept_pagination = paginate(query.order_by(Department.name), page=page, page_size=page_size)
+    dept_ids = [d.id for d in dept_pagination["items"]]
+
+    emp_counts = dict(
+        db.query(Employee.department_id, func.count(Employee.id))
+        .filter(Employee.department_id.in_(dept_ids) if dept_ids else False)
+        .group_by(Employee.department_id)
+        .all()
+    ) if dept_ids else {}
+
+    dept_list = [
+        {
             "id": d.id,
             "code": d.code,
             "name": d.name,
             "description": d.description,
             "head_name": d.head_name or "Unit Leadership",
             "location": d.location or "Main Campus",
-            "emp_count": emp_count,
+            "emp_count": emp_counts.get(d.id, 0),
             "attendance_rate": 94 + (d.id % 5),
-        })
+        }
+        for d in dept_pagination["items"]
+    ]
 
     return templates.TemplateResponse(
         request=request,
@@ -505,6 +597,8 @@ def departments_view(lang: str, request: Request, db: Session = Depends(get_db))
             "current_user": current_user,
             "current_page": "departments",
             "dept_list": dept_list,
+            "pagination": dept_pagination,
+            "search": search or "",
         },
     )
 
@@ -542,6 +636,8 @@ def scanner_view(lang: str, request: Request, db: Session = Depends(get_db)):
 def attendance_view(
     lang: str,
     request: Request,
+    page: int = Query(1),
+    page_size: int = Query(10),
     target_date: Optional[str] = Query(None),
     dept_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
@@ -582,11 +678,19 @@ def attendance_view(
             | (Employee.employee_code.ilike(s_filter))
         )
 
-    records = query.order_by(desc(AttendanceRecord.check_in_time)).all()
-    departments = db.query(Department).all()
+    total_present = (
+        db.query(func.count(AttendanceRecord.id))
+        .filter(AttendanceRecord.attendance_date == filter_date, AttendanceRecord.status.in_(["PRESENT", "LATE"]))
+        .scalar() or 0
+    )
+    total_late = (
+        db.query(func.count(AttendanceRecord.id))
+        .filter(AttendanceRecord.attendance_date == filter_date, AttendanceRecord.status == "LATE")
+        .scalar() or 0
+    )
 
-    total_present = sum(1 for r in records if r.status in ["PRESENT", "LATE"])
-    total_late = sum(1 for r in records if r.status == "LATE")
+    pagination = paginate(query.order_by(desc(AttendanceRecord.check_in_time)), page=page, page_size=page_size)
+    departments = db.query(Department).all()
 
     return templates.TemplateResponse(
         request=request,
@@ -596,7 +700,8 @@ def attendance_view(
             "t": t,
             "current_user": current_user,
             "current_page": "attendance",
-            "records": records,
+            "records": pagination["items"],
+            "pagination": pagination,
             "departments": departments,
             "filter_date": filter_date.strftime("%Y-%m-%d"),
             "selected_dept": dept_id,
@@ -613,6 +718,8 @@ def attendance_view(
 def audit_logs_view(
     lang: str,
     request: Request,
+    page: int = Query(1),
+    page_size: int = Query(15),
     action_type: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
@@ -638,7 +745,7 @@ def audit_logs_view(
             | (AuditLog.action_type.ilike(s_filter))
         )
 
-    logs = query.limit(50).all()
+    pagination = paginate(query, page=page, page_size=page_size)
 
     return templates.TemplateResponse(
         request=request,
@@ -648,8 +755,181 @@ def audit_logs_view(
             "t": t,
             "current_user": current_user,
             "current_page": "audit_logs",
-            "logs": logs,
+            "logs": pagination["items"],
+            "pagination": pagination,
             "selected_action": action_type or "",
+            "selected_status": status or "",
+            "search": search or "",
+        },
+    )
+
+
+@app.get("/{lang}/shifts", response_class=HTMLResponse)
+def shifts_view(
+    lang: str,
+    request: Request,
+    page: int = Query(1),
+    page_size: int = Query(10),
+    search: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "shifts")
+    if guard_resp:
+        return guard_resp
+
+    shifts = db.query(Shift).order_by(Shift.start_time).all()
+
+    query = (
+        db.query(EmployeeShift)
+        .join(Employee, Employee.id == EmployeeShift.employee_id)
+        .join(Shift, Shift.id == EmployeeShift.shift_id)
+        .options(joinedload(EmployeeShift.employee), joinedload(EmployeeShift.shift))
+    )
+    if search:
+        s_filter = f"%{search.strip()}%"
+        query = query.filter(
+            (Employee.first_name.ilike(s_filter))
+            | (Employee.last_name.ilike(s_filter))
+            | (Employee.employee_code.ilike(s_filter))
+            | (Shift.name.ilike(s_filter))
+        )
+
+    pagination = paginate(query.order_by(desc(EmployeeShift.created_at)), page=page, page_size=page_size)
+    employees = db.query(Employee).filter(Employee.status == "ACTIVE").order_by(Employee.last_name).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="shifts.html",
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "shifts",
+            "shifts": shifts,
+            "assignments": pagination["items"],
+            "pagination": pagination,
+            "employees": employees,
+            "search": search or "",
+        },
+    )
+
+
+@app.get("/{lang}/leave", response_class=HTMLResponse)
+def leave_view(
+    lang: str,
+    request: Request,
+    status: Optional[str] = Query(None),
+    leave_type_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1),
+    page_size: int = Query(10),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "leave")
+    if guard_resp:
+        return guard_resp
+
+    leave_types = db.query(LeaveType).order_by(LeaveType.name).all()
+
+    query = (
+        db.query(LeaveRequest)
+        .join(Employee, Employee.id == LeaveRequest.employee_id)
+        .join(LeaveType, LeaveType.id == LeaveRequest.leave_type_id)
+        .options(joinedload(LeaveRequest.employee), joinedload(LeaveRequest.leave_type))
+    )
+
+    if status:
+        query = query.filter(LeaveRequest.status == status)
+    if leave_type_id:
+        query = query.filter(LeaveRequest.leave_type_id == leave_type_id)
+    if search:
+        s_filter = f"%{search.strip()}%"
+        query = query.filter(
+            (Employee.first_name.ilike(s_filter))
+            | (Employee.last_name.ilike(s_filter))
+            | (Employee.employee_code.ilike(s_filter))
+        )
+
+    total_pending = db.query(func.count(LeaveRequest.id)).filter(LeaveRequest.status == "PENDING").scalar() or 0
+    total_approved = db.query(func.count(LeaveRequest.id)).filter(LeaveRequest.status == "APPROVED").scalar() or 0
+    total_rejected = db.query(func.count(LeaveRequest.id)).filter(LeaveRequest.status == "REJECTED").scalar() or 0
+
+    pagination = paginate(query.order_by(desc(LeaveRequest.created_at)), page=page, page_size=page_size)
+    employees = db.query(Employee).filter(Employee.status == "ACTIVE").order_by(Employee.last_name).all()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="leave.html",
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "leave",
+            "leave_types": leave_types,
+            "leave_requests": pagination["items"],
+            "pagination": pagination,
+            "employees": employees,
+            "selected_status": status or "",
+            "selected_type": leave_type_id,
+            "search": search or "",
+            "stats": {
+                "pending": total_pending,
+                "approved": total_approved,
+                "rejected": total_rejected,
+                "total": total_pending + total_approved + total_rejected,
+            },
+        },
+    )
+
+
+@app.get("/{lang}/devices", response_class=HTMLResponse)
+def devices_view(
+    lang: str,
+    request: Request,
+    page: int = Query(1),
+    page_size: int = Query(10),
+    search: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    lang = resolve_lang(lang)
+    t = TRANSLATIONS[lang]
+    guard_resp, current_user = check_view_access(request, db, lang, "devices")
+    if guard_resp:
+        return guard_resp
+
+    query = db.query(Device)
+    if status:
+        query = query.filter(Device.status == status)
+    if search:
+        s_filter = f"%{search.strip()}%"
+        query = query.filter(
+            (Device.name.ilike(s_filter))
+            | (Device.device_code.ilike(s_filter))
+            | (Device.location.ilike(s_filter))
+            | (Device.ip_address.ilike(s_filter))
+        )
+
+    pagination = paginate(query.order_by(Device.device_code), page=page, page_size=page_size)
+    total_online = db.query(func.count(Device.id)).filter(Device.status == "ONLINE").scalar() or 0
+    total_devices = db.query(func.count(Device.id)).scalar() or 0
+
+    return templates.TemplateResponse(
+        request=request,
+        name="devices.html",
+        context={
+            "lang": lang,
+            "t": t,
+            "current_user": current_user,
+            "current_page": "devices",
+            "devices": pagination["items"],
+            "pagination": pagination,
+            "total_online": total_online,
+            "total_devices": total_devices,
             "selected_status": status or "",
             "search": search or "",
         },
@@ -1630,3 +1910,376 @@ def export_attendance_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+# ============================================================================
+# ENTERPRISE WORKFORCE MANAGEMENT API ENDPOINTS
+# ============================================================================
+
+class ShiftCreateRequest(BaseModel):
+    code: str
+    name: str
+    start_time: str
+    end_time: str
+    grace_period_mins: int = 15
+    is_night_shift: bool = False
+
+
+@app.post("/api/shifts")
+def create_or_update_shift(req: ShiftCreateRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db, allowed_roles=["ADMIN", "HR_MANAGER"])
+    try:
+        t_start = datetime.strptime(req.start_time, "%H:%M").time()
+        t_end = datetime.strptime(req.end_time, "%H:%M").time()
+    except ValueError:
+        return JSONResponse(status_code=400, content={"success": False, "message": "Invalid time format (use HH:MM)"})
+
+    shift = db.query(Shift).filter(Shift.code == req.code.strip().upper()).first()
+    if not shift:
+        shift = Shift(
+            code=req.code.strip().upper(),
+            name=req.name.strip(),
+            start_time=req.start_time.strip(),
+            end_time=req.end_time.strip(),
+            grace_period_minutes=req.grace_period_mins,
+            is_overnight=req.is_night_shift,
+        )
+        db.add(shift)
+        action_msg = f"Created shift {shift.name} ({shift.code})"
+    else:
+        shift.name = req.name.strip()
+        shift.start_time = req.start_time.strip()
+        shift.end_time = req.end_time.strip()
+        shift.grace_period_minutes = req.grace_period_mins
+        shift.is_overnight = req.is_night_shift
+        action_msg = f"Updated shift {shift.name} ({shift.code})"
+
+    audit = AuditLog(
+        operator=user.username,
+        action_type="SHIFT_MUTATION",
+        status="SUCCESS",
+        details=action_msg,
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(shift)
+    return {"success": True, "message": action_msg, "shift": {"id": shift.id, "code": shift.code, "name": shift.name}}
+
+
+class ShiftAssignRequest(BaseModel):
+    employee_id: int
+    shift_id: int
+    effective_from: Optional[str] = None
+    effective_to: Optional[str] = None
+
+
+@app.post("/api/shifts/assign")
+def assign_employee_shift(req: ShiftAssignRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db, allowed_roles=["ADMIN", "HR_MANAGER"])
+    emp = db.query(Employee).filter(Employee.id == req.employee_id).first()
+    if not emp:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Employee not found"})
+
+    shift = db.query(Shift).filter(Shift.id == req.shift_id).first()
+    if not shift:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Shift not found"})
+
+    eff_from = date.today()
+    if req.effective_from:
+        try:
+            eff_from = datetime.strptime(req.effective_from, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    eff_to = None
+    if req.effective_to:
+        try:
+            eff_to = datetime.strptime(req.effective_to, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    assignment = EmployeeShift(
+        employee_id=emp.id,
+        shift_id=shift.id,
+        effective_from=eff_from,
+        effective_to=eff_to,
+        is_active=True,
+    )
+    db.add(assignment)
+    audit = AuditLog(
+        operator=user.username,
+        action_type="SHIFT_ASSIGNMENT",
+        status="SUCCESS",
+        details=f"Assigned {emp.full_name} to shift {shift.name}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": f"Successfully assigned {emp.full_name} to {shift.name}"}
+
+
+class LeaveCreateRequest(BaseModel):
+    employee_id: int
+    leave_type_id: int
+    start_date: str
+    end_date: str
+    reason: Optional[str] = None
+
+
+@app.post("/api/leave/request")
+def create_leave_request(req: LeaveCreateRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db)
+    try:
+        s_date = datetime.strptime(req.start_date, "%Y-%m-%d").date()
+        e_date = datetime.strptime(req.end_date, "%Y-%m-%d").date()
+    except ValueError:
+        return JSONResponse(status_code=400, content={"success": False, "message": "Invalid date format (use YYYY-MM-DD)"})
+
+    if s_date > e_date:
+        return JSONResponse(status_code=400, content={"success": False, "message": "Start date must be before end date"})
+
+    leave_req = LeaveRequest(
+        employee_id=req.employee_id,
+        leave_type_id=req.leave_type_id,
+        start_date=s_date,
+        end_date=e_date,
+        status="PENDING",
+        reason=req.reason.strip() if req.reason else None,
+    )
+    db.add(leave_req)
+    audit = AuditLog(
+        operator=user.username,
+        action_type="LEAVE_REQUESTED",
+        status="SUCCESS",
+        details=f"Leave request created for Employee #{req.employee_id} ({s_date} to {e_date})",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": "Leave request submitted successfully"}
+
+
+class LeaveReviewRequest(BaseModel):
+    status: str
+    rejection_reason: Optional[str] = None
+
+
+@app.post("/api/leave/{leave_id}/review")
+def review_leave_request(leave_id: int, req: LeaveReviewRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db, allowed_roles=["ADMIN", "HR_MANAGER"])
+    leave_req = db.query(LeaveRequest).filter(LeaveRequest.id == leave_id).first()
+    if not leave_req:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Leave request not found"})
+
+    new_status = req.status.strip().upper()
+    if new_status not in ["APPROVED", "REJECTED"]:
+        return JSONResponse(status_code=400, content={"success": False, "message": "Status must be APPROVED or REJECTED"})
+
+    leave_req.status = new_status
+    leave_req.approved_by_user_id = user.id
+    leave_req.rejection_reason = req.rejection_reason if new_status == "REJECTED" else None
+
+    audit = AuditLog(
+        operator=user.username,
+        action_type=f"LEAVE_{new_status}",
+        status="SUCCESS",
+        details=f"Leave request #{leave_id} set to {new_status} by {user.username}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": f"Leave request #{leave_id} {new_status.lower()}."}
+
+
+class DeviceCreateRequest(BaseModel):
+    device_code: str
+    name: str
+    device_type: str = "OPTICAL_TERMINAL"
+    ip_address: Optional[str] = None
+    mac_address: Optional[str] = None
+    location: Optional[str] = None
+
+
+@app.post("/api/devices")
+def register_or_update_device(req: DeviceCreateRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db, allowed_roles=["ADMIN", "SECURITY_OFFICER"])
+    code = req.device_code.strip().upper()
+    dev = db.query(Device).filter(Device.device_code == code).first()
+    if not dev:
+        dev = Device(
+            device_code=code,
+            name=req.name.strip(),
+            device_type=req.device_type,
+            ip_address=req.ip_address.strip() if req.ip_address else None,
+            location=req.location.strip() if req.location else "Main Entrance",
+            status="ONLINE",
+            last_seen_at=datetime.now(timezone.utc),
+        )
+        db.add(dev)
+        action_msg = f"Registered terminal device {dev.name} ({dev.device_code})"
+    else:
+        dev.name = req.name.strip()
+        dev.device_type = req.device_type
+        if req.ip_address:
+            dev.ip_address = req.ip_address.strip()
+        if req.location:
+            dev.location = req.location.strip()
+        action_msg = f"Updated terminal device {dev.name} ({dev.device_code})"
+
+    audit = AuditLog(
+        operator=user.username,
+        action_type="DEVICE_MUTATION",
+        status="SUCCESS",
+        details=action_msg,
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": action_msg}
+
+
+@app.post("/api/devices/{device_id}/ping")
+def ping_device(device_id: int, db: Session = Depends(get_db)):
+    dev = db.query(Device).filter(Device.id == device_id).first()
+    if not dev:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Device not found"})
+    dev.last_seen_at = datetime.now(timezone.utc)
+    dev.status = "ONLINE"
+    db.commit()
+    return {"success": True, "status": "ONLINE", "last_ping_at": dev.last_seen_at.isoformat()}
+
+
+class AttendanceCorrectionRequest(BaseModel):
+    record_id: int
+    requested_check_in: Optional[str] = None
+    requested_check_out: Optional[str] = None
+    reason: str
+
+
+@app.post("/api/attendance/corrections")
+def submit_attendance_correction(req: AttendanceCorrectionRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db)
+    record = db.query(AttendanceRecord).filter(AttendanceRecord.id == req.record_id).first()
+    if not record:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Attendance record not found"})
+
+    req_in = None
+    if req.requested_check_in:
+        try:
+            req_in = datetime.fromisoformat(req.requested_check_in)
+        except ValueError:
+            pass
+
+    req_out = None
+    if req.requested_check_out:
+        try:
+            req_out = datetime.fromisoformat(req.requested_check_out)
+        except ValueError:
+            pass
+
+    correction = AttendanceCorrection(
+        attendance_record_id=record.id,
+        requested_by_user_id=user.id,
+        requested_check_in=req_in,
+        requested_check_out=req_out,
+        reason=req.reason.strip(),
+        status="PENDING",
+    )
+    db.add(correction)
+    audit = AuditLog(
+        operator=user.username,
+        action_type="ATTENDANCE_CORRECTION_REQUEST",
+        status="SUCCESS",
+        details=f"Attendance correction requested for record #{record.id} by {user.username}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": "Attendance correction request submitted for review"}
+
+
+class AttendanceCorrectionReviewRequest(BaseModel):
+    status: str
+    reviewer_notes: Optional[str] = None
+
+
+@app.post("/api/attendance/corrections/{correction_id}/review")
+def review_attendance_correction(correction_id: int, req: AttendanceCorrectionReviewRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db, allowed_roles=["ADMIN", "HR_MANAGER"])
+    correction = db.query(AttendanceCorrection).filter(AttendanceCorrection.id == correction_id).first()
+    if not correction:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Correction request not found"})
+
+    new_status = req.status.strip().upper()
+    if new_status not in ["APPROVED", "REJECTED"]:
+        return JSONResponse(status_code=400, content={"success": False, "message": "Status must be APPROVED or REJECTED"})
+
+    correction.status = new_status
+    correction.reviewed_by_user_id = user.id
+    correction.reviewer_notes = req.reviewer_notes
+    correction.reviewed_at = datetime.now(timezone.utc)
+
+    if new_status == "APPROVED":
+        record = db.query(AttendanceRecord).filter(AttendanceRecord.id == correction.attendance_record_id).first()
+        if record:
+            if correction.requested_check_in:
+                record.check_in_time = correction.requested_check_in
+            if correction.requested_check_out:
+                record.check_out_time = correction.requested_check_out
+            record.notes = f"Corrected by {user.username} (Correction #{correction.id})"
+
+    audit = AuditLog(
+        operator=user.username,
+        action_type=f"ATTENDANCE_CORRECTION_{new_status}",
+        status="SUCCESS",
+        details=f"Attendance correction #{correction_id} {new_status.lower()} by {user.username}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": f"Correction #{correction_id} {new_status.lower()}."}
+
+
+class BiometricConsentRequest(BaseModel):
+    employee_id: int
+    consent_given: bool
+    notes: Optional[str] = None
+
+
+@app.post("/api/biometrics/consent")
+def record_biometric_consent(req: BiometricConsentRequest, request: Request, db: Session = Depends(get_db)):
+    user = require_user(request, db, allowed_roles=["ADMIN", "HR_MANAGER"])
+    emp = db.query(Employee).filter(Employee.id == req.employee_id).first()
+    if not emp:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Employee not found"})
+
+    consent = db.query(BiometricConsent).filter(BiometricConsent.employee_id == emp.id).first()
+    now_utc = datetime.now(timezone.utc)
+    if not consent:
+        consent = BiometricConsent(
+            employee_id=emp.id,
+            is_granted=req.consent_given,
+            consented_at=now_utc if req.consent_given else None,
+            revoked_at=now_utc if not req.consent_given else None,
+            purpose="ATTENDANCE_VERIFICATION",
+        )
+        db.add(consent)
+    else:
+        consent.is_granted = req.consent_given
+        if req.consent_given:
+            consent.consented_at = now_utc
+            consent.revoked_at = None
+        else:
+            consent.revoked_at = now_utc
+
+    audit = AuditLog(
+        operator=user.username,
+        action_type="BIOMETRIC_CONSENT_UPDATE",
+        status="SUCCESS",
+        details=f"Biometric consent for {emp.full_name} set to {req.consent_given}",
+        ip_address=request.client.host if request.client else "127.0.0.1",
+    )
+    db.add(audit)
+    db.commit()
+    return {"success": True, "message": f"Biometric consent recorded for {emp.full_name}"}

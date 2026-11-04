@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.shifts }} — {{ t.brand_name }}{% endblock %}
+{% block breadcrumb %}{{ t.shifts }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ t.shifts }}</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage work schedules, shifts, grace periods, and personnel assignments.</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      {% if not current_user or can_access_page(current_user.role, 'shifts') %}
+      <button onclick="openModal('assign-shift-modal')" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 shadow-sm transition-colors">
+        <i data-lucide="user-check" class="w-4 h-4 text-[#0ea5e9]"></i>
+        <span>{{ t.assign_shift }}</span>
+      </button>
+
+      <button onclick="openModal('add-shift-modal')" class="px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-sky-500/20 transition-all">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span>{{ t.create_shift }}</span>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Shift Definitions Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    {% for s in shifts %}
+    <div class="aesthetic-card p-5 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-sky-50 dark:bg-sky-950/60 text-[#0ea5e9] border border-sky-200 dark:border-sky-800">
+            {{ s.code }}
+          </span>
+          <span class="w-2 h-2 rounded-full {{ 'bg-emerald-500' if s.is_active else 'bg-slate-400' }}"></span>
+        </div>
+        <h4 class="text-sm font-bold text-slate-900 dark:text-white">{{ s.name }}</h4>
+        <div class="mt-3 flex items-center gap-2 font-mono text-xs font-bold text-slate-700 dark:text-slate-200">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>{{ s.start_time | format_time }} – {{ s.end_time | format_time }}</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">Grace Period: <strong class="text-slate-700 dark:text-slate-300">{{ s.grace_period_minutes }} mins</strong></p>
+      </div>
+      <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
+        <span class="text-slate-400">{{ 'Night Shift' if s.is_overnight else 'Standard Day' }}</span>
+        <button onclick="editShift('{{ s.code }}', '{{ s.name }}', '{{ s.start_time }}', '{{ s.end_time }}', {{ s.grace_period_minutes }}, {{ 'true' if s.is_overnight else 'false' }})" class="text-[#0ea5e9] hover:underline font-semibold">{{ t.edit }}</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Shift Assignments Table -->
+  <div class="aesthetic-card overflow-hidden">
+    <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Active Shift Rosters</h3>
+        <p class="text-xs text-slate-400">Personnel assigned to shifts and schedules</p>
+      </div>
+
+      <form method="GET" action="/{{ lang }}/shifts" class="flex items-center gap-2">
+        <div class="relative">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" name="search" value="{{ search }}" placeholder="{{ t.search_placeholder }}" class="pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+        {% if search %}
+        <a href="/{{ lang }}/shifts" class="text-xs text-rose-500 font-bold hover:underline px-2">{{ t.reset }}</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50/80 dark:bg-[#26262b] border-b border-slate-200 dark:border-[#333338] text-[11px]">
+          <tr>
+            <th class="py-4 px-6">{{ t.employee_name }}</th>
+            <th class="py-4 px-6">{{ t.department }}</th>
+            <th class="py-4 px-6">{{ t.shift_name }}</th>
+            <th class="py-4 px-6">Schedule Window</th>
+            <th class="py-4 px-6">Effective Period</th>
+            <th class="py-4 px-6">{{ t.status }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+          {% for a in assignments %}
+          <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+            <td class="py-3.5 px-6">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-950/60 text-[#0ea5e9] flex items-center justify-center font-bold text-xs shrink-0">
+                  {{ a.employee.first_name[0] if a.employee and a.employee.first_name else 'E' }}
+                </div>
+                <div>
+                  <p class="font-bold text-slate-900 dark:text-white">{{ a.employee.full_name if a.employee else 'Employee #' ~ a.employee_id }}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">{{ a.employee.employee_code if a.employee else '-' }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-6 text-slate-600 dark:text-slate-300 font-semibold">
+              {{ a.employee.department.name if a.employee and a.employee.department else 'General' }}
+            </td>
+            <td class="py-3.5 px-6 font-bold text-[#0ea5e9]">
+              {{ a.shift.name if a.shift else '-' }}
+            </td>
+            <td class="py-3.5 px-6 font-mono text-slate-700 dark:text-slate-300">
+              {{ a.shift.start_time | format_time }} – {{ a.shift.end_time | format_time }}
+            </td>
+            <td class="py-3.5 px-6 font-mono text-[11px] text-slate-500">
+              {{ a.effective_from.strftime('%b %d, %Y') if a.effective_from else 'Permanent' }}
+              {% if a.effective_to %} to {{ a.effective_to.strftime('%b %d, %Y') }}{% endif %}
+            </td>
+            <td class="py-3.5 px-6">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' if a.is_active else 'bg-slate-100 text-slate-600' }}">
+                {{ 'Active' if a.is_active else 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="py-12 text-center text-slate-400">
+              No shift assignments recorded yet. Use "Assign Shift" to schedule personnel.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Server-Side Pagination Bar -->
+    {% if pagination and pagination.total > 0 %}
+    <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+      <div>
+        <span>{{ t.showing }} <strong>{{ (pagination.page - 1) * pagination.page_size + 1 }}</strong> {{ t.to }} <strong>{{ [pagination.page * pagination.page_size, pagination.total]|min }}</strong> {{ t.of }} <strong>{{ pagination.total }}</strong> {{ t.records_total }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_page }}&search={{ search }}" class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5 transition-colors">
+          <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+          <span>{{ t.previous }}</span>
+        </a>
+        {% endif %}
+        <span class="px-3 py-1.5 font-mono font-bold text-slate-700 dark:text-slate-300">
+          {{ pagination.page }} / {{ pagination.total_pages }}
+        </span>
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_page }}&search={{ search }}" class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5 transition-colors">
+          <span>{{ t.next }}</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Modal: Create / Edit Shift -->
+<div id="add-shift-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="aesthetic-card border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+    <button onclick="closeModal('add-shift-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-[#0ea5e9] border border-sky-100 dark:border-sky-800 flex items-center justify-center">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h3 id="shift-modal-title" class="font-bold text-base text-slate-900 dark:text-white">{{ t.create_shift }}</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Define schedule window and grace parameters</p>
+      </div>
+    </div>
+    <form id="shift-form" onsubmit="submitShiftForm(event)" class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Shift Code *</label>
+          <input type="text" id="shift-code" required placeholder="DAY" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.shift_name }} *</label>
+          <input type="text" id="shift-name" required placeholder="Morning Regular" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.start_time }} *</label>
+          <input type="time" id="shift-start" required value="08:00" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.end_time }} *</label>
+          <input type="time" id="shift-end" required value="17:00" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.grace_period_mins }}</label>
+          <input type="number" id="shift-grace" value="15" min="0" max="60" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+        <div class="flex items-center pt-5">
+          <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input type="checkbox" id="shift-night" class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300">
+            <span>Night Shift</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button type="button" onclick="closeModal('add-shift-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          {{ t.cancel }}
+        </button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md shadow-sky-500/20">
+          {{ t.save }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Assign Shift to Employee -->
+<div id="assign-shift-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="aesthetic-card border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+    <button onclick="closeModal('assign-shift-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-[#0ea5e9] border border-sky-100 dark:border-sky-800 flex items-center justify-center">
+        <i data-lucide="user-check" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-slate-900 dark:text-white">{{ t.assign_shift }}</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Map personnel to working roster</p>
+      </div>
+    </div>
+    <form id="assign-shift-form" onsubmit="submitAssignForm(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.employee_name }} *</label>
+        <select id="assign-emp-id" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          <option value="">Select Employee</option>
+          {% for emp in employees %}
+          <option value="{{ emp.id }}">{{ emp.full_name }} ({{ emp.employee_code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ t.shift_name }} *</label>
+        <select id="assign-shift-id" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+          {% for s in shifts %}
+          <option value="{{ s.id }}">{{ s.name }} ({{ s.start_time | format_time }} – {{ s.end_time | format_time }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Effective From</label>
+          <input type="date" id="assign-eff-from" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Effective To</label>
+          <input type="date" id="assign-eff-to" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#0ea5e9]">
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button type="button" onclick="closeModal('assign-shift-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          {{ t.cancel }}
+        </button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md shadow-sky-500/20">
+          {{ t.save }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openModal(id) {
+  const m = document.getElementById(id);
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+}
+function closeModal(id) {
+  const m = document.getElementById(id);
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+}
+function editShift(code, name, start, end, grace, isNight) {
+  document.getElementById('shift-code').value = code;
+  document.getElementById('shift-name').value = name;
+  document.getElementById('shift-start').value = start;
+  document.getElementById('shift-end').value = end;
+  document.getElementById('shift-grace').value = grace;
+  document.getElementById('shift-night').checked = isNight;
+  document.getElementById('shift-modal-title').textContent = 'Edit Shift';
+  openModal('add-shift-modal');
+}
+async function submitShiftForm(e) {
+  e.preventDefault();
+  const payload = {
+    code: document.getElementById('shift-code').value,
+    name: document.getElementById('shift-name').value,
+    start_time: document.getElementById('shift-start').value,
+    end_time: document.getElementById('shift-end').value,
+    grace_period_mins: parseInt(document.getElementById('shift-grace').value || 15),
+    is_night_shift: document.getElementById('shift-night').checked,
+  };
+  try {
+    const res = await fetch('/api/shifts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      location.reload();
+    } else {
+      alert(data.message || 'Error saving shift');
+    }
+  } catch (err) {
+    alert('Network error saving shift');
+  }
+}
+async function submitAssignForm(e) {
+  e.preventDefault();
+  const payload = {
+    employee_id: parseInt(document.getElementById('assign-emp-id').value),
+    shift_id: parseInt(document.getElementById('assign-shift-id').value),
+    effective_from: document.getElementById('assign-eff-from').value || null,
+    effective_to: document.getElementById('assign-eff-to').value || null,
+  };
+  try {
+    const res = await fetch('/api/shifts/assign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      location.reload();
+    } else {
+      alert(data.message || 'Error assigning shift');
+    }
+  } catch (err) {
+    alert('Network error assigning shift');
+  }
+}
+</script>
+{% endblock %}

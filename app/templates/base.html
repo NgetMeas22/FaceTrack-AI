@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ get_csrf_token(request) }}">
   <title>{% block title %}{{ t.brand_name }} — {{ t.brand_tagline }}{% endblock %}</title>
 
   <!-- Prevent Theme Flash (Early Theme Evaluator - Default to Dark Charcoal #181818) -->
@@ -113,6 +114,30 @@
         <i data-lucide="calendar-check" class="w-4 h-4"></i>
         <span>{{ t.attendance_logs }}</span>
       </a>
+
+      <!-- Shifts (ADMIN, HR_MANAGER) -->
+      {% if not current_user or can_access_page(current_user.role, 'shifts') %}
+      <a href="/{{ lang }}/shifts" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'shifts' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="clock" class="w-4 h-4"></i>
+        <span>{{ t.shifts }}</span>
+      </a>
+      {% endif %}
+
+      <!-- Leave Requests (All roles) -->
+      {% if not current_user or can_access_page(current_user.role, 'leave') %}
+      <a href="/{{ lang }}/leave" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'leave' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="calendar-off" class="w-4 h-4"></i>
+        <span>{{ t.leave }}</span>
+      </a>
+      {% endif %}
+
+      <!-- Terminals & Devices (ADMIN, SECURITY_OFFICER) -->
+      {% if not current_user or can_access_page(current_user.role, 'devices') %}
+      <a href="/{{ lang }}/devices" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if current_page == 'devices' %} nav-link-active {% else %} text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 {% endif %}">
+        <i data-lucide="cpu" class="w-4 h-4"></i>
+        <span>{{ t.devices }}</span>
+      </a>
+      {% endif %}
 
       <!-- System Audit Logs (ADMIN, SECURITY_OFFICER) -->
       {% if not current_user or can_access_page(current_user.role, 'audit_logs') %}

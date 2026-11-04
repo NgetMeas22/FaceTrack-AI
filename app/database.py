@@ -45,11 +45,114 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    """Create all tables and seed default departments/employees/logs/users if empty."""
-    from app.models import AttendanceRecord, AuditLog, Department, Employee, FaceEmbedding, ScanLog, SystemSetting, User
-    from app.security import hash_password, ROLE_ADMIN, ROLE_HR, ROLE_SECURITY, ROLE_EMPLOYEE
+    """Create all tables and seed default departments/employees/logs/users/shifts/leaves if empty."""
+    from app.models import (
+        AttendanceCorrection,
+        AttendanceRecord,
+        AuditLog,
+        BiometricConsent,
+        Department,
+        Device,
+        Employee,
+        EmployeeShift,
+        FaceEmbedding,
+        Holiday,
+        LeaveRequest,
+        LeaveType,
+        Notification,
+        Permission,
+        Role,
+        RolePermission,
+        ScanLog,
+        Shift,
+        SystemSetting,
+        User,
+    )
+    from app.security import (
+        hash_password,
+        ROLE_ADMIN,
+        ROLE_HR,
+        ROLE_SECURITY,
+        ROLE_EMPLOYEE,
+    )
 
     Base.metadata.create_all(bind=engine)
+
+    with SessionLocal() as db:
+        # Seed Roles & Permissions
+        if db.query(Role).count() == 0:
+            roles = [
+                Role(name=ROLE_ADMIN, description="Full administrative clearance across entire system"),
+                Role(name=ROLE_HR, description="Human Resources & Employee Directory Manager"),
+                Role(name=ROLE_SECURITY, description="Security Officer & Real-time Biometric Terminal Operator"),
+                Role(name=ROLE_EMPLOYEE, description="General Staff Member with Personal Attendance Access"),
+            ]
+            db.add_all(roles)
+            db.commit()
+
+            # Seed basic permissions
+            perms = [
+                Permission(key="employees:read", description="View personnel directory", module="EMPLOYEES"),
+                Permission(key="employees:write", description="Create and modify personnel records", module="EMPLOYEES"),
+                Permission(key="attendance:read", description="View attendance logs", module="ATTENDANCE"),
+                Permission(key="attendance:write", description="Record or correct attendance", module="ATTENDANCE"),
+                Permission(key="shifts:manage", description="Configure work shifts and schedules", module="SHIFTS"),
+                Permission(key="leave:manage", description="Review and approve leave requests", module="LEAVE"),
+                Permission(key="devices:manage", description="Register and manage optical terminals", module="DEVICES"),
+                Permission(key="audit:read", description="Inspect immutable audit logs", module="AUDIT"),
+                Permission(key="system:settings", description="Modify system and security settings", module="SETTINGS"),
+            ]
+            db.add_all(perms)
+            db.commit()
+
+        # Seed Standard Shifts
+        if db.query(Shift).count() == 0:
+            shifts = [
+                Shift(code="SHIFT-STD", name="Standard Office Shift", start_time="08:30", end_time="17:30", grace_period_minutes=15, is_overnight=False, description="Primary daylight operating shift"),
+                Shift(code="SHIFT-MORN", name="Morning Terminal Shift", start_time="06:00", end_time="14:30", grace_period_minutes=10, is_overnight=False, description="Early optical gate coverage"),
+                Shift(code="SHIFT-EVE", name="Evening Operations Shift", start_time="14:00", end_time="22:30", grace_period_minutes=10, is_overnight=False, description="Evening ingress & facility supervision"),
+                Shift(code="SHIFT-NIGHT", name="Overnight Security Shift", start_time="22:00", end_time="06:30", grace_period_minutes=15, is_overnight=True, description="24/7 facility monitoring & nocturnal ingress"),
+            ]
+            db.add_all(shifts)
+            db.commit()
+
+        # Seed Leave Types
+        if db.query(LeaveType).count() == 0:
+            leaves = [
+                LeaveType(code="ANNUAL", name="Annual Paid Leave", days_per_year=18, is_paid=True, description="Standard statutory annual paid leave allowance"),
+                LeaveType(code="SICK", name="Medical / Sick Leave", days_per_year=14, is_paid=True, description="Paid sick leave with medical certificate"),
+                LeaveType(code="SPECIAL", name="Special Family / Compassionate Leave", days_per_year=7, is_paid=True, description="Family emergencies, wedding, or bereavement"),
+                LeaveType(code="UNPAID", name="Unpaid Leave", days_per_year=0, is_paid=False, description="Authorized unpaid absence approved by management"),
+            ]
+            db.add_all(leaves)
+            db.commit()
+
+        # Seed Optical Terminals / Devices
+        if db.query(Device).count() == 0:
+            devices = [
+                Device(device_code="DEV-001", name="Front Entrance Optical Array #04", location="Building A Main Entrance", ip_address="192.168.1.104", device_type="OPTICAL_TERMINAL", status="ONLINE", last_seen_at=datetime.now(timezone.utc)),
+                Device(device_code="DEV-002", name="Lobby Optical Turnstile #02", location="Ground Floor Lobby", ip_address="192.168.1.102", device_type="TURNSTILE", status="ONLINE", last_seen_at=datetime.now(timezone.utc)),
+                Device(device_code="DEV-003", name="AI Research Lab Access Terminal #01", location="Building C Lab Entrance", ip_address="192.168.1.103", device_type="OPTICAL_TERMINAL", status="ONLINE", last_seen_at=datetime.now(timezone.utc)),
+            ]
+            db.add_all(devices)
+            db.commit()
+
+        # Seed Official Holidays
+        if db.query(Holiday).count() == 0:
+            year = date.today().year
+            holidays = [
+                Holiday(holiday_date=date(year, 1, 1), name="International New Year's Day", description="Global New Year holiday"),
+                Holiday(holiday_date=date(year, 4, 13), name="Khmer New Year (Day 1)", description="Moha Sangkranta"),
+                Holiday(holiday_date=date(year, 4, 14), name="Khmer New Year (Day 2)", description="Virak Wanabat"),
+                Holiday(holiday_date=date(year, 4, 15), name="Khmer New Year (Day 3)", description="Virak Loeung Sak"),
+                Holiday(holiday_date=date(year, 5, 1), name="International Labor Day", description="Statutory public holiday"),
+                Holiday(holiday_date=date(year, 10, 1), name="Pchum Ben Day 1", description="Ancestors Day"),
+                Holiday(holiday_date=date(year, 10, 2), name="Pchum Ben Day 2", description="Ancestors Day Festival"),
+                Holiday(holiday_date=date(year, 11, 14), name="Water Festival (Day 1)", description="Bon Om Touk"),
+                Holiday(holiday_date=date(year, 11, 15), name="Water Festival (Day 2)", description="Bon Om Touk"),
+            ]
+            db.add_all(holidays)
+            db.commit()
 
     with SessionLocal() as db:
         # Seed Users & Roles if empty

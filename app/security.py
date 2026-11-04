@@ -1,20 +1,29 @@
 """Enterprise Security & Role-Based Access Control (RBAC) Module.
 
-Pure Python implementation using Python standard library (hashlib, hmac, secrets).
-Requires zero native external wheels, guaranteeing 100% cross-platform VPS stability.
+Hardened security implementation adhering to OWASP & AGENT_GUIDE standards:
+- Password Hashing: Argon2id (preferred) with automatic PBKDF2-HMAC-SHA256 fallback
+- Session Tokens: Cryptographic HMAC-SHA256 signatures with expiration & tamper protection
+- CSRF Protection: Session-bound CSRF token generation and constant-time verification
+- Role-Based Access Control: Granular Zero-Trust authorization matrix for pages and APIs
 """
 
 import base64
 import hashlib
 import hmac
 import json
+import os
+from pathlib import Path
 import secrets
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-import os
-from pathlib import Path
+try:
+    from argon2 import PasswordHasher
+    from argon2.exceptions import VerifyMismatchError
+    _argon2_hasher = PasswordHasher()
+except ImportError:
+    _argon2_hasher = None
 
 # Secret key for signing sessions (persisted in data/.session_secret or environment)
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -36,6 +45,7 @@ else:
         pass
 
 SESSION_COOKIE_NAME = "facetrack_session"
+CSRF_HEADER_NAME = "X-CSRF-Token"
 SESSION_DURATION_SECONDS = 86400  # 24 hours
 
 # Role definitions
@@ -47,8 +57,14 @@ ROLE_EMPLOYEE = "EMPLOYEE"
 ALL_ROLES = [ROLE_ADMIN, ROLE_HR, ROLE_SECURITY, ROLE_EMPLOYEE]
 
 
+# ============================================================================
+# PASSWORD HASHING (Argon2id + PBKDF2 Backward Compatibility)
+# ============================================================================
+
 def hash_password(password: str) -> str:
-    """Hash password using PBKDF2-HMAC-SHA256 with 100,000 iterations and a random salt."""
+    """Hash password using Argon2id (preferred) with fallback to PBKDF2-HMAC-SHA256."""
+    if _argon2_hasher:
+        return _argon2_hasher.hash(password)
     salt = secrets.token_hex(16)
     key = hashlib.pbkdf2_hmac(
         "sha256",
@@ -60,7 +76,22 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify plain password against PBKDF2 hash using constant-time comparison."""
+    """Verify plain password against Argon2id or legacy PBKDF2 hash using constant-time comparison."""
+    if not hashed_password:
+        return False
+
+    # Check Argon2id hash
+    if hashed_password.startswith("$argon2"):
+        if _argon2_hasher:
+            try:
+                return _argon2_hasher.verify(hashed_password, plain_password)
+            except VerifyMismatchError:
+                return False
+            except Exception:
+                return False
+        return False
+
+    # Check legacy PBKDF2 hash
     try:
         parts = hashed_password.split("$")
         if len(parts) != 3:
@@ -79,6 +110,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     except Exception:
         return False
 
+
+# ============================================================================
+# CRYPTOGRAPHIC SESSION MANAGEMENT
+# ============================================================================
 
 def create_session_token(user_id: int, username: str, role: str) -> str:
     """Generate an HMAC-SHA256 signed session token containing timestamp and user payload."""
@@ -130,18 +165,58 @@ def verify_session_token(token: Optional[str]) -> Optional[Dict[str, Any]]:
         return None
 
 
+# ============================================================================
+# CSRF PROTECTION HELPERS
+# ============================================================================
+
+def generate_csrf_token(session_token: str) -> str:
+    """Generate a cryptographic CSRF token bound to the current session token."""
+    if not session_token:
+        return ""
+    h = hmac.new(SECRET_KEY.encode("utf-8"), f"csrf:{session_token}".encode("utf-8"), hashlib.sha256)
+    return h.hexdigest()
+
+
+def verify_csrf_token(submitted_token: Optional[str], session_token: str) -> bool:
+    """Verify a CSRF token using constant-time comparison."""
+    if not submitted_token or not session_token:
+        return False
+    expected = generate_csrf_token(session_token)
+    return hmac.compare_digest(submitted_token, expected)
+
+
+# ============================================================================
+# ROLE-BASED ACCESS CONTROL (RBAC) MATRIX
+# ============================================================================
+
+PAGE_PERMISSIONS: Dict[str, List[str]] = {
+    ROLE_ADMIN: [
+        "dashboard", "employees", "departments", "scanner", "attendance",
+        "audit-logs", "audit_logs", "reports", "settings", "security",
+        "shifts", "leave", "devices"
+    ],
+    ROLE_HR: [
+        "dashboard", "employees", "departments", "scanner", "attendance",
+        "reports", "shifts", "leave"
+    ],
+    ROLE_SECURITY: [
+        "dashboard", "scanner", "attendance", "audit-logs", "audit_logs",
+        "devices", "leave"
+    ],
+    ROLE_EMPLOYEE: [
+        "dashboard", "scanner", "attendance", "leave"
+    ],
+}
+
+
 def can_access_page(user_role: str, page_name: str) -> bool:
     """Check if a specific role is authorized to view a page."""
     role = (user_role or "").upper()
     if role == ROLE_ADMIN:
         return True  # Admin has unrestricted access
 
-    permissions = {
-        ROLE_HR: ["dashboard", "employees", "departments", "attendance", "reports", "scanner"],
-        ROLE_SECURITY: ["dashboard", "scanner", "attendance", "audit_logs"],
-        ROLE_EMPLOYEE: ["dashboard", "scanner", "attendance"],
-    }
+    clean_page = page_name.replace("_", "-")
+    allowed_pages = PAGE_PERMISSIONS.get(role, ["dashboard", "scanner"])
+    allowed_pages_clean = [p.replace("_", "-") for p in allowed_pages]
 
-    allowed_pages = permissions.get(role, ["dashboard", "scanner"])
-    return page_name in allowed_pages
-
+    return clean_page in allowed_pages_clean

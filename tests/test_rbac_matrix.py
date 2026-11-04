@@ -9,7 +9,7 @@ def test_full_rbac_matrix():
     client = TestClient(app)
 
     # 1. Unauthenticated requests to protected pages redirect to login
-    for page in ["dashboard", "employees", "departments", "scanner", "attendance", "audit-logs", "reports", "settings", "security"]:
+    for page in ["dashboard", "employees", "departments", "scanner", "attendance", "audit-logs", "reports", "settings", "security", "shifts", "leave", "devices"]:
         r = client.get(f"/en/{page}", follow_redirects=False)
         assert r.status_code == 302, f"Expected redirect for unauthenticated /{page}, got {r.status_code}"
         assert "/login" in r.headers["location"]
@@ -24,13 +24,13 @@ def test_full_rbac_matrix():
     }
 
     expected_page_access = {
-        "ADMIN": {"dashboard", "employees", "departments", "scanner", "attendance", "audit-logs", "reports", "settings", "security"},
-        "HR_MANAGER": {"dashboard", "employees", "departments", "scanner", "attendance", "reports"},
-        "SECURITY_OFFICER": {"dashboard", "scanner", "attendance", "audit-logs"},
-        "EMPLOYEE": {"dashboard", "scanner", "attendance"},
+        "ADMIN": {"dashboard", "employees", "departments", "scanner", "attendance", "audit-logs", "reports", "settings", "security", "shifts", "leave", "devices"},
+        "HR_MANAGER": {"dashboard", "employees", "departments", "scanner", "attendance", "reports", "shifts", "leave"},
+        "SECURITY_OFFICER": {"dashboard", "scanner", "attendance", "audit-logs", "leave", "devices"},
+        "EMPLOYEE": {"dashboard", "scanner", "attendance", "leave"},
     }
 
-    all_pages = ["dashboard", "employees", "departments", "scanner", "attendance", "audit-logs", "reports", "settings", "security"]
+    all_pages = ["dashboard", "employees", "departments", "scanner", "attendance", "audit-logs", "reports", "settings", "security", "shifts", "leave", "devices"]
 
     for role_name, (username, password) in role_creds.items():
         c = TestClient(app)
