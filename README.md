@@ -29,7 +29,7 @@ Designed specifically for clean, lightweight deployment on **Hostinger VPS** or 
   - One-click CSV export for payroll and HR reporting.
 
 ---
-
+   
 ## Project Structure
 
 ```plaintext
@@ -160,3 +160,8 @@ To connect FaceTrack AI to a Hostinger MySQL / MariaDB database instead of SQLit
 export DATABASE_URL="mysql+pymysql://u123456789_user:Password@localhost:3306/u123456789_facetrack"
 ```
 FaceTrack AI will automatically connect and create all tables on first startup.
+
+
+
+
+<!-- .\.venv\Scripts\python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 -->

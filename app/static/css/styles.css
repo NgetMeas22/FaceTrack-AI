@@ -233,6 +233,21 @@ html.dark select:focus {
   100% { top: 92%; opacity: 0.7; }
 }
 
+.radar-spin-slow {
+  animation: radarSpin 10s linear infinite;
+}
+.radar-spin-reverse {
+  animation: radarSpinReverse 4s linear infinite;
+}
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes radarSpinReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
 .reticle-bracket {
   position: absolute;
   width: 24px;
