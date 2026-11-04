@@ -218,7 +218,7 @@
       
       <!-- Video Feed & Dynamic Detection Canvas -->
       <video id="webcam-feed" autoplay playsinline muted class="w-full h-full object-cover transform scale-x-[-1]"></video>
-      <canvas id="face-canvas" class="absolute inset-0 w-full h-full pointer-events-none transform scale-x-[-1] z-10"></canvas>
+      <canvas id="face-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
 
       <!-- Laser Beam & Hologram Grid -->
       <div id="scanner-laser" class="hud-laser"></div>
@@ -260,17 +260,6 @@
         </div>
       </div>
 
-      <!-- Central Holographic Target Box (Simulated ID: Sarah Jenkins) -->
-      <div id="sample-target-box" class="absolute w-44 h-56 border-2 border-cyan-400/80 rounded-xl pointer-events-none z-15 flex flex-col justify-between p-2 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-        <div class="flex justify-between items-center text-[9px] font-mono text-cyan-300">
-          <span>FACE_LOCK_01</span>
-          <span>98.4%</span>
-        </div>
-        <div class="text-center bg-cyan-950/80 backdrop-blur border border-cyan-500/40 rounded-lg py-1 px-2 text-[10px] font-bold text-white shadow">
-          ID: Sarah Jenkins
-        </div>
-      </div>
-
       <!-- Bottom Stream Telemetry Bar -->
       <div class="absolute bottom-4 left-5 right-5 flex items-center justify-between text-[11px] font-mono z-15">
         <div class="telemetry-chip">
@@ -281,10 +270,10 @@
         </div>
 
         <!-- Real-Time Verified ID Badge -->
-        <div id="match-result-card" class="telemetry-chip bg-emerald-950/90 text-emerald-300 border-emerald-500/50 shadow-lg shadow-emerald-950/40 opacity-100 transition-all">
+        <div id="match-result-card" class="telemetry-chip bg-emerald-950/90 text-emerald-300 border-emerald-500/50 shadow-lg shadow-emerald-950/40 opacity-0 pointer-events-none transition-all duration-300">
           <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span>ID: <strong id="match-name" class="text-white">Sarah Jenkins</strong></span>
-          <span id="match-confidence" class="text-emerald-400 font-bold">(98.4%)</span>
+          <span>ID: <strong id="match-name" class="text-white">-</strong></span>
+          <span id="match-confidence" class="text-emerald-400 font-bold"></span>
         </div>
 
         <div class="telemetry-chip text-slate-300">

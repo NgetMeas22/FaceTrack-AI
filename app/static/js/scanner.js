@@ -223,7 +223,15 @@ class LiveFaceScanner {
   }
 
   drawTargetBox(ctx, box, color, title, score) {
-    const { x, y, width, height } = box;
+    const isVideoMirrored = this.video && (
+      this.video.classList.contains('scale-x-[-1]') ||
+      (this.video.className && this.video.className.indexOf('scale-x-[-1]') !== -1)
+    );
+    const x = isVideoMirrored ? (this.overlayCanvas.width - (box.x + box.width)) : box.x;
+    const y = box.y;
+    const width = box.width;
+    const height = box.height;
+
     ctx.strokeStyle = color;
     ctx.lineWidth = 3;
 

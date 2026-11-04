@@ -18,8 +18,8 @@ MODEL_DIR = BASE_DIR / "ml_models"
 YUNET_FILENAME = "face_detection_yunet_2023mar.onnx"
 SFACE_FILENAME = "face_recognition_sface_2021dec.onnx"
 
-# Typical SFace cosine similarity threshold is 0.363 (higher is more similar, up to 1.0)
-DEFAULT_COSINE_THRESHOLD = 0.38
+# Typical SFace cosine similarity threshold is 0.363 on clean benchmarks; 0.30 provides optimal real-world webcam recall
+DEFAULT_COSINE_THRESHOLD = 0.30
 MIN_FACE_SIZE = 40  # Minimum face width/height in pixels
 
 
@@ -193,7 +193,10 @@ class FaceEngine:
                 confidence=score,
                 landmarks=landmarks,
             )
-            results.append((box, face_row))
+            # Ensure face_row coordinates match the original unscaled image for alignCrop
+            rescaled_row = face_row.copy()
+            rescaled_row[:14] = coords
+            results.append((box, rescaled_row))
 
         return results
 
