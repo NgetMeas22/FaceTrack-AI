@@ -88,7 +88,8 @@ SQLAlchemy ORM │                  │ OpenCV Inference
 ├── .gitignore                        # Must include .env, data/, ml_models/, .venv/, __pycache__/
 ├── requirements.txt                  # Python dependencies (pinned)
 ├── download_models.py                # Automated downloader for OpenCV YuNet & SFace ONNX models
-├── AGENT_GUIDE.md                    # This document
+├── AGENT_GUIDE.md                    # This authoritative document
+├── README.md                         # Project documentation and developer quickstart
 │
 ├── app/
 │   ├── main.py                       # FastAPI entrypoint, HTTP/API routes, SSR views, file upload handlers
@@ -100,7 +101,7 @@ SQLAlchemy ORM │                  │ OpenCV Inference
 │   │
 │   ├── templates/                    # Jinja2 HTML layouts & views
 │   │   ├── base.html                 # Master layout (Navbar, Sidebar, Theme switcher, Language switcher)
-│   │   ├── dashboard.html            # 2:1 Analytics grid (Spline wave chart, Donut gauge, Scanner, Dossier)
+│   │   ├── dashboard.html            # 2:1 Analytics grid (Spline wave chart, Donut gauge, Scanner HUD, Dossier)
 │   │   ├── employees.html            # Personnel management, Add/Edit modals, Biometric registration
 │   │   ├── departments.html          # Organizational departments directory & CRUD modals
 │   │   ├── scanner.html              # Dedicated full-screen interactive face recognition scanner
@@ -109,14 +110,15 @@ SQLAlchemy ORM │                  │ OpenCV Inference
 │   │   ├── reports.html              # Workforce analytics, department percentages, CSV/JSON exports
 │   │   ├── settings.html             # 5-tab system settings (Security, Profile, Notifications, System, Privacy)
 │   │   ├── security.html             # User operators table, clearance provisioning, cryptographic sessions
-│   │   └── login.html                # Zero-trust login view with 1-click test role credentials (DEV ONLY)
+│   │   ├── login.html                # Zero-trust login view with 1-click test role credentials (DEV ONLY)
+│   │   └── 403_forbidden.html        # Localized Access Denied error view
 │   │
 │   └── static/
 │       ├── css/
-│       │   └── styles.css            # Master styles, Khmer typography engine, animations, cards
+│       │   └── styles.css            # Master styles, Khmer typography engine, HUD animations, radar spinning
 │       └── js/
 │           ├── main.js               # Global UI utilities, alerts, audio chimes, modal helpers
-│           └── scanner.js            # Video stream processing, bounding boxes, biometrics API bridge
+│           └── scanner.js            # Video stream processing, holographic radar, biometric landmarks, telemetry
 │
 ├── data/                             # Local SQLite database and employee uploaded photos - GITIGNORED
 │   ├── facetrack.db                  # Local SQLite database fallback
@@ -324,59 +326,114 @@ Face embeddings are biometric personal data. Treat them accordingly:
 [OpenCV YuNet Detection]  ──► Extracts bounding box, score, & 5 facial landmarks
        │
        ▼
-[Quality & Liveness Check] ──► Checks width (>60px), confidence (>0.70), lighting
+[Quality & Liveness Check] ──► Checks width (>40px), confidence (>0.70), lighting & blur
        │
        ▼
-[OpenCV SFace Alignment]  ──► Warps and crops face to normalized 112x112 canonical view
+[OpenCV SFace Alignment]  ──► Rescales landmarks to original coords; warps/crops to 112x112 canonical view
        │
        ▼
-[128-d Feature Vector]    ──► Extracts floating-point embedding vector
+[128-d Feature Vector]    ──► Extracts normalized floating-point embedding vector
        │
        ▼
-[Cosine Matcher]          ──► Compares against stored vectors in Database
+[Cosine Matcher]          ──► Compares against stored vectors in Neon PostgreSQL / SQLite
        │
-       ├── Cosine similarity ≥ 0.32 (Match Found) ──► Log Attendance Check-In / Check-Out
-       └── Cosine similarity < 0.32 (Unknown)     ──► Raise Alert / Display Unidentified
+       ├── Cosine similarity ≥ 0.30 (Match Found) ──► Log Attendance Check-In / Check-Out
+       └── Cosine similarity < 0.30 (Unknown)     ──► Raise Alert / Display Unidentified
 ```
 
 ### Models & Calibrated Parameters
 - `face_detection_yunet_2023mar.onnx` (Detection)
 - `face_recognition_sface_2021dec.onnx` (Recognition)
-- `COSINE_MATCH_THRESHOLD = 0.32` (Calibrated for real-world webcam recall with zero false positives)
-- `MIN_FACE_WIDTH_PX = 60`
-- `DUPLICATE_SCAN_COOLDOWN_SEC = 45`
+- **`DEFAULT_COSINE_THRESHOLD = 0.30`**: Calibrated for real-world webcam recall with zero false positives. (Clean benchmarks score ~0.363; ambient indoor lighting and slight head tilt typically score 0.32–0.36; non-registered individuals score < 0.20).
+- `MIN_FACE_SIZE = 40` (pixels)
+- `DUPLICATE_SCAN_COOLDOWN_SEC = 15`
+- `SCAN_INTERVAL_MS = 450` (responsive real-time frame evaluation)
+
+### Critical Frontend Rendering Rules (Canvas vs Video Mirroring)
+- **Video Feed**: The `<video>` element has `transform scale-x-[-1]` so users see a natural mirror reflection of themselves.
+- **Overlay Canvas**: The `<canvas id="face-canvas">` must **NEVER** have CSS `transform scale-x-[-1]`. Mirroring the canvas inverts all 2D text drawing (`nosreP nwonknU`).
+- **Bounding Box Mapping**: When the video is mirrored, JavaScript computes the mirrored X coordinate:
+  ```javascript
+  const isVideoMirrored = this.video.classList.contains('scale-x-[-1]');
+  const x = isVideoMirrored ? (this.overlayCanvas.width - (box.x + box.width)) : box.x;
+  ```
+  This places the box exactly on the face while drawing upright, left-to-right text tags and labels.
+- **5-Point Landmark Visualizer**: Eyes, nose tip, and mouth corners are mapped and rendered on canvas as glowing cyan dots so users can visibly see the AI tracking facial features in real time.
+- **Holographic Radar Loading Animation**: When searching for faces, a central animated HUD radar sweeps with rotating outer compass rings (`radar-spin-slow`), counter-rotating inner cyan brackets (`radar-spin-reverse`), concentric radar ping waves, and an animated `AI NEURAL SCANNING...` badge. It auto-fades smoothly upon face detection.
+- **Chromium Lifecycle Management**: Video event listeners check `readyState >= 2`, `loadeddata`, and `canplay` to avoid race conditions where `onloadedmetadata` fired prior to listener attachment.
 
 ---
 
 ## 9. Database Design (PostgreSQL-first, SQLite-compatible)
 
-- Use portable SQLAlchemy types.
-- Plural snake_case table names (`employees`, `departments`, `attendance_records`, `face_embeddings`, `audit_logs`).
-- Every table has surrogate primary key and UTC timestamps.
-- Neon PostgreSQL connection: `pool_pre_ping=True`, `pool_recycle=300`, `connect_args={"sslmode": "require"}`.
+FaceTrack AI is architected with **Neon Serverless PostgreSQL** as the primary production engine, while preserving 100% offline fallback compatibility with **SQLite** (`data/facetrack.db`).
+
+### Schema Principles
+- Use portable SQLAlchemy types (`Integer`, `String`, `Float`, `Boolean`, `DateTime`, `Text`, `JSON`).
+- Plural snake_case table names (`employees`, `departments`, `attendance_records`, `face_embeddings`, `audit_logs`, `system_settings`, `users`).
+- Every table has a surrogate primary key (`id = Column(Integer, primary_key=True)`) and UTC timestamps (`created_at = Column(DateTime, default=datetime.utcnow)`).
+- Relationships use foreign keys with appropriate `ON DELETE` behavior (`CASCADE` for face embeddings; `RESTRICT` for departments with assigned employees).
+- Neon PostgreSQL connection string: configure with connection pooler and SSL:
+  ```text
+  postgresql://neondb_owner:npg_...-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+  ```
+- Connection pool engine settings:
+  ```python
+  engine = create_engine(
+      DATABASE_URL,
+      pool_pre_ping=True,
+      pool_recycle=300,
+  )
+  ```
 
 ---
 
-## 10. Localization & Khmer Typography Engine
+## 10. HTTP & REST API Conventions
+
+### 10.1 Routing
+- **Pages**: `GET /{lang}/<resource>` (kebab-case, e.g., `/audit-logs`, `/departments`).
+- **Mutations**: `POST /api/<resource>` and `POST /api/<resource>/{id}/<action>` (e.g., `/api/employees/12/deactivate`).
+- Always validate `{lang}` against `{"en", "kh"}`; unknown languages default to `/en`.
+
+### 10.2 Response Standards
+
+| Case | HTML Form Submission | JSON / Fetch API |
+| :--- | :--- | :--- |
+| **Success** | `303 See Other` redirect to `/{lang}/<page>?message=<key>` | `200` or `201` `{ "ok": true, "data": ... }` |
+| **Validation Error** | Re-render form or redirect with `?error=<key>` | `422` `{ "ok": false, "error": { "code": "validation_error", "fields": { ... } } }` |
+| **Unauthenticated** | `302` redirect to `/{lang}/login?next=...` | `401` `{ "ok": false, "detail": "Authentication required" }` |
+| **Forbidden** | Localized `403_forbidden.html` view | `403` `{ "ok": false, "detail": "Access denied" }` |
+| **Not Found** | Localized 404 page | `404` `{ "ok": false, "detail": "Resource not found" }` |
+| **Conflict (duplicate)** | Re-render form with `?error=already_exists` | `409` `{ "ok": false, "detail": "Conflict" }` |
+
+---
+
+## 11. Localization & Khmer Typography Engine
 
 ### Language Handling
-- Routes prefixed with `/{lang}/...` (`/en` and `/kh`).
-- Redirects dynamically infer active language from `Referer` header.
+- All routes are prefixed with the language parameter:
+  - English: `/en/...`
+  - Khmer: `/kh/...`
+- Redirects dynamically infer the language from the `Referer` header so form submissions preserve the active language.
 
 ### Khmer Typography Rules
 - Fonts: **Kantumruy Pro**, **Battambang**, and **Noto Sans Khmer**.
-- **Critical Rule**: Never apply `uppercase`, `tracking-wider`, or `tracking-widest` to Khmer script.
+- **Critical Rule**: Never apply `uppercase`, `tracking-wider`, or `tracking-widest` to Khmer script. It breaks diacritics and ligatures.
 - Khmer table headers use `0.8125rem` (13px) with `font-weight: 700` and high-contrast color (`#475569` light mode, `#94a3b8` dark mode).
 
 ---
 
-## 11. UI/UX Design System & Avatar Fallbacks
+## 12. UI/UX Design System
 
-### Theme Tokens
-- Dark mode: `--bg-app: #181818; --bg-surface: #222225; --border: #333338;`
-- Light mode: `--bg-app: #f8fafc; --bg-surface: #ffffff; --border: #e2e8f0;`
+### 12.1 Design Principles
+- **Clarity over decoration**: High-density operational interface with crisp visual hierarchy.
+- **High contrast & accessible**: WCAG 2.1 AA conformance in both dark and light modes.
+- **Theme tokens**:
+  - Dark mode: `--bg-app: #181818; --bg-surface: #222225; --border: #333338; text: #f1f5f9;`
+  - Light mode: `--bg-app: #f8fafc; --bg-surface: #ffffff; --border: #e2e8f0; text: #0f172a;`
+- **Instant Theme Script**: Early `<script>` tag in `<head>` evaluates `localStorage.getItem('theme')` before layout rendering to completely eliminate theme flashing.
 
-### Mandatory Avatar Fallback Pattern
+### 12.2 Mandatory Avatar Fallback Pattern
 Always include `onerror` fallback on avatar images to prevent broken image icons:
 ```html
 <img src="{{ avatar_url }}" alt="{{ name }}" class="h-9 w-9 rounded-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -387,29 +444,210 @@ Always include `onerror` fallback on avatar images to prevent broken image icons
 
 ---
 
-## 12. Developer Commands & Operational Guide
+## 13. Error Handling, Logging & Observability
 
+### 13.1 Error Handling
+- Register global exception handlers for `HTTPException`, `RequestValidationError`, and unhandled `Exception`.
+- Render localized error pages for HTML and structured JSON for `/api/*`.
+- Catch specific exceptions (`IntegrityError` $ightarrow$ 409, `OperationalError` $ightarrow$ 503 with retry hint); never use bare `except:`.
+- Missing ML models: scanner displays an actionable banner with `download_models.py` instruction; app still boots gracefully.
+
+### 13.2 Logging & Audit Trail
+- Structured log format: timestamp, level, request_id, operator, route, status, duration_ms.
+- Every state change writes an immutable `AuditLog` row inside the same database transaction.
+
+---
+
+## 14. Performance & Scalability Standards
+
+| Area | Target / Rule |
+| :--- | :--- |
+| **Page TTFB (list page)** | < 300 ms server response time |
+| **Scan API (detect + embed + match)** | < 250 ms on standard CPU for 640px frames |
+| **DB queries per page** | Avoid N+1; use `joinedload`/`selectinload`; aim $\le$ 10 queries per request |
+| **Dashboard aggregates** | Use SQL `COUNT` / `GROUP BY` — never load full tables into Python memory to count |
+| **ONNX Models** | Singleton instance loaded once at startup |
+| **Inference Concurrency** | OpenCV inference executed under threading lock to protect native C++ runtime buffers |
+
+---
+
+## 15. Testing Strategy & Quality Gates
+
+### 15.1 Test Suites
+
+| Suite | File | Focus |
+| :--- | :--- | :--- |
+| **RBAC Matrix** | `tests/test_rbac_matrix.py` | Validates access for all 4 roles across all 9 pages; unauthenticated redirects |
+| **Session & Logout** | `tests/test_roles_navbar_logout.py` | Verifies avatar persistence, session lifecycle, CSRF logout, and nav filtering |
+
+### 15.2 Quality Gate Rule
+Before any PR or commit, all test suites must pass 100%:
 ```powershell
-# 1. Activate virtual environment
-.\.venv\Scripts\activate
-
-# 2. Run web server
-.\.venv\Scripts\python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-
-# 3. Run test suites
 .\.venv\Scripts\python tests/test_rbac_matrix.py
 .\.venv\Scripts\python tests/test_roles_navbar_logout.py
 ```
 
 ---
 
-## 13. Definition of Done Checklist
+## 16. Developer Commands & Environment
 
-Before submitting changes, ensure:
+### Virtual Environment Activation
+```powershell
+# Windows PowerShell
+.\.venv\Scriptsctivate
+```
+
+### Run Web Server
+```powershell
+.\.venv\Scripts\python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+Open [http://127.0.0.1:8000/kh/dashboard](http://127.0.0.1:8000/kh/dashboard).
+
+### Run Test Suites
+```powershell
+.\.venv\Scripts\python -u tests/test_rbac_matrix.py
+.\.venv\Scripts\python -u tests/test_roles_navbar_logout.py
+```
+
+### Git Repository Management
+```powershell
+# Remote URL
+git remote -v
+# origin  https://github.com/NgetMeas22/FaceTrack-AI.git
+
+# Push changes
+git push -u origin main
+```
+
+---
+
+## 17. Configuration & Secrets Management
+
+### Environment Variables (`.env`)
+
+| Variable | Required | Example / Default | Purpose |
+| :--- | :---: | :--- | :--- |
+| `APP_ENV` | ✅ | `development` or `production` | Gates demo accounts, debug, cookie Secure flag |
+| `SECRET_KEY` | ✅ | `64+ random hex characters` | Cryptographically signs session cookies & CSRF |
+| `DATABASE_URL` | ❌ | `postgresql://user:pass@host/db?sslmode=require` | Neon cloud connection (omit for SQLite fallback) |
+| `ALLOWED_HOSTS` | prod | `127.0.0.1,localhost,facetrack.ai` | Trusted host middleware security |
+| `SESSION_IDLE_MINUTES` | ❌ | `30` | Idle timeout |
+| `SESSION_ABSOLUTE_HOURS` | ❌ | `12` | Absolute session timeout |
+| `MAX_UPLOAD_MB` | ❌ | `5` | File upload cap |
+| `DEFAULT_LANG` | ❌ | `kh` | Fallback language |
+| `BUSINESS_TIMEZONE` | ❌ | `Asia/Phnom_Penh` | Attendance day boundary (UTC+07:00) |
+
+> [!IMPORTANT]
+> `.env` must remain in `.gitignore`. Never commit credentials, connection strings, or production secrets to Git.
+
+---
+
+## 18. Deployment & Operations
+
+### 18.1 Production Runtime
+- **Linux / Hostinger VPS**:
+  ```bash
+  gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 2 -b 127.0.0.1:8000 --timeout 60
+  ```
+- **Windows Host**: Run `uvicorn` as a background Windows service via NSSM or Task Scheduler.
+- **Reverse Proxy**: Place behind Nginx, Caddy, or Cloudflare for TLS/HTTPS termination.
+  *Camera access strictly requires HTTPS — plain HTTP outside localhost will disable camera permissions in browsers.*
+
+---
+
+## 19. Git Workflow & Change Management
+
+- `main` branch is always deployable and stable.
+- Remote repository: `https://github.com/NgetMeas22/FaceTrack-AI.git`.
+- Semantic commit prefixes: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
+- Never commit with `--no-verify` or bypass tests.
+
+---
+
+## 20. Agent Operating Protocol (Mandatory)
+
+This section governs how AI coding assistants and LLM agents must operate within this codebase:
+1. **Read Before Writing**: Inspect existing patterns, translations dictionary, and models before altering files.
+2. **Smallest Correct Change**: Do not rewrite unrelated modules or reformat whole files unnecessarily.
+3. **Preserve Documentation & Comments**: Never strip existing architectural docstrings or doc comments.
+4. **Bilingual Parity**: Any new UI string must be added to both `en` and `kh` dictionaries in `app/translations.py`.
+5. **Enforce Server-Side Security**: Never rely on frontend CSS hiding for authorization.
+6. **Verify Before Completion**: Run relevant test scripts and ensure zero regressions.
+
+---
+
+## 21. Feature Implementation Playbooks
+
+### 21.1 Adding a New View Page
+1. Define route `GET /{lang}/<page>` in `app/main.py` with `require_user()` and `check_view_access()`.
+2. Add page permission mapping in `app/security.py` (`PAGE_REQUIRED_ROLES`).
+3. Create `app/templates/<page>.html` extending `base.html`.
+4. Add bilingual keys to `app/translations.py` for both `en` and `kh`.
+5. Add test coverage in `tests/test_rbac_matrix.py`.
+
+### 21.2 Adding a New Mutation API
+1. Define endpoint `POST /api/<resource>` in `app/main.py`.
+2. Validate caller via `require_user(allowed_roles=[...])`.
+3. Validate inputs with Pydantic or strict Form types.
+4. Execute DB changes within a single transaction; write an `AuditLog` row.
+5. Return JSON response `{ "ok": true, "data": ... }`.
+
+---
+
+## 22. Anti-Patterns (Forbidden)
+
+| ❌ Forbidden Anti-Pattern | ✅ Approved Engineering Standard |
+| :--- | :--- |
+| `f"SELECT ... WHERE id = {id}"` | SQLAlchemy ORM queries with parameterized bindings |
+| `{{ user_input \| safe }}` | Jinja2 autoescape; use `\|tojson` when embedding in JS |
+| `if user.role == "ADMIN"` scattered in HTML | Central `can_access_page()` RBAC helpers |
+| Trusting hidden form fields (`user_id`, `role`) | Derive and verify actor on the server from session cookie |
+| Storing raw/MD5/SHA-1 passwords | Argon2id or bcrypt (cost $\ge$ 12) |
+| Returning face embeddings in API responses | Embeddings are strictly private; never serialize |
+| Loading ONNX models on every request | Singleton pattern loaded once during startup |
+| `scale-x-[-1]` on `<canvas id="face-canvas">` | Mirror `<video>` only; calculate mirrored box X in JS |
+| Upper-case transformations on Khmer text | Follow Khmer typography rules (§11) |
+
+---
+
+## 23. Definition of Done Checklist
+
+Before submitting changes, verify:
 - [ ] Meets functional requirements and handles edge cases.
-- [ ] Works cleanly on both SQLite and Neon PostgreSQL.
-- [ ] Auth & RBAC enforced server-side; test suites green.
-- [ ] Dark and light themes verified for high contrast.
-- [ ] `/en` and `/kh` bilingual parity preserved.
-- [ ] Avatar `onerror` fallbacks included.
+- [ ] Operates cleanly on both Neon Serverless PostgreSQL and local SQLite.
+- [ ] Server-side authentication & RBAC verified; test suites passing 100%.
+- [ ] Dark and light themes tested for high-contrast visibility.
+- [ ] Bilingual parity preserved across English (`/en`) and Khmer (`/kh`).
+- [ ] Avatar `onerror` fallbacks included on all user/employee images.
 - [ ] No secrets committed; `.env` remains in `.gitignore`.
+
+---
+
+## 24. Known Gaps & Hardening Roadmap
+
+| Priority | Item | Rationale |
+| :---: | :--- | :--- |
+| 🔴 **High** | Disable demo accounts in production | Default credentials must be gated behind `APP_ENV=development` |
+| 🔴 **High** | CSRF token verification on all POSTs | Comprehensive cross-site request forgery defense |
+| 🔴 **High** | Rate-limiting on `/api/auth/login` | Brute-force protection (e.g. max 5 attempts / 15 min) |
+| 🟠 **Medium** | Alembic database migrations | Structured schema evolution replacing `create_all()` |
+| 🟠 **Medium** | Security headers & strict CSP middleware | Browser-level clickjacking and script injection defense |
+| 🟢 **Low** | Active 3D RGB-D liveness challenge | Hardware-level anti-spoofing challenge response |
+
+---
+
+## 25. Glossary
+
+| Term | Meaning |
+| :--- | :--- |
+| **SSR** | Server-Side Rendering — HTML dynamically compiled on server by Jinja2 |
+| **RBAC** | Role-Based Access Control — Access governance enforced by user role matrix |
+| **IDOR** | Insecure Direct Object Reference — Unauthorized access via manipulated IDs |
+| **CSRF** | Cross-Site Request Forgery |
+| **CSP / SRI** | Content Security Policy / Subresource Integrity |
+| **YuNet** | High-speed lightweight deep learning face detection model (ONNX) |
+| **SFace** | Deep learning face recognition model extracting 128-d canonical embeddings (ONNX) |
+| **Embedding** | 128-dimensional floating-point biometric feature vector representing a face |
+| **Cosine Similarity**| Normalized dot product measuring face vector alignment (threshold = 0.30) |
+| **Neon** | Serverless PostgreSQL cloud database with connection pooling and branching |
+| **Audit Trail** | Immutable append-only log of organizational and security events |
