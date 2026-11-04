@@ -47,3 +47,4 @@ def paginate(
         "prev_page": page - 1 if page > 1 else None,
         "next_page": page + 1 if page < total_pages else None,
     }
+
