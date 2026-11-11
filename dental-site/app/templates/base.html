@@ -13,14 +13,14 @@
   <link rel="alternate" hreflang="km" href="{{ hreflang_km }}">
   <link rel="alternate" hreflang="x-default" href="{{ hreflang_en }}">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}">
-  <meta property="og:description" content="{{ t.hero_subtitle }}">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.meta_description() }}">
   <meta property="og:url" content="{{ canonical_url }}">
   <meta property="og:locale" content="{{ 'km_KH' if lang == 'kh' else 'en_US' }}">
   <meta property="og:image" content="{{ og_image_url }}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}">
-  <meta name="twitter:description" content="{{ t.hero_subtitle }}">
+  <meta name="twitter:title" content="{{ self.title() }}">
+  <meta name="twitter:description" content="{{ self.meta_description() }}">
   <meta name="twitter:image" content="{{ og_image_url }}">
   {% endif %}
   {% for jd in json_ld_strings %}

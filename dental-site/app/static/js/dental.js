@@ -1,6 +1,7 @@
 /**
  * Dental Clinic Official Website — Minimal Deferred Vanilla JS
- * Handles mobile menu drawer, accessible FAQ accordions, and safe form submit locking.
+ * Handles mobile menu drawer, accessible FAQ accordions, form submit locking,
+ * and anonymous conversion event hooks (zero form PHI recorded).
  */
 (function () {
   "use strict";
@@ -9,6 +10,7 @@
     initMobileDrawer();
     initFaqAccordions();
     initBookingFormUX();
+    initConversionHooks();
   });
 
   function initMobileDrawer() {
@@ -64,7 +66,7 @@
       });
     });
 
-    // Enforce Sunday closed warning client-side as gentle enhancement (server always re-validates)
+    // Gentle client enhancement flagging closed Sundays (authoritative validation stays on server)
     var dateInput = document.getElementById("preferred_date");
     var dateHint = document.getElementById("date-closed-hint");
     if (dateInput && dateHint) {
@@ -76,10 +78,29 @@
         var parts = dateInput.value.split("-");
         if (parts.length === 3) {
           var chosen = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-          var isSunday = chosen.getDay() === 0;
-          dateHint.hidden = !isSunday;
+          dateHint.hidden = chosen.getDay() !== 0;
         }
       });
     }
+  }
+
+  function initConversionHooks() {
+    // Emit conversion type only (call_tap / directions_tap / booking_cta_tap) — never form content or PHI
+    document.addEventListener("click", function (event) {
+      var anchor = event.target.closest ? event.target.closest("a") : null;
+      if (!anchor) return;
+      var href = anchor.getAttribute("href") || "";
+      var conversionType = null;
+      if (href.indexOf("tel:") === 0) {
+        conversionType = "call_tap";
+      } else if (href.indexOf("maps.google") !== -1) {
+        conversionType = "directions_tap";
+      } else if (href.indexOf("#book-form") !== -1) {
+        conversionType = "booking_cta_tap";
+      }
+      if (conversionType) {
+        window.dispatchEvent(new CustomEvent("dental:conversion", { detail: { type: conversionType } }));
+      }
+    });
   }
 })();
