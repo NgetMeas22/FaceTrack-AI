@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.confirm_badge }} — {{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="card" style="max-width: 42rem; margin: 0 auto;">
+      <span class="badge badge-open">{{ t.confirm_badge }}</span>
+      <h1 style="margin-top: 0.75rem;">{{ t.confirm_title }}</h1>
+
+      <div class="alert alert-success" role="status">
+        <p style="margin-bottom: 0.5rem;">
+          <strong>{{ t.confirm_ref_label }}:</strong>
+          <code style="font-size: 1.05rem;">{{ summary.reference_code }}</code>
+        </p>
+        <p style="margin-bottom: 0;">{{ t.confirm_status_note }}</p>
+      </div>
+
+      <dl style="display: grid; grid-template-columns: auto 1fr; gap: 0.625rem 1.25rem; margin: 1.25rem 0;">
+        <dt class="text-muted"><strong>{{ t.confirm_service_label }}</strong></dt>
+        <dd style="margin: 0;">{{ summary.service_label }}</dd>
+        <dt class="text-muted"><strong>{{ t.confirm_date_label }}</strong></dt>
+        <dd style="margin: 0;">{{ summary.preferred_date }}</dd>
+        <dt class="text-muted"><strong>{{ t.confirm_time_label }}</strong></dt>
+        <dd style="margin: 0;">{{ summary.preferred_time_slot }} (UTC+07:00)</dd>
+      </dl>
+
+      <div class="alert alert-emergency" role="note">
+        {{ t.emergency_notice }}
+      </div>
+
+      <div class="cta-group">
+        <a href="/{{ lang }}/" class="btn btn-primary">{{ t.confirm_back_home }}</a>
+        <a href="/{{ lang }}/contact#book-form" class="btn btn-secondary">{{ t.confirm_another }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,357 @@
+"""Structured clinic service, dentist, testimonial, and FAQ catalogs using explicit placeholders.
+
+IMPORTANT: No dentists, credentials, prices, or patient reviews are invented here.
+Replace bracketed placeholders with clinic-verified information before production launch.
+"""
+
+from typing import Dict, List, Optional
+
+SERVICES: List[Dict] = [
+    {
+        "slug": "general-checkup-cleaning",
+        "category": "preventive",
+        "category_en": "Preventive Care",
+        "category_kh": "ការថែទាំបង្ការ",
+        "title_en": "Dental Checkup & Cleaning",
+        "title_kh": "ការពិនិត្យសុខភាពធ្មេញ និងសម្អាតកំណកកំបោរ",
+        "summary_en": "Routine oral exam, gum evaluation, and gentle ultrasonic plaque and tartar removal.",
+        "summary_kh": "ការពិនិត្យសុខភាពមាត់ធ្មេញ អញ្ចាញធ្មេញ និងការសម្អាតកំណកកំបោរធ្មេញជាប្រចាំ។",
+        "what_it_is_en": "A comprehensive checkup helps detect tooth decay, gum inflammation, and bite concerns early before they require complex care.",
+        "what_it_is_kh": "ការពិនិត្យជាប្រចាំជួយរកឃើញបញ្ហាធ្មេញពុក ការរលាកអញ្ចាញធ្មេញ និងបញ្ហាផ្សេងៗទៀតទាន់ពេលវេលា។",
+        "who_for_en": "Recommended every 6 months for children, adults, and seniors, or sooner if you notice bleeding gums or sensitivity.",
+        "who_for_kh": "ណែនាំរៀងរាល់ ៦ ខែម្តងសម្រាប់កុមារ មនុស្សពេញវ័យ និងមនុស្សចាស់ ឬឆាប់ជាងនេះប្រសិនបើមានអាការៈឈឺ ឬហូរឈាមអញ្ចាញ។",
+        "steps_en": [
+            "Review of medical history and any dental discomfort.",
+            "Visual and periodontal examination (digital X-rays only when clinically needed).",
+            "Ultrasonic scaling and polishing to remove surface tartar and stains.",
+            "Personalized brushing, flossing, and next-visit advice.",
+        ],
+        "steps_kh": [
+            "សួរនាំប្រវត្តិសុខភាព និងរោគសញ្ញាបច្ចុប្បន្ន។",
+            "ពិនិត្យធ្មេញ និងអញ្ចាញធ្មេញ (ថតកាំរស្មី X តែនៅពេលចាំបាច់ប៉ុណ្ណោះ)។",
+            "សម្អាតកំណកកំបោរ និងប៉ូលាផ្ទៃធ្មេញឱ្យស្អាត។",
+            "ណែនាំវិធីសាស្ត្រថែទាំធ្មេញប្រចាំថ្ងៃតាមស្ថានភាពជាក់ស្តែង។",
+        ],
+        "duration_en": "Approx. 30–45 minutes",
+        "duration_kh": "ប្រហែល ៣០–៤៥ នាទី",
+        "recovery_en": "Normal eating right away; mild temporary sensitivity to cold drinks is possible for 1–2 days if heavy tartar was removed.",
+        "recovery_kh": "អាចទទួលទានអាហារធម្មតាបានភ្លាម។ អាចមានអារម្មណ៍ស្រៀវបន្តិចរយៈពេល ១–២ ថ្ងៃប្រសិនបើមានកំណកច្រើន។",
+        "price_en": "[FEE PLACEHOLDER — Contact clinic or review after exam]",
+        "price_kh": "[តម្លៃបណ្តោះអាសន្ន — សូមទាក់ទងគ្លីនិក ឬពិនិត្យតម្លៃក្រោយពេលពិគ្រោះ]",
+        "faqs": [
+            {
+                "q_en": "How often should I schedule a checkup?",
+                "q_kh": "តើគួរមកពិនិត្យធ្មេញញឹកញាប់ប៉ុណ្ណា?",
+                "a_en": "Most patients benefit from visits every 6 months; your dentist may advise a customized interval based on gum health.",
+                "a_kh": "ភាគច្រើនគួរមកពិនិត្យរៀងរាល់ ៦ ខែម្តង ឬតាមការណែនាំរបស់ទន្តបណ្ឌិតអាស្រ័យលើសុខភាពអញ្ចាញ។",
+            },
+            {
+                "q_en": "Does teeth cleaning damage enamel?",
+                "q_kh": "តើការសម្អាតកំណកធ្មេញធ្វើឱ្យខូចស្រទាប់ធ្មេញឬទេ?",
+                "a_en": "No. Ultrasonic tips vibrate to loosen hardened tartar without cutting healthy tooth enamel.",
+                "a_kh": "ទេ ឧបករណ៍រំញ័រ Ultrasonic ជួយបំបែកកំណកកំបោរដោយមិនធ្វើឱ្យខូចស្រទាប់រឹងរបស់ធ្មេញឡើយ។",
+            },
+        ],
+    },
+    {
+        "slug": "tooth-colored-filling",
+        "category": "restorative",
+        "category_en": "Restorative Care",
+        "category_kh": "ការព្យាបាលជួសជុលធ្មេញ",
+        "title_en": "Tooth-Colored Fillings",
+        "title_kh": "ការប៉ះធ្មេញពណ៌ដូចធ្មេញធម្មជាតិ",
+        "summary_en": "Composite resin restorations shaped to match your natural tooth shade after cavity treatment.",
+        "summary_kh": "ការប៉ះជួសជុលធ្មេញដែលពុក ឬបាក់បែកដោយប្រើសម្ភារៈពណ៌ដូចធ្មេញធម្មជាតិ។",
+        "what_it_is_en": "Decayed tooth structure is gently removed and replaced with a bonded composite resin matched closely to surrounding enamel.",
+        "what_it_is_kh": "ជាតិពុកត្រូវបានសម្អាតចេញ និងជំនួសដោយសម្ភារៈ Composite ដែលមានពណ៌ស៊ីគ្នានឹងធ្មេញធម្មជាតិ។",
+        "who_for_en": "Patients with early-to-moderate cavities, minor chipped edges, or worn old fillings.",
+        "who_for_kh": "សមស្របសម្រាប់អ្នកដែលមានធ្មេញពុកដំណាក់កាលដំបូង ឬមធ្យម ធ្មេញប្រេះស្រាល ឬត្រូវផ្លាស់ប្តូរស្នាមប៉ះចាស់។",
+        "steps_en": [
+            "Assessment of cavity depth and shade selection.",
+            "Local numbing if required so treatment stays comfortable.",
+            "Decay removal and layered composite bonding cured with dental light.",
+            "Bite adjustment and smooth polishing.",
+        ],
+        "steps_kh": [
+            "ពិនិត្យជម្រៅធ្មេញពុក និងជ្រើសរើសពណ៌ឱ្យស៊ីគ្នា។",
+            "ប្រើថ្នាំស្ពឹកតាមតម្រូវការដើម្បីកាត់បន្ថយការឈឺចាប់។",
+            "សម្អាតធ្មេញពុក និងប៉ះបំពេញជាស្រទាប់ៗដោយពន្លឺពិសេស។",
+            "សម្រួលការខាំ និងប៉ូលាឱ្យរលោង។",
+        ],
+        "duration_en": "Approx. 30–60 minutes per tooth",
+        "duration_kh": "ប្រហែល ៣០–៦០ នាទីក្នុងមួយធ្មេញ",
+        "recovery_en": "If local numbing was used, wait until numbness wears off before chewing hot foods.",
+        "recovery_kh": "ប្រសិនបើមានចាក់ថ្នាំស្ពឹក សូមរង់ចាំឱ្យអស់ជាតិស្ពឹកសិនមុននឹងទំពាអាហារ ឬភេសជ្ជៈក្តៅ។",
+        "price_en": "[FEE PLACEHOLDER — Varies by tooth surface count]",
+        "price_kh": "[តម្លៃបណ្តោះអាសន្ន — អាស្រ័យលើទំហំ និងផ្ទៃធ្មេញ]",
+        "faqs": [
+            {
+                "q_en": "Will the filling be visible when I smile?",
+                "q_kh": "តើស្នាមប៉ះមើលឃើញច្បាស់ពេលញញឹមឬទេ?",
+                "a_en": "Composite shades are matched to your adjacent teeth so they blend naturally in normal light.",
+                "a_kh": "ពណ៌ Composite ត្រូវបានជ្រើសរើសឱ្យប្រហាក់ប្រហែលនឹងធ្មេញជុំវិញដើម្បីឱ្យមើលទៅធម្មជាតិ។",
+            },
+        ],
+    },
+    {
+        "slug": "dental-implants",
+        "category": "restorative",
+        "category_en": "Restorative Care",
+        "category_kh": "ការព្យាបាលជួសជុលធ្មេញ",
+        "title_en": "Dental Implants",
+        "title_kh": "ការដាំបង្គោលធ្មេញ (Dental Implants)",
+        "summary_en": "Consultation and staged tooth replacement planning using titanium implants and custom crowns.",
+        "summary_kh": "ការពិគ្រោះ និងផែនការដាំបង្គោលធ្មេញជំនួសធ្មេញដែលបាត់បង់តាមដំណាក់កាលត្រឹមត្រូវ។",
+        "what_it_is_en": "A dental implant replaces a missing tooth root with a medical-grade fixture that supports a replacement crown without grinding neighboring teeth.",
+        "what_it_is_kh": "ការដាំបង្គោលធ្មេញគឺជាការដាក់ឫសធ្មេញសិប្បនិម្មិតដើម្បីទ្រគ្រោងធ្មេញថ្មី ដោយមិនចាំបាច់ឆាបធ្មេញសងខាងឡើយ។",
+        "who_for_en": "Adults missing one or more teeth who have adequate bone support and healthy gums (evaluated via 3D scan/X-ray).",
+        "who_for_kh": "សម្រាប់មនុស្សពេញវ័យដែលបាត់បង់ធ្មេញមួយ ឬច្រើន និងមានឆ្អឹងថ្គាមគ្រប់គ្រាន់តាមការវាយតម្លៃផ្នែកវេជ្ជសាស្ត្រ។",
+        "steps_en": [
+            "Clinical exam, imaging review, and suitability assessment.",
+            "Written treatment timeline and fee breakdown before scheduling placement.",
+            "Implant placement under local anesthesia followed by bone healing period.",
+            "Custom crown fabrication and bite check.",
+        ],
+        "steps_kh": [
+            "ពិនិត្យស្ថានភាពធ្មេញ និងថតឆ្អឹងថ្គាមដើម្បីវាយតម្លៃភាពសមស្រប។",
+            "ពន្យល់ផែនការព្យាបាល រយៈពេល និងតម្លៃលម្អិតជាមុន។",
+            "ដាំបង្គោលធ្មេញក្រោមការប្រើថ្នាំស្ពឹក និងរង់ចាំដំណើរការជាសះស្បើយឆ្អឹង។",
+            "ភ្ជាប់គ្រោងធ្មេញថ្មី និងពិនិត្យការខាំចុងក្រោយ។",
+        ],
+        "duration_en": "Multi-stage process over several weeks to months",
+        "duration_kh": "ដំណើរការច្រើនដំណាក់កាល (រយៈពេលជាច្រើនសប្តាហ៍ ឬខែអាស្រ័យលើស្ថានភាពឆ្អឹង)",
+        "recovery_en": "Rest for 24–48 hours following placement, eat soft foods initially, and follow written hygiene instructions.",
+        "recovery_kh": "សម្រាក ២៤–៤៨ ម៉ោងក្រោយដាំបង្គោល ទទួលទានអាហារទន់ៗ និងអនុវត្តតាមការណែនាំអនាម័យ។",
+        "price_en": "[FEE PLACEHOLDER — Detailed quote provided after imaging]",
+        "price_kh": "[តម្លៃបណ្តោះអាសន្ន — ជូនដំណឹងតម្លៃលម្អិតក្រោយពេលថតពិនិត្យ]",
+        "faqs": [
+            {
+                "q_en": "Am I guaranteed to qualify for a same-day implant?",
+                "q_kh": "តើគ្រប់គ្នាសុទ្ធតែអាចដាំធ្មេញភ្លាមៗក្នុងថ្ងៃតែមួយបានឬទេ?",
+                "a_en": "Suitability depends on bone volume, gum health, and bite forces; your dentist confirms timing after an exam and scan.",
+                "a_kh": "ភាពសមស្របអាស្រ័យលើបរិមាណឆ្អឹង និងសុខភាពអញ្ចាញ ទន្តបណ្ឌិតនឹងវាយតម្លៃផ្ទាល់ជាមុន។",
+            },
+        ],
+    },
+    {
+        "slug": "teeth-whitening",
+        "category": "cosmetic",
+        "category_en": "Cosmetic Dentistry",
+        "category_kh": "សោភ័ណភាពធ្មេញ",
+        "title_en": "Teeth Whitening",
+        "title_kh": "ការធ្វើឱ្យធ្មេញសស្អាត",
+        "summary_en": "Dentist-supervised shade brightening for extrinsic staining after gum and enamel screening.",
+        "summary_kh": "ការបំបាត់ស្នាមប្រឡាក់ និងជួយឱ្យធ្មេញភ្លឺជាងមុនក្រោមការពិនិត្យរបស់ទន្តបណ្ឌិត។",
+        "what_it_is_en": "Controlled dental whitening gel helps lift stains caused by coffee, tea, or aging after verifying there are no untreated cavities or gum leaks.",
+        "what_it_is_kh": "ការប្រើជែលបំភ្លឺពណ៌ធ្មេញដោយមានការត្រួតពិនិត្យសុខភាពអញ្ចាញ និងធ្មេញជាមុន។",
+        "who_for_en": "Healthy adult teeth with surface staining; note that crowns and fillings do not change shade with bleaching gel.",
+        "who_for_kh": "សមស្របសម្រាប់ធ្មេញធម្មជាតិដែលមានស្នាមប្រឡាក់ពីកាហ្វេ ឬតែ (ចំណាំ៖ ធ្មេញប៉ះ ឬស្រោបមិនប្តូរពណ៌ឡើយ)។",
+        "steps_en": [
+            "Checkup to confirm teeth and gums are ready for whitening.",
+            "Shade check and protective barrier placement over gums.",
+            "Supervised whitening session with sensitivity monitoring.",
+            "Post-care dietary advice for the first 48 hours.",
+        ],
+        "steps_kh": [
+            "ពិនិត្យសុខភាពធ្មេញ និងអញ្ចាញជាមុន។",
+            "វាស់ពណ៌ធ្មេញបច្ចុប្បន្ន និងការពារអញ្ចាញធ្មេញ។",
+            "ដាក់ជែលបំភ្លឺធ្មេញដោយមានការតាមដានអាការៈស្រៀវ។",
+            "ណែនាំអំពីអាហារគួរចៀសវាងក្នុងរយៈពេល ៤៨ ម៉ោងដំបូង។",
+        ],
+        "duration_en": "Approx. 45–60 minutes",
+        "duration_kh": "ប្រហែល ៤៥–៦០ នាទី",
+        "recovery_en": "Results vary naturally by enamel structure; mild tooth sensitivity can occur for 1–2 days.",
+        "recovery_kh": "លទ្ធផលអាចប្រែប្រួលតាមធ្មេញធម្មជាតិរបស់បុគ្គលម្នាក់ៗ ហើយអាចស្រៀវស្រាល ១–២ ថ្ងៃ។",
+        "price_en": "[FEE PLACEHOLDER — In-clinic / take-home kit options]",
+        "price_kh": "[តម្លៃបណ្តោះអាសន្ន — មានជម្រើសធ្វើនៅគ្លីនិក និងឈុតថែទាំនៅផ្ទះ]",
+        "faqs": [
+            {
+                "q_en": "Will whitening turn existing crowns whiter?",
+                "q_kh": "តើការធ្វើឱ្យធ្មេញសអាចប្តូរពណ៌ធ្មេញស្រោប ឬស្នាមប៉ះបានទេ?",
+                "a_en": "No. Whitening gel only acts on natural tooth enamel, not porcelain crowns or resin fillings.",
+                "a_kh": "ទេ ជែលមានប្រសិទ្ធភាពតែលើធ្មេញធម្មជាតិប៉ុណ្ណោះ មិនប្តូរពណ៌ធ្មេញស្រោប ឬស្នាមប៉ះឡើយ។",
+            },
+        ],
+    },
+    {
+        "slug": "orthodontics-braces",
+        "category": "orthodontics",
+        "category_en": "Orthodontics",
+        "category_kh": "ការពត់តម្រង់ធ្មេញ",
+        "title_en": "Braces & Clear Aligners",
+        "title_kh": "ការពត់ធ្មេញដោយដែក ឬឈុតថ្លា",
+        "summary_en": "Structured orthodontic evaluation for crowding, spacing, and bite alignment in teens and adults.",
+        "summary_kh": "ការវាយតម្លៃ និងរៀបចំផែនការពត់តម្រង់ធ្មេញជំពើស ធ្មេញចន្លោះ ឬការខាំខុសទម្រង់។",
+        "what_it_is_en": "Gradual alignment of teeth and jaw bite using brackets or clear removable trays based on diagnostic records and regular checkups.",
+        "what_it_is_kh": "ការតម្រង់ធ្មេញ និងការខាំឱ្យមានសណ្តាប់ធ្នាប់បន្តិចម្តងៗដោយប្រើដែកពត់ ឬឈុតថ្លា។",
+        "who_for_en": "Teens and adults seeking improved alignment and easier long-term tooth cleaning.",
+        "who_for_kh": "សមស្របសម្រាប់យុវវ័យ និងមនុស្សពេញវ័យដែលចង់តម្រង់ជួរធ្មេញឱ្យស្អាត និងងាយស្រួលសម្អាត។",
+        "steps_en": [
+            "Diagnostic photographs, models/scan, and X-rays.",
+            "Discussion of duration estimates, hygiene needs, and retainer plans.",
+            "Appliance fitting and monthly progress reviews.",
+        ],
+        "steps_kh": [
+            "ថតរូប ស្កេនធ្មេញ និងថតកាំរស្មី X ដើម្បីរៀបចំផែនការ។",
+            "ពិភាក្សាអំពីរយៈពេលប៉ាន់ស្មាន ការថែទាំ និងការពាក់ Retainer ក្រោយពត់រួច។",
+            "ដំឡើងឧបករណ៍ និងណាត់តាមដានរៀងរាល់ខែ។",
+        ],
+        "duration_en": "Typically 12–24+ months depending on complexity",
+        "duration_kh": "ជាទូទៅ ១២–២៤ ខែឡើងទៅអាស្រ័យលើកម្រិតនៃធ្មេញ",
+        "recovery_en": "Mild pressure soreness for 2–3 days after adjustments; normal speech returns quickly.",
+        "recovery_kh": "អាចមានអារម្មណ៍តឹងណែនរយៈពេល ២–៣ ថ្ងៃបន្ទាប់ពីរឹតដែក ឬដូរឈុតថ្មី។",
+        "price_en": "[FEE PLACEHOLDER — Installment policy discussed at consult]",
+        "price_kh": "[តម្លៃបណ្តោះអាសន្ន — ពិភាក្សាគម្រោងបង់រំលស់ពេលពិគ្រោះ]",
+        "faqs": [],
+    },
+    {
+        "slug": "emergency-dental-care",
+        "category": "urgent",
+        "category_en": "Urgent Dental Care",
+        "category_kh": "ការសង្គ្រោះបន្ទាន់មាត់ធ្មេញ",
+        "title_en": "Urgent Toothache & Emergency Care",
+        "title_kh": "ការព្យាបាលឈឺធ្មេញបន្ទាន់",
+        "summary_en": "Same-day triage guidance and pain-focused diagnosis for sudden toothache, swelling, or chipped teeth.",
+        "summary_kh": "ការពិនិត្យ និងព្យាបាលបន្ទាន់សម្រាប់អាការៈឈឺធ្មេញខ្លាំង ហើមអញ្ចាញ ឬបាក់ធ្មេញ។",
+        "what_it_is_en": "Focused evaluation to identify the cause of acute oral pain, stabilize broken restorations, or treat localized infection safely.",
+        "what_it_is_kh": "ការពិនិត្យស្វែងរកមូលហេតុឈឺធ្មេញភ្លាមៗ ជួសជុលធ្មេញបាក់ ឬគ្រប់គ្រងការរលាកឆ្លងរោគដោយសុវត្ថិភាព។",
+        "who_for_en": "Anyone experiencing acute toothache, lost crowns/fillings, facial swelling, or dental trauma. Please call first for urgent triage.",
+        "who_for_kh": "សម្រាប់អ្នកឈឺធ្មេញខ្លាំង របូតស្នាមប៉ះ ហើមមុខ ឬគ្រោះថ្នាក់ប៉ះពាល់ធ្មេញ។ សូមទូរស័ព្ទមកជាមុន។",
+        "steps_en": [
+            "Call our phone line immediately for triage advice and earliest opening.",
+            "Focused exam and targeted imaging.",
+            "Stabilization to relieve acute pain and plan definitive care.",
+        ],
+        "steps_kh": [
+            "ទូរស័ព្ទមកគ្លីនិកភ្លាមៗដើម្បីទទួលការណែនាំ និងកក់ម៉ោងឆាប់បំផុត។",
+            "ពិនិត្យចំទីតាំងឈឺ និងថតពិនិត្យតាមតម្រូវការ។",
+            "ជួយសម្រាលការឈឺចាប់ភ្លាម និងរៀបចំផែនការព្យាបាលបន្ត។",
+        ],
+        "duration_en": "Triage slot — approx. 30 minutes",
+        "duration_kh": "ម៉ោងពិនិត្យបន្ទាន់ — ប្រហែល ៣០ នាទី",
+        "recovery_en": "Follow prescribed care; seek urgent hospital care if swelling affects breathing or swallowing.",
+        "recovery_kh": "អនុវត្តតាមវេជ្ជបញ្ជា; ប្រសិនបើហើមពិបាកដកដង្ហើម ឬលេប សូមទៅមន្ទីរពេទ្យភ្លាម។",
+        "price_en": "[FEE PLACEHOLDER — Exam & emergency stabilization quote given upfront]",
+        "price_kh": "[តម្លៃបណ្តោះអាសន្ន — បញ្ជាក់តម្លៃពិនិត្យមុនពេលព្យាបាល]",
+        "faqs": [],
+    },
+]
+
+SERVICE_MAP: Dict[str, Dict] = {s["slug"]: s for s in SERVICES}
+
+# Clearly flagged placeholder dentist profiles — DO NOT present as verified real clinicians until filled by owner
+DENTISTS: List[Dict] = [
+    {
+        "slug": "dentist-placeholder-1",
+        "name_en": "[DENTIST NAME PLACEHOLDER 1]",
+        "name_kh": "[ឈ្មោះទន្តបណ្ឌិតទី ១ (បណ្តោះអាសន្ន)]",
+        "title_en": "[Title Placeholder — Lead General Dentist]",
+        "title_kh": "[តួនាទី — ទន្តបណ្ឌិតទូទៅ]",
+        "specialty_en": "[Specialty Placeholder — Preventive & Restorative Care]",
+        "specialty_kh": "[ជំនាញ — ការថែទាំទូទៅ និងជួសជុលធ្មេញ]",
+        "credentials_en": "[License / Degree Placeholder — e.g. DDS, License #XXXX]",
+        "credentials_kh": "[សញ្ញាបត្រ និងលេខអាជ្ញាប័ណ្ណ — គំរូបណ្តោះអាសន្ន]",
+        "languages_en": "[Languages Placeholder — Khmer, English]",
+        "languages_kh": "[ភាសា — ខ្មែរ, អង់គ្លេស]",
+        "experience_en": "[X years experience placeholder]",
+        "experience_kh": "[បទពិសោធន៍ X ឆ្នាំ (បណ្តោះអាសន្ន)]",
+        "bio_en": "[Clinician bio placeholder provided by clinic owner prior to launch.]",
+        "bio_kh": "[ជីវប្រវត្តិសង្ខេបរបស់ទន្តបណ្ឌិត (បំពេញដោយម្ចាស់គ្លីនិក)។]",
+    },
+    {
+        "slug": "dentist-placeholder-2",
+        "name_en": "[DENTIST NAME PLACEHOLDER 2]",
+        "name_kh": "[ឈ្មោះទន្តបណ្ឌិតទី ២ (បណ្តោះអាសន្ន)]",
+        "title_en": "[Title Placeholder — Dental Surgeon / Orthodontist]",
+        "title_kh": "[តួនាទី — ទន្តបណ្ឌិតឯកទេស]",
+        "specialty_en": "[Specialty Placeholder — Implants / Orthodontics]",
+        "specialty_kh": "[ជំនាញ — ដាំបង្គោលធ្មេញ / ពត់ធ្មេញ]",
+        "credentials_en": "[License / Degree Placeholder — Verify before publishing]",
+        "credentials_kh": "[សញ្ញាបត្រ និងលេខអាជ្ញាប័ណ្ណ — ផ្ទៀងផ្ទាត់មុនបង្ហោះ]",
+        "languages_en": "[Languages Placeholder — Khmer, English]",
+        "languages_kh": "[ភាសា — ខ្មែរ, អង់គ្លេស]",
+        "experience_en": "[X years experience placeholder]",
+        "experience_kh": "[បទពិសោធន៍ X ឆ្នាំ (បណ្តោះអាសន្ន)]",
+        "bio_en": "[Clinician bio placeholder provided by clinic owner prior to launch.]",
+        "bio_kh": "[ជីវប្រវត្តិសង្ខេបរបស់ទន្តបណ្ឌិត (បំពេញដោយម្ចាស់គ្លីនិក)។]",
+    },
+]
+
+DENTIST_MAP: Dict[str, Dict] = {d["slug"]: d for d in DENTISTS}
+
+# Clearly flagged placeholder testimonials — strictly zero fabricated patient quotes
+TESTIMONIAL_PLACEHOLDERS: List[Dict] = [
+    {
+        "author_en": "[CONSENTED PATIENT INITIALS #1]",
+        "author_kh": "[អក្សរកាត់អ្នកជំងឺដែលបានយល់ព្រម #១]",
+        "date": "[DATE PLACEHOLDER]",
+        "service_en": "Dental Checkup & Cleaning",
+        "service_kh": "ពិនិត្យ និងសម្អាតធ្មេញ",
+        "quote_en": "[Verified patient quote awaiting written clinic consent before launch.]",
+        "quote_kh": "[មតិយោបល់ពិតរបស់អ្នកជំងឺ — រង់ចាំការយល់ព្រមជាលាយលក្ខណ៍អក្សរពីអ្នកជំងឺ។]",
+    },
+    {
+        "author_en": "[CONSENTED PATIENT INITIALS #2]",
+        "author_kh": "[អក្សរកាត់អ្នកជំងឺដែលបានយល់ព្រម #២]",
+        "date": "[DATE PLACEHOLDER]",
+        "service_en": "Tooth-Colored Fillings",
+        "service_kh": "ការប៉ះធ្មេញ",
+        "quote_en": "[Verified patient quote awaiting written clinic consent before launch.]",
+        "quote_kh": "[មតិយោបល់ពិតរបស់អ្នកជំងឺ — រង់ចាំការយល់ព្រមជាលាយលក្ខណ៍អក្សរពីអ្នកជំងឺ។]",
+    },
+    {
+        "author_en": "[CONSENTED PATIENT INITIALS #3]",
+        "author_kh": "[អក្សរកាត់អ្នកជំងឺដែលបានយល់ព្រម #៣]",
+        "date": "[DATE PLACEHOLDER]",
+        "service_en": "Urgent Dental Care",
+        "service_kh": "ការព្យាបាលបន្ទាន់",
+        "quote_en": "[Verified patient quote awaiting written clinic consent before launch.]",
+        "quote_kh": "[មតិយោបល់ពិតរបស់អ្នកជំងឺ — រង់ចាំការយល់ព្រមជាលាយលក្ខណ៍អក្សរពីអ្នកជំងឺ។]",
+    },
+]
+
+CLINIC_FAQS: List[Dict] = [
+    {
+        "id": "faq-first-visit",
+        "q_en": "What happens during my first dental visit?",
+        "q_kh": "តើមានអ្វីខ្លះកើតឡើងនៅពេលមកពិនិត្យដំបូង?",
+        "a_en": "We review your health history, examine your teeth and gums, discuss any discomfort, and explain clear options and fees before proceeding with treatment.",
+        "a_kh": "ក្រុមការងារនឹងសួរនាំប្រវត្តិសុខភាព ពិនិត្យធ្មេញ និងអញ្ចាញ ព្រមទាំងពន្យល់ពីជម្រើសព្យាបាល និងតម្លៃជាមុនសិន។",
+    },
+    {
+        "id": "faq-pricing",
+        "q_en": "How do pricing and treatment quotes work?",
+        "q_kh": "តើការគិតតម្លៃ និងការផ្តល់សម្រង់តម្លៃដំណើរការដូចម្តេច?",
+        "a_en": "Every patient receives a clear estimate before treatment begins. Exact quotes depend on clinical findings after an examination. [ADD APPROVED PRICE LIST / PAYMENT METHODS]",
+        "a_kh": "អ្នកជំងឺគ្រប់រូបទទួលបានការបញ្ជាក់តម្លៃច្បាស់លាស់មុនពេលព្យាបាល។ តម្លៃជាក់លាក់អាស្រ័យលើស្ថានភាពធ្មេញក្រោយពេលពិនិត្យ។ [បន្ថែមតារាងតម្លៃផ្លូវការ]",
+    },
+    {
+        "id": "faq-emergency",
+        "q_en": "What should I do for a sudden toothache or broken tooth?",
+        "q_kh": "តើខ្ញុំត្រូវធ្វើដូចម្តេចប្រសិនបើឈឺធ្មេញខ្លាំង ឬបាក់ធ្មេញភ្លាមៗ?",
+        "a_en": "Please call our clinic phone line directly for same-day triage. Online requests are reviewed during business hours and confirmed within [2] hours.",
+        "a_kh": "សូមទូរស័ព្ទមកលេខគ្លីនិកដោយផ្ទាល់ដើម្បីស្នើសុំម៉ោងពិនិត្យបន្ទាន់។ សំណើតាមអនឡាញត្រូវបានពិនិត្យ និងបញ្ជាក់ក្នុងម៉ោងធ្វើការ។",
+    },
+    {
+        "id": "faq-children",
+        "q_en": "Do you treat children and patients with dental anxiety?",
+        "q_kh": "តើគ្លីនិកទទួលពិនិត្យកុមារ និងអ្នកដែលភ័យខ្លាចពេទ្យធ្មេញដែរឬទេ?",
+        "a_en": "Yes. Let us know when booking if you or your child feel anxious so we can schedule extra time, explain each step calmly, and pause whenever needed.",
+        "a_kh": "បាទ/ចាស។ សូមបញ្ជាក់ក្នុងទម្រង់ណាត់ជួបប្រសិនបើអ្នក ឬកុមារមានការភ័យខ្លាច ដើម្បីឱ្យយើងត្រៀមពេលវេលាបន្ថែម និងពន្យល់មួយជំហានម្តងៗ។",
+    },
+    {
+        "id": "faq-payment",
+        "q_en": "Which payment methods and insurance options do you accept?",
+        "q_kh": "តើគ្លីនិកទទួលការទូទាត់តាមវិធីណាខ្លះ និងមានធានារ៉ាប់រងទេ?",
+        "a_en": "[PAYMENT & INSURANCE PLACEHOLDER — Replace with Cash, ABA/KHQR, Cards, and accepted insurance providers.]",
+        "a_kh": "[ព័ត៌មានទូទាត់ និងធានារ៉ាប់រង — សូមជំនួសដោយ សាច់ប្រាក់ ABA/KHQR កាតធនាគារ និងក្រុមហ៊ុនធានារ៉ាប់រងដែលទទួលយក។]",
+    },
+]
+
+
+def get_service_by_slug(slug: str) -> Optional[Dict]:
+    return SERVICE_MAP.get(slug)
+
+
+def get_dentist_by_slug(slug: str) -> Optional[Dict]:
+    return DENTIST_MAP.get(slug)
