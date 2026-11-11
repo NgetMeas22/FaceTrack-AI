@@ -355,3 +355,4 @@ def get_service_by_slug(slug: str) -> Optional[Dict]:
 
 def get_dentist_by_slug(slug: str) -> Optional[Dict]:
     return DENTIST_MAP.get(slug)
+

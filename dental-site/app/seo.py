@@ -177,3 +177,4 @@ def render_robots_txt() -> str:
         "Disallow: /kh/booking-confirmed\n"
         f"Sitemap: {base}/sitemap.xml\n"
     )
+

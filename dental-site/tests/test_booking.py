@@ -213,3 +213,4 @@ def test_general_contact_inquiry_flow():
     r_done = client.get(r_msg.headers["location"])
     assert r_done.status_code == 200
     assert "Message received" in r_done.text
+

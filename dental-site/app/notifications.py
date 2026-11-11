@@ -72,3 +72,4 @@ def notify_clinic_new_booking(
 def notify_clinic_contact_message(*, reference_code: str) -> None:
     """Log safe contact inquiry event without exposing user PII/message text."""
     logger.info("NEW_CONTACT_MESSAGE ref=%s", reference_code)
+

@@ -68,3 +68,4 @@ All bracketed items are intentional placeholders; zero names, credentials, price
 - Configure PostgreSQL in `DENTAL_DATABASE_URL` and run `alembic upgrade head` before starting workers.
 - Terminate TLS at Nginx/Caddy/Cloudflare (app automatically emits HSTS headers in production/HTTPS).
 - Configure regular automated database backups and test restores.
+

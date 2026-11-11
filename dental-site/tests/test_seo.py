@@ -72,3 +72,4 @@ def test_noindex_on_private_and_error_pages():
     r_404 = client.get("/en/does-not-exist")
     assert r_404.status_code == 404
     assert '<meta name="robots" content="noindex, nofollow">' in r_404.text
+

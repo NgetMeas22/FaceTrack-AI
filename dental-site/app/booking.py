@@ -247,3 +247,4 @@ def validate_and_create_contact_message(
     db.refresh(msg_obj)
     notify_clinic_contact_message(reference_code=msg_obj.reference_code)
     return {}, msg_obj
+

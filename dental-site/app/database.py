@@ -49,3 +49,4 @@ def db_transaction(db: Session) -> Generator[Session, None, None]:
     except Exception:
         db.rollback()
         raise
+

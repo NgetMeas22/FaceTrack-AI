@@ -152,3 +152,4 @@ def is_clinic_open_now(now_utc: Optional[datetime] = None) -> bool:
         return False
     open_t, close_t = hours
     return open_t <= local_now.time() < close_t
+

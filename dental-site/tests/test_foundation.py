@@ -59,3 +59,4 @@ def test_translation_keys_match():
     diff = find_missing_translation_keys()
     assert diff["missing_in_kh"] == []
     assert diff["missing_in_en"] == []
+
