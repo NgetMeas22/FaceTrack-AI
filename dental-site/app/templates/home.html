@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }} — {{ t.hero_badge }}{% endblock %}
+{% block meta_description %}{{ t.hero_subtitle }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container hero-grid">
+    <div>
+      <span class="badge badge-teal">{{ t.hero_badge }}</span>
+      <h1 style="margin-top: 0.75rem;">{{ t.hero_title }}</h1>
+      <p class="text-muted">{{ t.hero_subtitle }}</p>
+      <div class="cta-group">
+        <a href="/{{ lang }}/contact#book-form" class="btn btn-primary">{{ t.hero_cta_book }}</a>
+        <a href="{{ clinic.phone_href }}" class="btn btn-secondary">{{ t.hero_cta_call }}</a>
+      </div>
+      <p class="field-hint" style="margin-top: 1rem;">{{ t.emergency_notice }}</p>
+    </div>
+
+    <div class="card">
+      <p style="font-weight: 700; margin-bottom: 0.5rem;">{{ t.hours_label }}</p>
+      <p style="margin-bottom: 0.75rem;">
+        <span class="badge {{ 'badge-open' if clinic_open else 'badge-closed' }}">
+          {{ t.status_open_now if clinic_open else t.status_closed_now }}
+        </span>
+      </p>
+      <ul class="footer-links text-muted">
+        <li>{{ t.footer_hours_mon_fri }}</li>
+        <li>{{ t.footer_hours_sat }}</li>
+        <li>{{ t.footer_hours_sun }}</li>
+      </ul>
+      <p class="field-hint" style="margin-top: 0.75rem; margin-bottom: 0;">{{ t.timezone_note }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-muted">
+  <div class="container">
+    <h2>{{ t.why_choose_title }}</h2>
+    <div class="grid-3">
+      <article class="card">
+        <h3>{{ t.why_point_1_title }}</h3>
+        <p class="text-muted" style="margin-bottom: 0;">{{ t.why_point_1_desc }}</p>
+      </article>
+      <article class="card">
+        <h3>{{ t.why_point_2_title }}</h3>
+        <p class="text-muted" style="margin-bottom: 0;">{{ t.why_point_2_desc }}</p>
+      </article>
+      <article class="card">
+        <h3>{{ t.why_point_3_title }}</h3>
+        <p class="text-muted" style="margin-bottom: 0;">{{ t.why_point_3_desc }}</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="info-strip">
+      <div>
+        <h3>{{ t.address_label }}</h3>
+        <p class="text-muted" style="margin-bottom: 0.5rem;">{{ clinic.address_en if lang == 'en' else clinic.address_kh }}</p>
+        <a href="{{ clinic.google_maps_directions_url }}" target="_blank" rel="noopener noreferrer">{{ t.action_directions }}</a>
+      </div>
+      <div>
+        <h3>{{ t.phone_label }}</h3>
+        <p style="margin-bottom: 0.5rem;"><a href="{{ clinic.phone_href }}">{{ clinic.phone_display }}</a></p>
+        <p class="field-hint" style="margin-bottom: 0;">{{ clinic.email }}</p>
+      </div>
+      <div>
+        <h3>{{ t.final_cta_title }}</h3>
+        <p class="text-muted" style="margin-bottom: 0.75rem;">{{ t.final_cta_desc }}</p>
+        <a href="/{{ lang }}/contact#book-form" class="btn btn-primary">{{ t.nav_book_cta }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

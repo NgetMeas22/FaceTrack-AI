@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="{{ t.html_lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ t.hero_subtitle }}{% endblock %}">
+  {% block seo_head %}{% endblock %}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/dental.css">
+  <script src="/static/js/dental.js" defer></script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">{{ t.skip_to_content }}</a>
+
+  <!-- Clear Preview Notice for Unsupplied Placeholders -->
+  <div class="notice-strip" role="note">
+    <div class="container">{{ t.placeholder_notice }}</div>
+  </div>
+
+  <!-- Header with Logo, Simple Nav (<=6 items), Language Switch, and Sticky Book CTA -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/{{ lang }}/" class="brand-link">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 3c-2.2 0-4 1.8-4 4.2 0 2.5 1 4.6 1.5 7.4.5 2.9 1.2 6.4 2.8 6.4 1.2 0 1.7-2.2 2.4-4.2.5-1.3 1.4-2.1 2.3-2.1s1.8.8 2.3 2.1c.7 2 1.2 4.2 2.4 4.2 1.6 0 2.3-3.5 2.8-6.4.5-2.8 1.5-4.9 1.5-7.4C21 4.8 19.2 3 17 3c-1.7 0-3 .9-5 .9S8.7 3 7 3Z"/>
+          </svg>
+        </span>
+        <span>{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="{{ t.primary_nav_label }}">
+        <a href="/{{ lang }}/" class="nav-link {% if active_nav == 'home' %}is-active{% endif %}">{{ t.nav_home }}</a>
+        <a href="/{{ lang }}/services" class="nav-link {% if active_nav == 'services' %}is-active{% endif %}">{{ t.nav_services }}</a>
+        <a href="/{{ lang }}/dentists" class="nav-link {% if active_nav == 'dentists' %}is-active{% endif %}">{{ t.nav_dentists }}</a>
+        <a href="/{{ lang }}/patient-stories" class="nav-link {% if active_nav == 'stories' %}is-active{% endif %}">{{ t.nav_stories }}</a>
+        <a href="/{{ lang }}/about" class="nav-link {% if active_nav == 'about' %}is-active{% endif %}">{{ t.nav_about }}</a>
+        <a href="/{{ lang }}/faq" class="nav-link {% if active_nav == 'faq' %}is-active{% endif %}">{{ t.nav_faq }}</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-switch" role="group" aria-label="Language switcher">
+          <a href="{{ switch_en_url }}" class="{% if lang == 'en' %}is-active{% endif %}" hreflang="en" lang="en">{{ t.lang_label_en }}</a>
+          <a href="{{ switch_kh_url }}" class="{% if lang == 'kh' %}is-active{% endif %}" hreflang="km" lang="km">{{ t.lang_label_km }}</a>
+        </div>
+
+        <a href="/{{ lang }}/contact#book-form" class="btn btn-primary header-book-desktop">{{ t.nav_book_cta }}</a>
+
+        <button
+          type="button"
+          id="mobile-menu-toggle"
+          class="menu-toggle"
+          aria-expanded="false"
+          aria-controls="mobile-nav-drawer"
+          aria-label="{{ t.menu_open }}"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-nav-drawer" class="mobile-drawer" hidden>
+      <nav aria-label="{{ t.primary_nav_label }}">
+        <ul class="mobile-drawer-list">
+          <li><a href="/{{ lang }}/" class="{% if active_nav == 'home' %}is-active{% endif %}">{{ t.nav_home }}</a></li>
+          <li><a href="/{{ lang }}/services" class="{% if active_nav == 'services' %}is-active{% endif %}">{{ t.nav_services }}</a></li>
+          <li><a href="/{{ lang }}/dentists" class="{% if active_nav == 'dentists' %}is-active{% endif %}">{{ t.nav_dentists }}</a></li>
+          <li><a href="/{{ lang }}/patient-stories" class="{% if active_nav == 'stories' %}is-active{% endif %}">{{ t.nav_stories }}</a></li>
+          <li><a href="/{{ lang }}/about" class="{% if active_nav == 'about' %}is-active{% endif %}">{{ t.nav_about }}</a></li>
+          <li><a href="/{{ lang }}/faq" class="{% if active_nav == 'faq' %}is-active{% endif %}">{{ t.nav_faq }}</a></li>
+          <li><a href="/{{ lang }}/contact#book-form" class="btn btn-primary">{{ t.nav_book_cta }}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h3>{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}</h3>
+          <p class="text-muted"><strong>{{ t.address_label }}:</strong> {{ clinic.address_en if lang == 'en' else clinic.address_kh }}</p>
+          <p class="text-muted">
+            <strong>{{ t.phone_label }}:</strong>
+            <a href="{{ clinic.phone_href }}">{{ clinic.phone_display }}</a>
+          </p>
+          <p class="text-muted">{{ t.emergency_notice }}</p>
+        </div>
+
+        <div>
+          <h3>{{ t.hours_label }}</h3>
+          <ul class="footer-links text-muted">
+            <li>{{ t.footer_hours_mon_fri }}</li>
+            <li>{{ t.footer_hours_sat }}</li>
+            <li>{{ t.footer_hours_sun }}</li>
+            <li>{{ t.timezone_note }}</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>{{ t.footer_links }}</h3>
+          <ul class="footer-links">
+            <li><a href="/{{ lang }}/contact">{{ t.nav_contact }}</a></li>
+            <li><a href="/{{ lang }}/privacy">{{ t.nav_privacy }}</a></li>
+            <li><a href="{{ clinic.facebook_url }}" rel="noopener noreferrer">Facebook [PLACEHOLDER]</a></li>
+            <li><a href="{{ switch_en_url }}" hreflang="en">English</a> · <a href="{{ switch_kh_url }}" hreflang="km">ភាសាខ្មែរ</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="text-muted" style="margin-top: 2rem; margin-bottom: 0; font-size: 0.875rem;">
+        &copy; {{ clinic.copyright_year }} {{ t.footer_copyright }}
+      </p>
+    </div>
+  </footer>
+
+  <!-- Mobile Sticky Bar: Call · Message · Book -->
+  <nav class="mobile-sticky-bar" aria-label="{{ t.mobile_actions_label }}">
+    <a href="{{ clinic.phone_href }}" class="mobile-bar-btn mobile-bar-call">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      <span>{{ t.action_call }}</span>
+    </a>
+    <a href="/{{ lang }}/contact#contact-channels" class="mobile-bar-btn mobile-bar-msg">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>{{ t.action_message }}</span>
+    </a>
+    <a href="/{{ lang }}/contact#book-form" class="mobile-bar-btn mobile-bar-book">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <span>{{ t.action_book }}</span>
+    </a>
+  </nav>
+</body>
+</html>

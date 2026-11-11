@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}404 — {{ t.error_404_title }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="card" style="max-width: 38rem; margin: 0 auto;">
+      <span class="badge badge-teal">404</span>
+      <h1 style="margin-top: 0.75rem;">{{ t.error_404_title }}</h1>
+      <p class="text-muted">{{ t.error_404_desc }}</p>
+      <div class="cta-group">
+        <a href="/{{ lang }}/" class="btn btn-primary">{{ t.error_404_home }}</a>
+        <a href="/{{ lang }}/contact#book-form" class="btn btn-secondary">{{ t.nav_book_cta }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
