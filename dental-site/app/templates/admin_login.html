@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.admin_login_title }} — {{ clinic.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width: 28rem;">
+    <div class="card">
+      <h1>{{ t.admin_login_title }}</h1>
+
+      {% if not admin_configured %}
+      <div class="alert alert-error" role="alert">
+        {{ t.admin_unconfigured }}
+      </div>
+      {% else %}
+        {% if error %}
+        <div class="alert alert-error" role="alert">{{ error }}</div>
+        {% endif %}
+        <form method="POST" action="/admin/login" data-lock-submit>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="form-grid">
+            <div class="field-group">
+              <label for="username" class="field-label">Username</label>
+              <input type="text" id="username" name="username" required autocomplete="username" class="field-control">
+            </div>
+            <div class="field-group">
+              <label for="password" class="field-label">Password</label>
+              <input type="password" id="password" name="password" required autocomplete="current-password" class="field-control">
+            </div>
+            <button type="submit" class="btn btn-primary">{{ t.admin_login_title }}</button>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

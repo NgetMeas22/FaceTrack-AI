@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.faq_page_title }} — {{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}{% endblock %}
+{% block meta_description %}{{ t.faq_page_subtitle }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width: 52rem;">
+    <span class="badge badge-teal">{{ t.nav_faq }}</span>
+    <h1 style="margin-top: 0.75rem;">{{ t.faq_page_title }}</h1>
+    <p class="text-muted">{{ t.faq_page_subtitle }}</p>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      {% for item in faqs %}
+      <div class="accordion-item">
+        <button
+          type="button"
+          class="accordion-trigger"
+          data-accordion-trigger
+          aria-expanded="false"
+          aria-controls="panel-{{ item.id }}"
+        >
+          <span>{{ item.q_en if lang == 'en' else item.q_kh }}</span>
+          <span aria-hidden="true">+</span>
+        </button>
+        <div id="panel-{{ item.id }}" class="accordion-panel" hidden>
+          <p style="margin-bottom: 0;">{{ item.a_en if lang == 'en' else item.a_kh }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="cta-group">
+      <a href="/{{ lang }}/contact#book-form" class="btn btn-primary">{{ t.nav_book_cta }}</a>
+      <a href="{{ clinic.phone_href }}" class="btn btn-secondary">{{ t.action_call_us }}</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

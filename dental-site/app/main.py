@@ -1,29 +1,39 @@
 """FastAPI entry point and routing for the official Dental Clinic website."""
 
+import csv
+import hmac
+import io
+import os
 from contextlib import asynccontextmanager
 from datetime import timedelta
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from fastapi import Depends, FastAPI, Form, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.booking import create_appointment_request, validate_and_create_contact_message, validate_booking_input
-from app.clinic_data import DENTISTS, SERVICES, get_service_by_slug
+from app.clinic_data import CLINIC_FAQS, DENTISTS, SERVICES, TESTIMONIAL_PLACEHOLDERS, get_service_by_slug
 from app.config import AVAILABLE_TIME_SLOTS, CLINIC_INFO, get_clinic_now, is_clinic_open_now, settings
 from app.database import get_db, init_dental_db
-from app.models import AppointmentRequest
+from app.models import AppointmentRequest, BookingStatusAudit, VALID_BOOKING_STATUSES
 from app.security import (
+    ADMIN_COOKIE_NAME,
     CSRF_COOKIE_NAME,
     SecurityHeadersMiddleware,
+    create_admin_session_token,
+    escape_csv_cell,
     form_rate_limiter,
     generate_csrf_token,
     get_or_issue_csrf_id,
     hash_client_ip,
+    verify_admin_password,
+    verify_admin_session_token,
     verify_csrf_token,
 )
 from app.translations import TRANSLATIONS
@@ -156,7 +166,81 @@ def trailing_lang_redirect(request: Request) -> RedirectResponse:
 def home_page(lang: str, request: Request) -> HTMLResponse:
     validate_lang_or_404(lang)
     ctx = build_base_context(request, lang, active_nav="home")
+    ctx.update(
+        {
+            "services": SERVICES[:6],
+            "dentists": DENTISTS,
+            "testimonials": TESTIMONIAL_PLACEHOLDERS[:3],
+        }
+    )
     return templates.TemplateResponse(request=request, name="home.html", context=ctx)
+
+
+@app.get("/{lang}/services", response_class=HTMLResponse)
+def services_page(lang: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    groups_map: Dict[str, Dict] = {}
+    for svc in SERVICES:
+        cat = svc["category"]
+        if cat not in groups_map:
+            groups_map[cat] = {
+                "category_label": svc["category_en"] if lang == "en" else svc["category_kh"],
+                "services": [],
+            }
+        groups_map[cat]["services"].append(svc)
+    ctx = build_base_context(request, lang, active_nav="services")
+    ctx["grouped_services"] = list(groups_map.values())
+    return templates.TemplateResponse(request=request, name="services.html", context=ctx)
+
+
+@app.get("/{lang}/services/{slug}", response_class=HTMLResponse)
+def service_detail_page(lang: str, slug: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    svc = get_service_by_slug(slug)
+    if not svc:
+        raise StarletteHTTPException(status_code=404)
+    related = [s for s in SERVICES if s["slug"] != slug][:3]
+    ctx = build_base_context(request, lang, active_nav="services")
+    ctx.update({"service": svc, "related_services": related})
+    return templates.TemplateResponse(request=request, name="service_detail.html", context=ctx)
+
+
+@app.get("/{lang}/dentists", response_class=HTMLResponse)
+def dentists_page(lang: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    ctx = build_base_context(request, lang, active_nav="dentists")
+    ctx["dentists"] = DENTISTS
+    return templates.TemplateResponse(request=request, name="dentists.html", context=ctx)
+
+
+@app.get("/{lang}/patient-stories", response_class=HTMLResponse)
+def patient_stories_page(lang: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    ctx = build_base_context(request, lang, active_nav="stories")
+    ctx["testimonials"] = TESTIMONIAL_PLACEHOLDERS
+    return templates.TemplateResponse(request=request, name="patient_stories.html", context=ctx)
+
+
+@app.get("/{lang}/about", response_class=HTMLResponse)
+def about_page(lang: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    ctx = build_base_context(request, lang, active_nav="about")
+    return templates.TemplateResponse(request=request, name="about.html", context=ctx)
+
+
+@app.get("/{lang}/faq", response_class=HTMLResponse)
+def faq_page(lang: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    ctx = build_base_context(request, lang, active_nav="faq")
+    ctx["faqs"] = CLINIC_FAQS
+    return templates.TemplateResponse(request=request, name="faq.html", context=ctx)
+
+
+@app.get("/{lang}/privacy", response_class=HTMLResponse)
+def privacy_page(lang: str, request: Request) -> HTMLResponse:
+    validate_lang_or_404(lang)
+    ctx = build_base_context(request, lang, active_nav="")
+    return templates.TemplateResponse(request=request, name="privacy.html", context=ctx)
 
 
 @app.get("/{lang}/contact", response_class=HTMLResponse)
@@ -377,6 +461,246 @@ def submit_contact_message(
         return render_contact_err(errors, 422)
 
     return RedirectResponse(url=f"/{lang}/contact?msg_ref={msg_obj.reference_code}#contact-form", status_code=303)
+
+
+def _get_admin_username() -> str:
+    return os.getenv("CLINIC_ADMIN_USERNAME", settings.admin_username).strip()
+
+
+def _get_admin_password_hash() -> str:
+    return os.getenv("CLINIC_ADMIN_PASSWORD_HASH", settings.admin_password_hash).strip()
+
+
+def _require_admin(request: Request) -> Optional[str]:
+    token = request.cookies.get(ADMIN_COOKIE_NAME)
+    payload = verify_admin_session_token(token)
+    if not payload or payload.get("usr") != _get_admin_username():
+        return None
+    return payload.get("usr")
+
+
+@app.get("/admin/login", response_class=HTMLResponse)
+def admin_login_page(request: Request) -> HTMLResponse:
+    csrf_id = get_or_issue_csrf_id(request)
+    admin_configured = bool(_get_admin_username() and _get_admin_password_hash())
+    ctx = build_base_context(request, "en", active_nav="")
+    ctx.update(
+        {
+            "csrf_token": generate_csrf_token(csrf_id, scope="admin"),
+            "admin_configured": admin_configured,
+            "error": None,
+        }
+    )
+    resp = templates.TemplateResponse(request=request, name="admin_login.html", context=ctx)
+    set_csrf_cookie_if_needed(resp, csrf_id, request)
+    return resp
+
+
+@app.post("/admin/login")
+def admin_login_submit(
+    request: Request,
+    csrf_token: str = Form(""),
+    username: str = Form(""),
+    password: str = Form(""),
+):
+    csrf_id = get_or_issue_csrf_id(request)
+    cfg_user = _get_admin_username()
+    cfg_hash = _get_admin_password_hash()
+    admin_configured = bool(cfg_user and cfg_hash)
+
+    def render_login_err(err: str, status: int) -> HTMLResponse:
+        ctx = build_base_context(request, "en", active_nav="")
+        ctx.update(
+            {
+                "csrf_token": generate_csrf_token(csrf_id, scope="admin"),
+                "admin_configured": admin_configured,
+                "error": err,
+            }
+        )
+        resp = templates.TemplateResponse(
+            request=request, name="admin_login.html", context=ctx, status_code=status
+        )
+        set_csrf_cookie_if_needed(resp, csrf_id, request)
+        return resp
+
+    if not admin_configured:
+        return render_login_err("Admin access is disabled until configured.", 403)
+    if not verify_csrf_token(csrf_token, request.cookies.get(CSRF_COOKIE_NAME), scope="admin"):
+        return render_login_err("Security session expired.", 403)
+
+    ip_hash = hash_client_ip(request)
+    if not form_rate_limiter.allow(f"admin_login:{ip_hash}"):
+        return render_login_err("Too many login attempts. Please wait and try again.", 429)
+
+    user_ok = hmac.compare_digest(username.strip(), cfg_user)
+    pass_ok = verify_admin_password(password, cfg_hash)
+    if not (user_ok and pass_ok):
+        return render_login_err("Invalid username or password.", 401)
+
+    token = create_admin_session_token(cfg_user)
+    resp = RedirectResponse(url="/admin/bookings", status_code=303)
+    resp.set_cookie(
+        key=ADMIN_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=(request.url.scheme == "https" or settings.app_env == "production"),
+        max_age=8 * 3600,
+    )
+    return resp
+
+
+@app.post("/admin/logout")
+def admin_logout(request: Request, csrf_token: str = Form("")):
+    if not verify_csrf_token(csrf_token, request.cookies.get(CSRF_COOKIE_NAME), scope="admin"):
+        raise StarletteHTTPException(status_code=403)
+    resp = RedirectResponse(url="/admin/login", status_code=303)
+    resp.delete_cookie(ADMIN_COOKIE_NAME)
+    return resp
+
+
+@app.get("/admin/bookings", response_class=HTMLResponse)
+def admin_bookings_view(
+    request: Request,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=5, le=100),
+    status: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    admin_usr = _require_admin(request)
+    if not admin_usr:
+        return RedirectResponse(url="/admin/login", status_code=302)
+
+    query = db.query(AppointmentRequest)
+    clean_status = (status or "").strip()
+    if clean_status and clean_status in VALID_BOOKING_STATUSES:
+        query = query.filter(AppointmentRequest.status == clean_status)
+    clean_q = (q or "").strip()
+    if clean_q:
+        like = f"%{clean_q}%"
+        query = query.filter(
+            (AppointmentRequest.reference_code.ilike(like))
+            | (AppointmentRequest.full_name.ilike(like))
+            | (AppointmentRequest.phone.ilike(like))
+        )
+
+    total = query.count()
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    page = min(page, total_pages)
+    appointments = (
+        query.order_by(desc(AppointmentRequest.created_at), desc(AppointmentRequest.id))
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    csrf_id = get_or_issue_csrf_id(request)
+    ctx = build_base_context(request, "en", active_nav="")
+    ctx.update(
+        {
+            "csrf_token": generate_csrf_token(csrf_id, scope="admin"),
+            "appointments": appointments,
+            "valid_statuses": VALID_BOOKING_STATUSES,
+            "status_filter": clean_status,
+            "q": clean_q,
+            "page": page,
+            "total_pages": total_pages,
+            "total": total,
+        }
+    )
+    resp = templates.TemplateResponse(request=request, name="admin_bookings.html", context=ctx)
+    set_csrf_cookie_if_needed(resp, csrf_id, request)
+    return resp
+
+
+@app.post("/admin/bookings/{appt_id}/status")
+def admin_update_booking_status(
+    appt_id: int,
+    request: Request,
+    csrf_token: str = Form(""),
+    status: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    admin_usr = _require_admin(request)
+    if not admin_usr:
+        raise StarletteHTTPException(status_code=401)
+    if not verify_csrf_token(csrf_token, request.cookies.get(CSRF_COOKIE_NAME), scope="admin"):
+        raise StarletteHTTPException(status_code=403)
+
+    new_status = status.strip()
+    if new_status not in VALID_BOOKING_STATUSES:
+        raise StarletteHTTPException(status_code=422)
+
+    appt = db.query(AppointmentRequest).filter(AppointmentRequest.id == appt_id).first()
+    if not appt:
+        raise StarletteHTTPException(status_code=404)
+
+    old_status = appt.status
+    if old_status != new_status:
+        appt.status = new_status
+        audit = BookingStatusAudit(
+            appointment_id=appt.id,
+            old_status=old_status,
+            new_status=new_status,
+            changed_by=admin_usr,
+            note="Updated via booking inbox",
+        )
+        db.add(audit)
+        db.commit()
+
+    return RedirectResponse(url="/admin/bookings", status_code=303)
+
+
+@app.get("/admin/bookings/export")
+def admin_export_bookings_csv(
+    request: Request,
+    status: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    admin_usr = _require_admin(request)
+    if not admin_usr:
+        raise StarletteHTTPException(status_code=401)
+
+    query = db.query(AppointmentRequest)
+    clean_status = (status or "").strip()
+    if clean_status and clean_status in VALID_BOOKING_STATUSES:
+        query = query.filter(AppointmentRequest.status == clean_status)
+    clean_q = (q or "").strip()
+    if clean_q:
+        like = f"%{clean_q}%"
+        query = query.filter(
+            (AppointmentRequest.reference_code.ilike(like))
+            | (AppointmentRequest.full_name.ilike(like))
+            | (AppointmentRequest.phone.ilike(like))
+        )
+
+    rows = query.order_by(desc(AppointmentRequest.created_at), desc(AppointmentRequest.id)).limit(5000).all()
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["Reference", "Name", "Phone", "Email", "Service", "Dentist", "Date", "Slot", "Status", "Created At"])
+    for a in rows:
+        writer.writerow(
+            [
+                escape_csv_cell(a.reference_code),
+                escape_csv_cell(a.full_name),
+                escape_csv_cell(a.phone),
+                escape_csv_cell(a.email or ""),
+                escape_csv_cell(a.service_slug),
+                escape_csv_cell(a.preferred_dentist_slug),
+                escape_csv_cell(a.preferred_date.strftime("%Y-%m-%d")),
+                escape_csv_cell(a.preferred_time_slot),
+                escape_csv_cell(a.status),
+                escape_csv_cell(a.created_at.isoformat()),
+            ]
+        )
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=clinic_appointments.csv"},
+    )
 
 
 @app.exception_handler(StarletteHTTPException)

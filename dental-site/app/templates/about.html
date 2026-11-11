@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.about_page_title }} — {{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}{% endblock %}
+{% block meta_description %}{{ t.about_page_subtitle }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <span class="badge badge-teal">{{ t.nav_about }}</span>
+    <h1 style="margin-top: 0.75rem;">{{ t.about_page_title }}</h1>
+    <p class="text-muted" style="max-width: 44rem;">{{ t.about_page_subtitle }}</p>
+
+    <div class="grid-2" style="margin-top: 2rem; align-items: start;">
+      <div class="card">
+        <h2>{{ t.about_story_title }}</h2>
+        <p class="text-muted">{{ t.about_story_body }}</p>
+
+        <h3>{{ t.about_equipment_title }}</h3>
+        <p class="text-muted" style="margin-bottom: 0;">{{ t.about_equipment_body }}</p>
+      </div>
+
+      <div class="card">
+        <h2>{{ t.about_sterilization_title }}</h2>
+        <p class="text-muted">{{ t.about_sterilization_intro }}</p>
+        <ul class="text-muted" style="padding-left: 1.25rem; margin-bottom: 0;">
+          <li style="margin-bottom: 0.5rem;">{{ t.about_steril_1 }}</li>
+          <li style="margin-bottom: 0.5rem;">{{ t.about_steril_2 }}</li>
+          <li style="margin-bottom: 0.5rem;">{{ t.about_steril_3 }}</li>
+          <li>{{ t.about_steril_4 }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+      <img
+        src="/static/img/clinic-hero.svg"
+        alt="{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}"
+        width="720"
+        height="480"
+        loading="lazy"
+        style="max-width: 560px; margin: 0 auto;"
+      >
+    </div>
+  </div>
+</section>
+{% endblock %}

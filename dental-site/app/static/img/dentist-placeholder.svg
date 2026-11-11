@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="Dentist Portrait Placeholder">
+  <rect width="400" height="400" rx="20" fill="#f8fafc"/>
+  <rect x="16" y="16" width="368" height="368" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="200" cy="152" r="46" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
+  <path d="M122 292c8-44 38-68 78-68s70 24 78 68" fill="#ccfbf1" stroke="#0f766e" stroke-width="2" stroke-linecap="round"/>
+  <text x="200" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#475569">[DENTIST PHOTO PLACEHOLDER]</text>
+</svg>

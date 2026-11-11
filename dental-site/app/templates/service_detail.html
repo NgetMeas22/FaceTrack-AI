@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.title_en if lang == 'en' else service.title_kh }} — {{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}{% endblock %}
+{% block meta_description %}{{ service.summary_en if lang == 'en' else service.summary_kh }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <nav aria-label="Breadcrumb" class="field-hint" style="margin-bottom: 1rem;">
+      <a href="/{{ lang }}/">{{ t.nav_home }}</a> &rsaquo;
+      <a href="/{{ lang }}/services">{{ t.nav_services }}</a> &rsaquo;
+      <span>{{ service.title_en if lang == 'en' else service.title_kh }}</span>
+    </nav>
+
+    <span class="badge badge-teal">{{ service.category_en if lang == 'en' else service.category_kh }}</span>
+    <h1 style="margin-top: 0.75rem;">{{ service.title_en if lang == 'en' else service.title_kh }}</h1>
+    <p class="text-muted" style="max-width: 44rem;">{{ service.summary_en if lang == 'en' else service.summary_kh }}</p>
+
+    <div class="grid-2" style="margin-top: 2rem;">
+      <div class="card">
+        <h2>{{ t.service_what_it_is }}</h2>
+        <p class="text-muted">{{ service.what_it_is_en if lang == 'en' else service.what_it_is_kh }}</p>
+
+        <h3>{{ t.service_who_for }}</h3>
+        <p class="text-muted">{{ service.who_for_en if lang == 'en' else service.who_for_kh }}</p>
+
+        <h3>{{ t.service_steps }}</h3>
+        <ol class="text-muted" style="padding-left: 1.25rem;">
+          {% for step in (service.steps_en if lang == 'en' else service.steps_kh) %}
+          <li style="margin-bottom: 0.375rem;">{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card">
+          <h2>{{ t.service_duration }} &amp; {{ t.service_recovery }}</h2>
+          <p class="text-muted"><strong>{{ t.service_duration }}:</strong> {{ service.duration_en if lang == 'en' else service.duration_kh }}</p>
+          <p class="text-muted"><strong>{{ t.service_recovery }}:</strong> {{ service.recovery_en if lang == 'en' else service.recovery_kh }}</p>
+          <p class="text-muted"><strong>{{ t.service_pricing }}:</strong> {{ service.price_en if lang == 'en' else service.price_kh }}</p>
+          <div class="cta-group">
+            <a href="/{{ lang }}/contact?service={{ service.slug }}#book-form" class="btn btn-primary">{{ t.book_this_service }}</a>
+            <a href="{{ clinic.phone_href }}" class="btn btn-secondary">{{ t.action_call_us }}</a>
+          </div>
+        </div>
+
+        {% if service.faqs %}
+        <div class="card">
+          <h2>{{ t.service_faq_title }}</h2>
+          {% for fq in service.faqs %}
+          <div class="accordion-item">
+            <button
+              type="button"
+              class="accordion-trigger"
+              data-accordion-trigger
+              aria-expanded="false"
+              aria-controls="svc-faq-{{ loop.index }}"
+            >
+              <span>{{ fq.q_en if lang == 'en' else fq.q_kh }}</span>
+              <span aria-hidden="true">+</span>
+            </button>
+            <div id="svc-faq-{{ loop.index }}" class="accordion-panel" hidden>
+              <p style="margin-bottom: 0;">{{ fq.a_en if lang == 'en' else fq.a_kh }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="margin-top: 3rem;">
+      <h2>{{ t.related_services }}</h2>
+      <div class="grid-3">
+        {% for rel in related_services %}
+        <article class="card">
+          <h3>{{ rel.title_en if lang == 'en' else rel.title_kh }}</h3>
+          <p class="text-muted">{{ rel.summary_en if lang == 'en' else rel.summary_kh }}</p>
+          <a href="/{{ lang }}/services/{{ rel.slug }}" class="btn btn-text">{{ t.view_service_details }} &rarr;</a>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

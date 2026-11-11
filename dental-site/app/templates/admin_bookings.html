@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.admin_title }} — {{ clinic.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+      <h1>{{ t.admin_title }}</h1>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <a href="/admin/bookings/export?status={{ status_filter }}&q={{ q }}" class="btn btn-secondary">{{ t.admin_export_csv }}</a>
+        <form method="POST" action="/admin/logout" style="margin: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn btn-secondary">{{ t.admin_logout }}</button>
+        </form>
+      </div>
+    </div>
+
+    <form method="GET" action="/admin/bookings" class="card" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
+      <input type="search" name="q" value="{{ q }}" placeholder="Search ref, name, or phone" aria-label="Search bookings" class="field-control" style="max-width: 18rem;">
+      <select name="status" aria-label="Filter by status" class="field-control" style="max-width: 12rem;">
+        <option value="">All statuses</option>
+        {% for st in valid_statuses %}
+        <option value="{{ st }}" {% if status_filter == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Patient</th>
+            <th>Phone</th>
+            <th>Service / Dentist</th>
+            <th>Date &amp; Slot</th>
+            <th>Status</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in appointments %}
+          <tr>
+            <td><code>{{ a.reference_code }}</code></td>
+            <td>{{ a.full_name }}</td>
+            <td>{{ a.phone }}</td>
+            <td>{{ a.service_slug }}<br><span class="field-hint">{{ a.preferred_dentist_slug }}</span></td>
+            <td>{{ a.preferred_date }} {{ a.preferred_time_slot }}</td>
+            <td><span class="badge badge-teal">{{ a.status }}</span></td>
+            <td>
+              <form method="POST" action="/admin/bookings/{{ a.id }}/status" style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <select name="status" aria-label="Status for {{ a.reference_code }}" class="field-control" style="min-height: 36px; padding: 0.25rem 0.5rem;">
+                  {% for st in valid_statuses %}
+                  <option value="{{ st }}" {% if a.status == st %}selected{% endif %}>{{ st }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-secondary" style="min-height: 36px; padding: 0.25rem 0.75rem;">Save</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="text-muted" style="text-align: center; padding: 2rem;">No appointment requests found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+      <span class="field-hint">Page {{ page }} of {{ total_pages }} ({{ total }} total)</span>
+      <div style="display: flex; gap: 0.5rem;">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&status={{ status_filter }}&q={{ q }}" class="btn btn-secondary">Previous</a>
+        {% endif %}
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&status={{ status_filter }}&q={{ q }}" class="btn btn-secondary">Next</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

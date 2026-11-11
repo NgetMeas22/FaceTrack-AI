@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.stories_page_title }} — {{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}{% endblock %}
+{% block meta_description %}{{ t.stories_page_subtitle }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <span class="badge badge-teal">{{ t.nav_stories }}</span>
+    <h1 style="margin-top: 0.75rem;">{{ t.stories_page_title }}</h1>
+    <p class="text-muted" style="max-width: 44rem;">{{ t.stories_page_subtitle }}</p>
+
+    <div class="cta-group" style="margin-bottom: 2rem;">
+      <a href="{{ clinic.google_reviews_url }}" class="btn btn-secondary">{{ t.google_reviews_cta }}</a>
+      <a href="/{{ lang }}/contact#book-form" class="btn btn-primary">{{ t.nav_book_cta }}</a>
+    </div>
+
+    <div class="grid-3">
+      {% for item in testimonials %}
+      <blockquote class="card" style="margin: 0;">
+        <p>&ldquo;{{ item.quote_en if lang == 'en' else item.quote_kh }}&rdquo;</p>
+        <footer class="field-hint">
+          <strong>{{ item.author_en if lang == 'en' else item.author_kh }}</strong><br>
+          {{ item.service_en if lang == 'en' else item.service_kh }} · {{ item.date }}
+        </footer>
+      </blockquote>
+      {% endfor %}
+    </div>
+
+    <div class="card" style="margin-top: 2.5rem;">
+      <h2>{{ t.before_after_title }}</h2>
+      <p class="text-muted">{{ t.before_after_note }}</p>
+      <div style="padding: 1.5rem; border: 2px dashed var(--color-border); border-radius: 0.75rem; text-align: center;" class="text-muted">
+        {{ t.before_after_placeholder }}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

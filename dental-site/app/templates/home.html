@@ -4,6 +4,7 @@
 {% block meta_description %}{{ t.hero_subtitle }}{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
 <section class="section">
   <div class="container hero-grid">
     <div>
@@ -17,24 +18,51 @@
       <p class="field-hint" style="margin-top: 1rem;">{{ t.emergency_notice }}</p>
     </div>
 
-    <div class="card">
-      <p style="font-weight: 700; margin-bottom: 0.5rem;">{{ t.hours_label }}</p>
-      <p style="margin-bottom: 0.75rem;">
-        <span class="badge {{ 'badge-open' if clinic_open else 'badge-closed' }}">
-          {{ t.status_open_now if clinic_open else t.status_closed_now }}
-        </span>
-      </p>
-      <ul class="footer-links text-muted">
-        <li>{{ t.footer_hours_mon_fri }}</li>
-        <li>{{ t.footer_hours_sat }}</li>
-        <li>{{ t.footer_hours_sun }}</li>
-      </ul>
-      <p class="field-hint" style="margin-top: 0.75rem; margin-bottom: 0;">{{ t.timezone_note }}</p>
+    <div>
+      <img
+        src="/static/img/clinic-hero.svg"
+        alt="{{ clinic.brand_name if lang == 'en' else clinic.brand_name_kh }}"
+        width="720"
+        height="480"
+        fetchpriority="high"
+        style="border-radius: 1rem; border: 1px solid var(--color-border-subtle); width: 100%; height: auto;"
+      >
     </div>
   </div>
 </section>
 
+<!-- Top Services Preview -->
 <section class="section section-muted">
+  <div class="container">
+    <div style="display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <h2>{{ t.section_services_title }}</h2>
+        <p class="text-muted" style="margin-bottom: 0; max-width: 42rem;">{{ t.section_services_subtitle }}</p>
+      </div>
+      <a href="/{{ lang }}/services" class="btn btn-secondary">{{ t.view_all_services }}</a>
+    </div>
+
+    <div class="grid-3">
+      {% for svc in services %}
+      <article class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge badge-teal">{{ svc.category_en if lang == 'en' else svc.category_kh }}</span>
+          <h3 style="margin-top: 0.75rem;">{{ svc.title_en if lang == 'en' else svc.title_kh }}</h3>
+          <p class="text-muted">{{ svc.summary_en if lang == 'en' else svc.summary_kh }}</p>
+        </div>
+        <div style="margin-top: 0.5rem;">
+          <a href="/{{ lang }}/services/{{ svc.slug }}" class="btn btn-text">
+            {{ t.view_service_details }} &rarr;
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="section">
   <div class="container">
     <h2>{{ t.why_choose_title }}</h2>
     <div class="grid-3">
@@ -54,18 +82,85 @@
   </div>
 </section>
 
+<!-- Dentist Preview -->
+<section class="section section-muted">
+  <div class="container">
+    <div style="display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+      <h2>{{ t.dentists_preview_title }}</h2>
+      <a href="/{{ lang }}/dentists" class="btn btn-secondary">{{ t.dentists_preview_cta }}</a>
+    </div>
+
+    <div class="grid-2">
+      {% for d in dentists %}
+      <article class="card" style="display: grid; grid-template-columns: 110px 1fr; gap: 1.25rem; align-items: start;">
+        <img
+          src="/static/img/dentist-placeholder.svg"
+          alt="{{ d.name_en if lang == 'en' else d.name_kh }}"
+          width="110"
+          height="110"
+          loading="lazy"
+          style="border-radius: 0.75rem;"
+        >
+        <div>
+          <h3>{{ d.name_en if lang == 'en' else d.name_kh }}</h3>
+          <p class="field-hint" style="margin-bottom: 0.5rem;">
+            {{ d.title_en if lang == 'en' else d.title_kh }} · {{ d.languages_en if lang == 'en' else d.languages_kh }}
+          </p>
+          <p class="text-muted" style="margin-bottom: 0.75rem;">{{ d.bio_en if lang == 'en' else d.bio_kh }}</p>
+          <a href="/{{ lang }}/contact?dentist={{ d.slug }}#book-form" class="btn btn-text">
+            {{ t.book_with_dentist }} &rarr;
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Preview (Clearly Marked Placeholders) -->
 <section class="section">
   <div class="container">
-    <div class="info-strip">
+    <div style="display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+      <h2>{{ t.stories_preview_title }}</h2>
+      <a href="/{{ lang }}/patient-stories" class="btn btn-secondary">{{ t.view_all_stories }}</a>
+    </div>
+
+    <div class="grid-3">
+      {% for item in testimonials %}
+      <blockquote class="card" style="margin: 0;">
+        <p style="margin-bottom: 0.75rem;">&ldquo;{{ item.quote_en if lang == 'en' else item.quote_kh }}&rdquo;</p>
+        <footer class="field-hint">
+          <strong>{{ item.author_en if lang == 'en' else item.author_kh }}</strong>
+          · {{ item.service_en if lang == 'en' else item.service_kh }} ({{ item.date }})
+        </footer>
+      </blockquote>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Hours, Location & Final CTA -->
+<section class="section section-muted">
+  <div class="container">
+    <div class="info-strip" style="background: var(--color-bg);">
+      <div>
+        <h3>{{ t.hours_label }}</h3>
+        <p style="margin-bottom: 0.5rem;">
+          <span class="badge {{ 'badge-open' if clinic_open else 'badge-closed' }}">
+            {{ t.status_open_now if clinic_open else t.status_closed_now }}
+          </span>
+        </p>
+        <ul class="footer-links text-muted">
+          <li>{{ t.footer_hours_mon_fri }}</li>
+          <li>{{ t.footer_hours_sat }}</li>
+          <li>{{ t.footer_hours_sun }}</li>
+        </ul>
+      </div>
       <div>
         <h3>{{ t.address_label }}</h3>
         <p class="text-muted" style="margin-bottom: 0.5rem;">{{ clinic.address_en if lang == 'en' else clinic.address_kh }}</p>
-        <a href="{{ clinic.google_maps_directions_url }}" target="_blank" rel="noopener noreferrer">{{ t.action_directions }}</a>
-      </div>
-      <div>
-        <h3>{{ t.phone_label }}</h3>
         <p style="margin-bottom: 0.5rem;"><a href="{{ clinic.phone_href }}">{{ clinic.phone_display }}</a></p>
-        <p class="field-hint" style="margin-bottom: 0;">{{ clinic.email }}</p>
+        <a href="{{ clinic.google_maps_directions_url }}" target="_blank" rel="noopener noreferrer">{{ t.action_directions }}</a>
       </div>
       <div>
         <h3>{{ t.final_cta_title }}</h3>

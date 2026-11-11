@@ -144,6 +144,78 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "confirm_status_note": "Status: Pending clinic confirmation. We will reach out by phone or message within [2] hours during opening hours.",
         "confirm_back_home": "Return to Home",
         "confirm_another": "Submit Another Request",
+
+        # Services & Service Detail Pages
+        "services_page_title": "Dental Services & Treatments",
+        "services_page_subtitle": "Comprehensive general, restorative, cosmetic, orthodontic, and urgent care planned around your comfort and clinical needs.",
+        "service_what_it_is": "What It Is",
+        "service_who_for": "Who It Is For",
+        "service_steps": "Typical Procedure Steps",
+        "service_duration": "Estimated Duration",
+        "service_recovery": "Aftercare & Recovery",
+        "service_pricing": "Fees & Quote Policy",
+        "service_faq_title": "Questions About This Treatment",
+        "book_this_service": "Book This Treatment",
+        "related_services": "Other Dental Services",
+
+        # Dentists Page
+        "dentists_page_title": "Our Dental Team",
+        "dentists_page_subtitle": "Meet the clinicians at [CLINIC BRAND NAME]. Replace placeholders below with verified dentist credentials and photos.",
+        "dentists_preview_title": "Meet Our Dental Team",
+        "dentists_preview_cta": "View full team",
+        "book_with_dentist": "Book With This Dentist",
+        "label_credentials": "Credentials",
+        "label_languages": "Languages",
+        "label_experience": "Experience",
+
+        # Patient Stories Page
+        "stories_page_title": "Patient Stories & Reviews",
+        "stories_page_subtitle": "We only publish genuine reviews and clinical examples with explicit patient permission.",
+        "stories_preview_title": "Patient Feedback",
+        "view_all_stories": "Read patient stories",
+        "google_reviews_cta": "Read Verified Reviews on Google [PLACEHOLDER]",
+        "before_after_title": "Before & After Gallery (Consent Required)",
+        "before_after_note": "Individual treatment results vary. Clinical photographs are displayed only when a patient provides explicit written consent.",
+        "before_after_placeholder": "[CLINICAL CASE PLACEHOLDER — Add consented images and factual captions only]",
+
+        # About Page
+        "about_page_title": "About [CLINIC BRAND NAME]",
+        "about_page_subtitle": "Built around honest diagnosis, unhurried communication, and documented infection control.",
+        "about_story_title": "Our Clinic Story",
+        "about_story_body": "[CLINIC STORY PLACEHOLDER — Describe when [CLINIC LEGAL NAME] opened, who leads it, and what patients can expect on arrival.]",
+        "about_sterilization_title": "Sterilization & Infection Control",
+        "about_sterilization_intro": "Instruments used in patient care follow documented cleaning and sterilization workflows:",
+        "about_steril_1": "Manual ultrasonic pre-cleaning to remove organic debris safely.",
+        "about_steril_2": "Individual medical-grade pouch sealing with indicator strips.",
+        "about_steril_3": "High-pressure steam sterilization (autoclave) cycles logged daily.",
+        "about_steril_4": "Surface disinfection of treatment chairs and handles between every patient.",
+        "about_equipment_title": "Equipment & Treatment Environment",
+        "about_equipment_body": "[EQUIPMENT PLACEHOLDER — List actual digital X-ray, intraoral camera, or dental chair equipment used in the clinic.]",
+
+        # FAQ Page
+        "faq_page_title": "Frequently Asked Questions",
+        "faq_page_subtitle": "Clear answers about first visits, quotes, dental anxiety, emergencies, and accepted payments.",
+
+        # Privacy & Cookie Policy
+        "privacy_page_title": "Privacy & Data Protection Policy",
+        "privacy_page_subtitle": "How [CLINIC LEGAL NAME] collects, protects, and retains appointment and contact inquiries.",
+        "privacy_s1_title": "1. Information We Collect",
+        "privacy_s1_body": "When you request an appointment or send an inquiry, we collect only the details needed to respond: your name, phone number, optional email, preferred date/time, and any brief message you choose to share.",
+        "privacy_s2_title": "2. How We Use Your Information",
+        "privacy_s2_body": "Your details are used strictly to schedule and confirm dental appointments, coordinate care with our reception and clinical staff, and answer your questions. We never sell patient contact details.",
+        "privacy_s3_title": "3. Retention & Security Controls",
+        "privacy_s3_body": "Electronic request records are protected behind access controls, encrypted transport (HTTPS), and are retained for up to [7] years or as required by Cambodian health recordkeeping guidance. Personal symptoms and phone numbers are never stored in web analytics.",
+        "privacy_s4_title": "4. Cookies & Analytics",
+        "privacy_s4_body": "This website uses essential security cookies only (CSRF and language preference protection). No intrusive third-party advertising trackers run on booking forms.",
+        "privacy_s5_title": "5. Your Rights (Access & Deletion)",
+        "privacy_s5_body": "You may request to review, correct, or delete your inquiry records by emailing [CLINIC EMAIL: reception@example-clinic.kh] or calling [PHONE: +855 XX XXX XXX].",
+
+        # Staff Booking Inbox (Admin)
+        "admin_title": "Clinic Booking Inbox",
+        "admin_login_title": "Staff Sign In",
+        "admin_unconfigured": "Staff admin credentials are not configured in server environment (CLINIC_ADMIN_USERNAME / CLINIC_ADMIN_PASSWORD_HASH). Access disabled by default.",
+        "admin_export_csv": "Export CSV",
+        "admin_logout": "Sign Out",
     },
     "kh": {
         "html_lang": "km",
@@ -286,6 +358,78 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "confirm_status_note": "ស្ថានភាព៖ កំពុងរង់ចាំការបញ្ជាក់ពីគ្លីនិក។ ក្រុមការងារនឹងទាក់ទងជូនក្នុងរយៈពេល [2] ម៉ោងក្នុងម៉ោងធ្វើការ។",
         "confirm_back_home": "ត្រឡប់ទៅទំព័រដើម",
         "confirm_another": "ផ្ញើសំណើផ្សេងទៀត",
+
+        # Services & Service Detail Pages
+        "services_page_title": "សេវាកម្ម និងការព្យាបាលធ្មេញ",
+        "services_page_subtitle": "សេវាថែទាំបង្ការ ជួសជុល សោភ័ណភាព ពត់ធ្មេញ និងសង្គ្រោះបន្ទាន់តាមតម្រូវការសុខភាពរបស់អ្នក។",
+        "service_what_it_is": "សេចក្តីពន្យល់ពីសេវាកម្ម",
+        "service_who_for": "សមស្របសម្រាប់អ្នកណា",
+        "service_steps": "ដំណាក់កាលនៃការព្យាបាលទូទៅ",
+        "service_duration": "រយៈពេលប៉ាន់ស្មាន",
+        "service_recovery": "ការថែទាំ និងការជាសះស្បើយ",
+        "service_pricing": "តម្លៃ និងគោលការណ៍ផ្តល់សម្រង់តម្លៃ",
+        "service_faq_title": "សំណួរអំពីសេវាកម្មនេះ",
+        "book_this_service": "ណាត់ជួបសម្រាប់សេវាកម្មនេះ",
+        "related_services": "សេវាកម្មផ្សេងទៀត",
+
+        # Dentists Page
+        "dentists_page_title": "ក្រុមទន្តបណ្ឌិតរបស់យើង",
+        "dentists_page_subtitle": "ស្គាល់ក្រុមគ្រូពេទ្យនៅ [ឈ្មោះគ្លីនិកធ្មេញ]។ សូមជំនួសគំរូខាងក្រោមដោយព័ត៌មាន និងរូបភាពគ្រូពេទ្យពិតប្រាកដ។",
+        "dentists_preview_title": "ក្រុមទន្តបណ្ឌិត",
+        "dentists_preview_cta": "មើលក្រុមគ្រូពេទ្យទាំងអស់",
+        "book_with_dentist": "ណាត់ជួបជាមួយទន្តបណ្ឌិតនេះ",
+        "label_credentials": "សញ្ញាបត្រ និងអាជ្ញាប័ណ្ណ",
+        "label_languages": "ភាសា",
+        "label_experience": "បទពិសោធន៍",
+
+        # Patient Stories Page
+        "stories_page_title": "បទពិសោធន៍ និងមតិអ្នកជំងឺ",
+        "stories_page_subtitle": "យើងបង្ហោះតែមតិយោបល់ពិត និងរូបភាពដែលមានការអនុញ្ញាតជាលាយលក្ខណ៍អក្សរពីអ្នកជំងឺប៉ុណ្ណោះ។",
+        "stories_preview_title": "មតិអ្នកជំងឺ",
+        "view_all_stories": "អានបទពិសោធន៍អ្នកជំងឺ",
+        "google_reviews_cta": "អានមតិអ្នកជំងឺនៅលើ Google [បណ្តោះអាសន្ន]",
+        "before_after_title": "រូបភាពមុន និងក្រោយព្យាបាល (តម្រូវការយល់ព្រម)",
+        "before_after_note": "លទ្ធផលអាចប្រែប្រួលតាមបុគ្គលម្នាក់ៗ។ រូបភាពត្រូវបានបង្ហាញតែនៅពេលមានការយល់ព្រមជាលាយលក្ខណ៍អក្សរប៉ុណ្ណោះ។",
+        "before_after_placeholder": "[គំរូករណីព្យាបាល — បញ្ចូលតែរូបភាពដែលមានការអនុញ្ញាត និងការពិពណ៌នាត្រឹមត្រូវ]",
+
+        # About Page
+        "about_page_title": "អំពី [ឈ្មោះគ្លីនិកធ្មេញ]",
+        "about_page_subtitle": "ផ្តោតលើការពិនិត្យវិនិច្ឆ័យស្មោះត្រង់ ការទំនាក់ទំនងច្បាស់លាស់ និងការសម្លាប់មេរោគតាមស្តង់ដារ។",
+        "about_story_title": "សាវតារគ្លីនិករបស់យើង",
+        "about_story_body": "[កន្លែងសរសេរប្រវត្តិគ្លីនិក — បញ្ជាក់ឆ្នាំបើកដំណើរការ អ្នកដឹកនាំ និងអ្វីដែលអ្នកជំងឺទទួលបាន។]",
+        "about_sterilization_title": "ស្តង់ដារសម្លាប់មេរោគ និងអនាម័យ",
+        "about_sterilization_intro": "ឧបករណ៍ពេទ្យទាំងអស់អនុវត្តតាមដំណាក់កាលសម្អាត និងសម្លាប់មេរោគច្បាស់លាស់៖",
+        "about_steril_1": "លាងសម្អាតបឋមដោយម៉ាស៊ីន Ultrasonic ដើម្បីកម្ចាត់កាកសំណល់ដោយសុវត្ថិភាព។",
+        "about_steril_2": "វេចខ្ចប់ក្នុងថង់ពេទ្យដាច់ដោយឡែក និងមានសញ្ញាត្រួតពិនិត្យសីតុណ្ហភាព។",
+        "about_steril_3": "សម្លាប់មេរោគដោយចំហាយទឹកសម្ពាធខ្ពស់ (Autoclave) ដោយមានកំណត់ត្រាប្រចាំថ្ងៃ។",
+        "about_steril_4": "សម្លាប់មេរោគលើកៅអីពិនិត្យ និងផ្ទៃប៉ះរាល់ពេលប្តូរអ្នកជំងឺម្តងៗ។",
+        "about_equipment_title": "បរិក្ខារ និងបរិយាកាសព្យាបាល",
+        "about_equipment_body": "[បញ្ជីបរិក្ខារគ្លីនិក — បំពេញឈ្មោះឧបករណ៍ថតកាំរស្មី X ឬកៅអីព្យាបាលដែលមានពិតប្រាកដ។]",
+
+        # FAQ Page
+        "faq_page_title": "សំណួរញឹកញាប់",
+        "faq_page_subtitle": "ចម្លើយច្បាស់លាស់អំពីការពិនិត្យដំបូង តម្លៃ ករណីបន្ទាន់ និងវិធីទូទាត់ប្រាក់។",
+
+        # Privacy & Cookie Policy
+        "privacy_page_title": "គោលការណ៍ឯកជនភាព និងការការពារទិន្នន័យ",
+        "privacy_page_subtitle": "របៀបដែល [CLINIC LEGAL NAME] ប្រមូល ការពារ និងរក្សាទុកព័ត៌មានសំណើណាត់ជួបរបស់អ្នក។",
+        "privacy_s1_title": "១. ព័ត៌មានដែលយើងប្រមូល",
+        "privacy_s1_body": "នៅពេលអ្នកស្នើសុំណាត់ជួប ឬផ្ញើសំណួរ យើងប្រមូលតែព័ត៌មានចាំបាច់ប៉ុណ្ណោះ៖ ឈ្មោះ លេខទូរស័ព្ទ អ៊ីមែល (បើមាន) កាលបរិច្ឆេទ និងសារខ្លីៗ។",
+        "privacy_s2_title": "២. របៀបប្រើប្រាស់ទិន្នន័យ",
+        "privacy_s2_body": "ព័ត៌មានត្រូវបានប្រើសម្រាប់ការណាត់ជួប និងការឆ្លើយតបរបស់ក្រុមការងារគ្លីនិកតែប៉ុណ្ណោះ។ យើងមិនលក់ ឬចែករំលែកទិន្នន័យអ្នកជំងឺឡើយ។",
+        "privacy_s3_title": "៣. រយៈពេលរក្សាទុក និងសុវត្ថិភាព",
+        "privacy_s3_body": "ទិន្នន័យត្រូវបានការពារដោយសិទ្ធិចូលប្រើ និងការអ៊ិនគ្រីប (HTTPS) ហើយរក្សាទុករហូតដល់ [7] ឆ្នាំ ឬតាមច្បាប់សុខាភិបាលកម្ពុជា។ លេខទូរស័ព្ទ និងរោគសញ្ញាមិនត្រូវបានរក្សាទុកក្នុងទិន្នន័យវិភាគគេហទំព័រឡើយ។",
+        "privacy_s4_title": "៤. ខូគី (Cookies) និងការវិភាគ",
+        "privacy_s4_body": "គេហទំព័រប្រើតែខូគីសុវត្ថិភាពចាំបាច់ (CSRF និងភាសា) ប៉ុណ្ណោះ ដោយមិនប្រើកម្មវិធីតាមដានផ្សាយពាណិជ្ជកម្មលើទម្រង់ណាត់ជួបឡើយ។",
+        "privacy_s5_title": "៥. សិទ្ធិរបស់អ្នក (ការពិនិត្យ និងលុបទិន្នន័យ)",
+        "privacy_s5_body": "អ្នកអាចស្នើសុំពិនិត្យ កែតម្រូវ ឬលុបទិន្នន័យទំនាក់ទំនងតាមរយៈ [CLINIC EMAIL: reception@example-clinic.kh] ឬទូរស័ព្ទ [PHONE: +855 XX XXX XXX]។",
+
+        # Staff Booking Inbox (Admin)
+        "admin_title": "ប្រអប់គ្រប់គ្រងសំណើណាត់ជួប",
+        "admin_login_title": "ចូលប្រព័ន្ធសម្រាប់បុគ្គលិក",
+        "admin_unconfigured": "គណនីបុគ្គលិកមិនទាន់ត្រូវបានកំណត់ក្នុងបរិស្ថានម៉ាស៊ីនមេទេ (CLINIC_ADMIN_USERNAME / CLINIC_ADMIN_PASSWORD_HASH)។ ប្រព័ន្ធត្រូវបានបិទជាលំនាំដើម។",
+        "admin_export_csv": "ទាញយក CSV",
+        "admin_logout": "ចាកចេញ",
     },
 }
 
